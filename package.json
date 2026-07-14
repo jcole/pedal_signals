@@ -1,0 +1,14 @@
+{
+  "name": "pedal-signals",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Interactive browser demos of how guitar effects pedals reshape a signal.",
+  "scripts": {
+    "test": "node --test",
+    "lint": "biome lint docs/src test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.3"
+  }
+}
