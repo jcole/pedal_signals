@@ -20,12 +20,14 @@ export default {
   centerTitle: "the pedal bends every sample",
   spectrumTitle: "new harmonics — the tone you hear",
 
+  // No control defaults: switching pedals swaps only the knee shape + labels and
+  // leaves drive/bias where the user left them (per-pedal p.drive still seeds the
+  // initial slider value via the control's `def` below).
   presets: Object.entries(PEDALS).map(([id, p]) => ({
     id,
     label: id,
     tech: p.tech,
     outnar: p.outnar,
-    defaults: { drive: p.drive },
   })),
 
   controls: [
