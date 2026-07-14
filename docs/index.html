@@ -2,43 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>pedal demo</title>
-<style>
-  body{margin:0;background:#12140f;color:#d8dbd2;font:14px ui-monospace,Menlo,monospace}
-  #grid{display:grid;grid-template-columns:0.8fr 1fr 1.1fr;grid-template-rows:auto minmax(420px,56vh);gap:8px 44px;max-width:1360px;margin:0 auto;padding:8px;align-items:stretch}
-  .panel canvas[data-c=input],.panel canvas[data-c=curve]{flex:1;min-height:0;height:auto}
-  .flowarr{position:relative}
-  .flowarr::before{content:"→";position:absolute;left:-36px;top:50%;transform:translateY(-50%);color:#7fa650;font-size:38px;font-weight:700;line-height:1;pointer-events:none}
-  .grp{background:#2f3626;padding:9px 10px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#c2c9b6}
-  .stack{display:flex;flex-direction:column;gap:8px}
-  .stack>.panel{flex:1;min-height:0}
-  .stack>.panel>canvas{flex:1;min-height:0;height:auto}
-  .panel{background:#191c15;position:relative;display:flex;flex-direction:column}
-  .panel h3{margin:0;padding:6px 8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a927e;font-weight:600;background:#1f231a;border-bottom:1px solid #0f110c}
-  .panel h3 .nar{display:block;color:#cdd4c1;font-weight:700}
-  .panel h3 .tech{display:block;margin-top:2px;font-size:10px;color:#6b7361;font-weight:400;letter-spacing:.06em}
-  .panel h3 .dry{color:#9aa0a6}
-  .panel h3 .wet{color:#C0522F;font-weight:700}
-  .dual{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#6b7361;text-align:center;padding:1px 0;line-height:1}
-  .panel canvas{display:block;width:100%;height:200px;touch-action:none}
-  .ctl{padding:8px;border-top:1px solid #0f110c;display:flex;gap:8px;align-items:center;font-size:12px;color:#8a927e}
-  .ctl input[type=range]{flex:1;accent-color:#7fa650}
-  .ctl output{color:#d8dbd2;min-width:2.6em;text-align:right}
-  #bar{max-width:1360px;margin:0 auto;padding:8px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-  #bar button{font:inherit;background:#5C7F3E;color:#fff;border:0;padding:8px 14px;cursor:pointer}
-  #play{width:44px;height:44px;border-radius:50%;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#5C7F3E;transition:background .15s}
-  #play svg{width:26px;height:26px;fill:#fff;display:block}
-  #play.playing{background:#C0522F}
-  .seg{display:inline-flex;border:1px solid #2c3125;border-radius:4px;overflow:hidden}
-  .srcbtn,.pedbtn{font:inherit;background:#12140f;color:#8a927e;border:0;padding:4px 10px;cursor:pointer}
-  .srcbtn.active,.pedbtn.active{background:#5C7F3E;color:#fff}
-  .srcbtn:disabled{opacity:.5;cursor:default}
-  #replay{font:inherit;background:#2c3125;color:#d8dbd2;border:0;border-radius:4px;padding:4px 10px;cursor:pointer;margin-left:auto}
-  #replay:disabled{opacity:.4;cursor:default}
-  footer{max-width:1360px;margin:0 auto;padding:10px 8px 20px;font-size:11px;color:#5a6152;line-height:1.5}
-  footer a{color:#7fa650;text-decoration:none}
-  footer a:hover{text-decoration:underline}
-  b{color:#C0522F}
-</style>
+<link rel="stylesheet" href="./src/styles.css">
 
 <div id="bar">
   <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
