@@ -27,18 +27,22 @@
      against the white page; it also draws the line the lesson prose sits below. -->
 <div id="rig">
 <div id="grid">
+  <!-- The arrows hang off the label bars, not the charts: INPUT → PEDAL → OUTPUT
+       is the signal chain, and the label row is the only row where all three
+       columns line up. Pinned to a chart they'd have to guess a height, and the
+       output column stacks two of them — there's no one right answer there. -->
   <div class="grp">Input</div>
-  <div class="grp grp-pedal">Pedal<span id="pedpicker" class="seg"></span></div>
-  <div class="grp">Output</div>
+  <div class="grp grp-pedal flowarr">Pedal<span id="pedpicker" class="seg"></span></div>
+  <div class="grp flowarr">Output</div>
   <div class="panel" id="inpanel">
     <h3><span class="nar">your signal</span><span class="tech" id="inh3"></span></h3>
     <canvas data-c="input"></canvas>
   </div>
-  <div class="panel flowarr">
+  <div class="panel">
     <h3><span class="nar" id="centernar"></span><span class="tech" id="centertech"></span></h3>
     <canvas data-c="center"></canvas>
   </div>
-  <div class="stack flowarr">
+  <div class="stack">
     <div class="panel">
       <h3><span class="nar" id="outnar"></span><span class="tech">time · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
       <canvas data-c="time"></canvas>

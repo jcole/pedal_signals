@@ -92,17 +92,20 @@ body {
 	min-height: 0;
 	height: auto;
 }
+/* Rides on a .grp label bar and reaches back into the 44px grid gap to its left,
+   so the three bars read as one chain. Sized to the bar rather than to the old
+   full-column height — at 38px it was taller than the bar it now sits in. */
 .flowarr {
 	position: relative;
 }
 .flowarr::before {
 	content: "→";
 	position: absolute;
-	left: -36px;
+	left: -34px;
 	top: 50%;
 	transform: translateY(-50%);
 	color: var(--accent);
-	font-size: 38px;
+	font-size: 25px;
 	font-weight: 700;
 	line-height: 1;
 	pointer-events: none;
