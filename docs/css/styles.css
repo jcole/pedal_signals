@@ -7,7 +7,7 @@
    device: its panels, its charts and the knobs under them stay dark, because a
    scope screen is dark and the traces have to glow. The page around it is a page
    about the device, and it's lit: prose, headings, the family switcher and the
-   footer are ink on white. The seam between them is the panel edge. When you add
+   hints are ink on white. The seam between them is the panel edge. When you add
    a surface, decide which side of that seam it's on and take the vars from there;
    don't stretch one across both. */
 :root {
@@ -20,7 +20,7 @@
 	--page: #fff;
 	--ink: #191c15; /* body prose — the panel's own dark, borrowed back */
 	--ink-hi: #0d0f09; /* headings, <strong> */
-	--ink-lo: #5e6555; /* captions, hints, footer */
+	--ink-lo: #5e6555; /* captions, hints */
 	--rule: #dfe3d7;
 	--sunk: #f2f4ee; /* inset blocks on the page: the op box, <code> */
 	/* The bench the rig sits on. Its whole job is to be a middle value: #191c15
@@ -314,10 +314,24 @@ b {
 	font-size: 12px;
 	color: var(--ink-lo);
 }
-/* sits under the controls, spanning the columns the two vol sliders live in */
-#volhint {
+/* the hint lines under the controls, each spanning the columns it's about */
+.ctlhint {
 	grid-column: 1 / -1;
 	margin: 2px 0 0;
+}
+/* the panel green is a glow color — it's built to sit on #191c15 and washes out
+   on the lit side, so links here get a darkened version of it. Darker than a
+   link on --page would need: these hints sit on the tray, not the white. The
+   weight is doing as much work as the color — at 12px the antialiasing on thin
+   strokes averages the tray back into the letters, and the link renders lighter
+   than it's set. Drop the weight and it goes washed again, whatever the hex. */
+.ctlhint a {
+	color: #35501f;
+	font-weight: 600;
+	text-decoration: none;
+}
+.ctlhint a:hover {
+	text-decoration: underline;
 }
 /* one row per switcher: [label + switcher] [its explanation]. The grid's shared
    first column keeps both explanations on one left edge, and keeps the header
@@ -481,21 +495,4 @@ b {
 	font-size: 0.9em;
 	background: var(--sunk);
 	padding: 1px 4px;
-}
-footer {
-	max-width: 1360px;
-	margin: 0 auto;
-	padding: 10px 8px 20px;
-	font-size: 12px;
-	color: var(--ink-lo);
-	line-height: 1.5;
-}
-/* the panel green is a glow color — it's built to sit on #191c15 and washes out
-   on white, so links get a darkened version of it rather than --accent-lo */
-footer a {
-	color: #46662b;
-	text-decoration: none;
-}
-footer a:hover {
-	text-decoration: underline;
 }

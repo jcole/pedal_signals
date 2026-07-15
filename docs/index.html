@@ -67,9 +67,14 @@
   <div class="ctlcol">
     <div class="ctl">vol <input id="vout" type="range" min="0" max="1" step="0.01" value="0.8"><output id="vouto">0.80</output></div>
   </div>
-  <!-- spans the two vol sliders it's about: input's in the first column, output's
-       in the third -->
-  <p class="hint" id="volhint">the vol sliders blend in vs out</p>
+  <!-- both hints span the columns: the vol one is about the sliders on either
+       side of them, and the credit is about the guitar button in the first -->
+  <p class="hint ctlhint" id="volhint">the vol sliders blend in vs out</p>
+  <p class="hint ctlhint" id="gcredit" style="display:none">
+    guitar input: a clean Stratocaster A3 (bridge pickup) from
+    <a href="https://egfxset.github.io/">EGFxSet</a> — Pedroza, Meza &amp; Roman,
+    ISMIR 2022. CC&nbsp;BY&nbsp;4.0.
+  </p>
 </div>
 </div>
 
@@ -84,12 +89,6 @@
     </div>
   </div>
 </section>
-
-<footer id="gcredit" style="display:none">
-  guitar input: a clean Stratocaster A3 (bridge pickup) from
-  <a href="https://egfxset.github.io/">EGFxSet</a> — Pedroza, Meza &amp; Roman,
-  ISMIR 2022. CC&nbsp;BY&nbsp;4.0.
-</footer>
 
 <script type="module">
   import { mount, selectPedal } from "./js/ui/harness.js";
