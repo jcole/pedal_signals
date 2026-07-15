@@ -9,6 +9,12 @@ import { SR, envelope } from "../dsp.js";
 import { DELAYS, SPANMS, impulseResponse, pluck } from "../pedals.js";
 
 export default {
+  id: "delay",
+  navLabel: "delay",
+  pageTitle: "delay — pedal demo",
+  dual: "⇅ same signal — waveform above, envelope below",
+  vinDefault: 0.6,
+  voutDefault: 0.6,
   pedals: DELAYS,
   centerTitle: "one hit → a train of repeats",
   spectrumTitle: "each repeat is quieter — feedback sets the decay",

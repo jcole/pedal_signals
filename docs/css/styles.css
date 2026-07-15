@@ -144,6 +144,9 @@ body {
 	align-items: center;
 	flex-wrap: wrap;
 }
+#effnav {
+	margin-left: auto;
+}
 #bar button {
 	font: inherit;
 	background: #5c7f3e;
@@ -179,16 +182,20 @@ body {
 	overflow: hidden;
 }
 .srcbtn,
-.pedbtn {
+.pedbtn,
+.navbtn {
 	font: inherit;
 	background: #12140f;
 	color: #8a927e;
 	border: 0;
 	padding: 4px 10px;
 	cursor: pointer;
+	text-decoration: none;
+	display: inline-block;
 }
 .srcbtn.active,
-.pedbtn.active {
+.pedbtn.active,
+.navbtn.active {
 	background: #5c7f3e;
 	color: #fff;
 }

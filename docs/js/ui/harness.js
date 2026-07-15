@@ -10,6 +10,10 @@
 // list of pedals, and hands it to mount(). The contract:
 //
 //   const view = {
+//     id, navLabel,           // URL ?effect= value + the nav link's label
+//     pageTitle,               // <title> for this family's demo
+//     dual,                    // the "⇅ ..." caption between the output panels
+//     vinDefault, voutDefault, // starting volumes for the input/output sliders
 //     pedals: [ Pedal, … ],   // the buttons; the selected one drives input+process
 //     centerTitle,            // center-panel headline ("the pedal bends every sample")
 //     spectrumTitle,          // output spectrum-panel headline

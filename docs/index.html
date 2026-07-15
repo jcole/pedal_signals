@@ -7,6 +7,7 @@
 <div id="bar">
   <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
   <span style="font-size:12px;color:#5a6152">raise a graph's volume to hear it — blend or solo input vs output</span>
+  <nav id="effnav" class="seg"></nav>
 </div>
 
 <div id="grid">
@@ -14,7 +15,7 @@
   <div class="grp">Pedal</div>
   <div class="grp">Output</div>
   <div class="panel" id="inpanel">
-    <h3><span class="nar">your signal</span><span class="tech" id="inh3">sine</span></h3>
+    <h3><span class="nar">your signal</span><span class="tech" id="inh3"></span></h3>
     <canvas data-c="input"></canvas>
     <div class="ctl">
       <span class="seg">
@@ -26,18 +27,18 @@
     <div class="ctl">vol <input id="vin" type="range" min="0" max="1" step="0.01" value="0"><output id="vino">0.00</output></div>
   </div>
   <div class="panel flowarr">
-    <h3><span class="nar" id="centernar">the pedal bends every sample</span><span class="tech" id="centertech"></span></h3>
+    <h3><span class="nar" id="centernar"></span><span class="tech" id="centertech"></span></h3>
     <canvas data-c="center"></canvas>
     <div id="centerctls"></div>
   </div>
   <div class="stack flowarr">
     <div class="panel">
-      <h3><span class="nar" id="outnar">the peaks get clipped</span><span class="tech">time · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
+      <h3><span class="nar" id="outnar"></span><span class="tech">time · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
       <canvas data-c="time"></canvas>
       <div class="ctl">vol <input id="vout" type="range" min="0" max="1" step="0.01" value="0.8"><output id="vouto">0.80</output></div>
     </div>
-    <div class="dual">⇅ same signal — time above, spectrum below</div>
-    <div class="panel"><h3><span class="nar" id="specnar">new harmonics — the tone you hear</span><span class="tech">spectrum · <span class="dry">in</span> vs <span class="wet">out</span> (dB)</span></h3><canvas data-c="spec"></canvas></div>
+    <div class="dual" id="dualtxt"></div>
+    <div class="panel"><h3><span class="nar" id="specnar"></span><span class="tech">spectrum · <span class="dry">in</span> vs <span class="wet">out</span> (dB)</span></h3><canvas data-c="spec"></canvas></div>
   </div>
 </div>
 
@@ -50,5 +51,33 @@
 <script type="module">
   import { mount } from "./js/ui/harness.js";
   import clipping from "./js/ui/clipping.js";
-  mount(clipping);
+  import delay from "./js/ui/delay.js";
+
+  // Every pedal family's view, keyed by its `id` — also its ?effect= value and
+  // its nav link's label. Add a new family here and it shows up in the nav and
+  // becomes linkable, no other page changes needed.
+  const EFFECTS = [clipping, delay];
+
+  const params = new URLSearchParams(location.search);
+  const view = EFFECTS.find((v) => v.id === params.get("effect")) ?? EFFECTS[0];
+
+  document.title = view.pageTitle;
+  document.getElementById("dualtxt").textContent = view.dual;
+  const vin = document.getElementById("vin"),
+    vout = document.getElementById("vout");
+  vin.value = view.vinDefault;
+  vout.value = view.voutDefault;
+  document.getElementById("vino").textContent = view.vinDefault.toFixed(2);
+  document.getElementById("vouto").textContent = view.voutDefault.toFixed(2);
+
+  const nav = document.getElementById("effnav");
+  for (const v of EFFECTS) {
+    const a = document.createElement("a");
+    a.href = `?effect=${v.id}`;
+    a.textContent = v.navLabel;
+    a.className = v === view ? "navbtn active" : "navbtn";
+    nav.appendChild(a);
+  }
+
+  mount(view);
 </script>

@@ -8,6 +8,12 @@ import { CLIPPING } from "../pedals.js";
 import { specDb, windowed, KBIN, F0, FMAX, SR, N } from "../dsp.js";
 
 export default {
+  id: "clipping",
+  navLabel: "clipping",
+  pageTitle: "pedal demo",
+  dual: "⇅ same signal — time above, spectrum below",
+  vinDefault: 0,
+  voutDefault: 0.8,
   pedals: CLIPPING,
   centerTitle: "the pedal bends every sample",
   spectrumTitle: "new harmonics — the tone you hear",
