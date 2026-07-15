@@ -18,6 +18,23 @@
   <div class="panel" id="inpanel">
     <h3><span class="nar">your signal</span><span class="tech" id="inh3"></span></h3>
     <canvas data-c="input"></canvas>
+  </div>
+  <div class="panel flowarr">
+    <h3><span class="nar" id="centernar"></span><span class="tech" id="centertech"></span></h3>
+    <canvas data-c="center"></canvas>
+  </div>
+  <div class="stack flowarr">
+    <div class="panel">
+      <h3><span class="nar" id="outnar"></span><span class="tech">time · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
+      <canvas data-c="time"></canvas>
+    </div>
+    <div class="dual" id="dualtxt"></div>
+    <div class="panel"><h3><span class="nar" id="specnar"></span><span class="tech">spectrum · <span class="dry">in</span> vs <span class="wet">out</span> (dB)</span></h3><canvas data-c="spec"></canvas></div>
+  </div>
+</div>
+
+<div id="controls">
+  <div class="ctlcol">
     <div class="ctl">
       <span class="seg">
         <button class="srcbtn active" data-src="sine">sine</button>
@@ -27,19 +44,9 @@
     </div>
     <div class="ctl">vol <input id="vin" type="range" min="0" max="1" step="0.01" value="0"><output id="vino">0.00</output></div>
   </div>
-  <div class="panel flowarr">
-    <h3><span class="nar" id="centernar"></span><span class="tech" id="centertech"></span></h3>
-    <canvas data-c="center"></canvas>
-    <div id="centerctls"></div>
-  </div>
-  <div class="stack flowarr">
-    <div class="panel">
-      <h3><span class="nar" id="outnar"></span><span class="tech">time · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
-      <canvas data-c="time"></canvas>
-      <div class="ctl">vol <input id="vout" type="range" min="0" max="1" step="0.01" value="0.8"><output id="vouto">0.80</output></div>
-    </div>
-    <div class="dual" id="dualtxt"></div>
-    <div class="panel"><h3><span class="nar" id="specnar"></span><span class="tech">spectrum · <span class="dry">in</span> vs <span class="wet">out</span> (dB)</span></h3><canvas data-c="spec"></canvas></div>
+  <div class="ctlcol" id="centerctls"></div>
+  <div class="ctlcol">
+    <div class="ctl">vol <input id="vout" type="range" min="0" max="1" step="0.01" value="0.8"><output id="vouto">0.80</output></div>
   </div>
 </div>
 

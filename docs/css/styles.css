@@ -113,6 +113,19 @@ body {
 	padding: 1px 0;
 	line-height: 1;
 }
+#controls {
+	display: grid;
+	grid-template-columns: 0.8fr 1fr 1.1fr;
+	gap: 8px 44px;
+	max-width: 1360px;
+	margin: 0 auto;
+	padding: 8px;
+}
+.ctlcol {
+	display: flex;
+	flex-direction: column;
+	background: #191c15;
+}
 .ctl {
 	padding: 8px;
 	border-top: 1px solid #0f110c;
@@ -121,6 +134,9 @@ body {
 	align-items: center;
 	font-size: 12px;
 	color: #8a927e;
+}
+.ctlcol .ctl:first-child {
+	border-top: 0;
 }
 .ctl input[type="range"] {
 	flex: 1;
