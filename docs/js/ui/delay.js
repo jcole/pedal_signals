@@ -19,6 +19,43 @@ export default {
   centerTitle: "one hit → a train of repeats",
   spectrumTitle: "each repeat is quieter — feedback sets the decay",
 
+  lesson: {
+    formula: "y[n] = x[n] + fb·y[n−D]",
+    formulaNote: "this sample, plus the output from D samples ago",
+    klass: "linear, time-invariant (LTI)",
+    oneLiner: "it hands you back what you already played.",
+    body: `
+      <p><strong>What's actually going on:</strong> the pedal keeps a bucket of
+      the recent past — a delay line, D samples long. Every sample, it plays
+      what you're feeding it right now plus whatever fell out of the far end of
+      that bucket, and drops the result back in the near end. So a hit comes
+      back D samples later, and that repeat gets fed in again to come back D
+      later still, each pass quieter than the last by the feedback ratio. The
+      decay is geometric: fb, then fb², then fb³.</p>
+      <p>Nothing here invents a frequency. The output is only ever <em>sums of
+      copies</em> of what you put in, so the harmonics you get out are the
+      harmonics you played — just arriving late, and more than once. That's
+      what makes it linear. The two knobs are the only two numbers in the
+      equation: time is D, feedback is fb.</p>
+    `,
+    aside: {
+      title: "Why feedback stops at 0.85",
+      body: `
+        <p>Each trip round the loop multiplies the signal by <code>fb</code>.
+        Below 1 that's a shrinking geometric series — the tail dies, and the
+        maths converges no matter how long you wait. At exactly 1 every repeat
+        returns at full strength and the tail never ends. Above 1 each pass is
+        <em>louder</em> than the last, and the loop climbs until something
+        clips.</p>
+        <p>Real delays run this close to the edge on purpose: a tape echo with
+        the repeats cranked is a self-oscillating feedback loop, howling on its
+        own with nothing played into it. The slider stops at 0.85 so the
+        ambient setting can get near that runaway without the demo screaming at
+        you.</p>
+      `,
+    },
+  },
+
   controls: [
     { id: "time", label: "time", min: 20, max: 400, step: 5, def: 160, fmt: (v) => `${v.toFixed(0)} ms` },
     { id: "feedback", label: "feedback", min: 0, max: 0.85, step: 0.01, def: 0.45, fmt: (v) => v.toFixed(2) },

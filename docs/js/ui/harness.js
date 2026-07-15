@@ -277,6 +277,12 @@ function setPedal(id) {
   if (pedal.tech) document.getElementById("centertech").textContent = pedal.tech;
   if (pedal.outnar)
     document.getElementById("outnar").textContent = pedal.outnar;
+  // The centre column belongs to the chosen pedal: its headline says what THIS
+  // pedal changes, falling back to the family's headline for a pedal that
+  // doesn't say. The formula on the line below is already pedal-specific.
+  if (pedal.whatChanges || view.centerTitle)
+    document.getElementById("centernar").textContent =
+      pedal.whatChanges || view.centerTitle;
   document.getElementById("inh3").textContent = srcTitle(srcMode);
   for (const [k, v] of Object.entries(pedal.defaults)) {
     const c = ctlEls[k]?.def;
@@ -420,6 +426,39 @@ function wireTransport() {
   };
 }
 
+// ---- lesson section ---------------------------------------------------------
+// Optional prose block a view can supply (view.lesson) explaining what the
+// family actually does to the signal — the governing equation and a
+// plain-language explanation, with an optional second column for a deeper
+// aside. Hidden entirely for views that omit it.
+function renderLesson(lesson) {
+  const section = document.getElementById("lesson");
+  const lede = document.getElementById("lede");
+  if (!lesson) {
+    section.style.display = "none";
+    lede.style.display = "none";
+    return;
+  }
+  section.style.display = "";
+  lede.style.display = "";
+  document.getElementById("lformula").textContent = lesson.formula;
+  document.getElementById("lformulanote").textContent = lesson.formulaNote;
+  document.getElementById("loneliner").textContent = lesson.oneLiner;
+  const klassline = document.querySelector("#lede .klassline");
+  klassline.style.display = lesson.klass ? "" : "none";
+  if (lesson.klass) document.getElementById("lklass").textContent = lesson.klass;
+  document.getElementById("lbody").innerHTML = lesson.body;
+
+  const asideWrap = document.getElementById("lasidewrap");
+  if (lesson.aside) {
+    asideWrap.style.display = "";
+    document.getElementById("lasidetitle").textContent = lesson.aside.title;
+    document.getElementById("lasidebody").innerHTML = lesson.aside.body;
+  } else {
+    asideWrap.style.display = "none";
+  }
+}
+
 // ---- mount -----------------------------------------------------------------
 export function mount(v) {
   view = v;
@@ -431,6 +470,7 @@ export function mount(v) {
     document.getElementById("centernar").textContent = view.centerTitle;
   if (view.spectrumTitle)
     document.getElementById("specnar").textContent = view.spectrumTitle;
+  renderLesson(view.lesson);
   buildControls();
   setPedal(pedal.id); // seed labels + apply the first pedal's defaults
   wireSourceToggle();

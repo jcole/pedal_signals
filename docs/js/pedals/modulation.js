@@ -21,8 +21,8 @@ export class ModulationPedal extends Pedal {
   spanSamples = NMOD;
   srcTitles = { sine: "sine", guitar: "guitar · A3 (sustained)" };
 
-  constructor({ id, label, tech, outnar, rate, depth, fn, waveType }) {
-    super({ id, label, tech, outnar });
+  constructor({ rate, depth, fn, waveType, ...opts }) {
+    super(opts);
     this.defaults = { rate, depth };
     Object.assign(this, { fn, waveType });
   }
@@ -82,6 +82,7 @@ export const MODULATIONS = [
     id: "tremolo",
     outnar: "the volume rises and falls in a steady pulse",
     tech: "x[n]·(1 − d/2 + d/2·sin(2π·rate·t))",
+    whatChanges: "amplitude; sidebands at f ± rate",
     rate: 4,
     depth: 0.6,
     fn: sineShape,
@@ -91,6 +92,7 @@ export const MODULATIONS = [
     id: "chop",
     outnar: "the signal gates on and off",
     tech: "x[n]·(1 − d/2 + d/2·square(2π·rate·t))",
+    whatChanges: "amplitude gated on/off; square LFO spreads many sidebands",
     rate: 7,
     depth: 0.95,
     fn: squareShape,
@@ -100,6 +102,7 @@ export const MODULATIONS = [
     id: "warble",
     outnar: "a slow, shallow wobble",
     tech: "x[n]·(1 − d/2 + d/2·tri(2π·rate·t))",
+    whatChanges: "amplitude, slow and shallow; sidebands stay close in",
     rate: 2,
     depth: 0.35,
     fn: triangleShape,

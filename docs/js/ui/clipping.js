@@ -19,6 +19,42 @@ export default {
   centerTitle: "the pedal bends every sample",
   spectrumTitle: "new harmonics — the tone you hear",
 
+  lesson: {
+    formula: "y[n] = f(x[n])",
+    formulaNote: "one sample in, one sample out, no memory",
+    // The family's signal class, named once here rather than stamped on every
+    // pedal: it's the same for all three, and the formula note above is exactly
+    // what the term means.
+    klass: "memoryless nonlinearity (NL)",
+    oneLiner: "it flattens the peaks.",
+    body: `
+      <p><strong>What's actually going on:</strong> the pedal applies a fixed
+      input→output curve. Below some level the curve is a straight line and
+      nothing happens. Above it the curve bends over, so the tops of the wave
+      get squashed. A squashed sine isn't a sine any more, and the only way to
+      build a non-sine periodic wave is to add harmonics. So harmonics appear
+      — at 2f₀, 3f₀, 4f₀ and up. The pitch does not change; the
+      <em>period is identical</em>. Only the shape moved.</p>
+      <p>Drive is just how hard you push the signal into the bend before the
+      curve. Everything else — germanium vs silicon, LED vs diode, op-amp vs
+      tube — is an argument about the exact shape of that bend.</p>
+    `,
+    aside: {
+      title: "Why builders obsess over asymmetry",
+      body: `
+        <p>If your transfer curve is odd-symmetric — <code>f(−x) = −f(x)</code>
+        — the maths guarantees you get <em>only odd harmonics</em>. 3f₀, 5f₀,
+        7f₀. No 2f₀, no 4f₀. Odd harmonics on their own sound hollow and hard;
+        that's the classic op-amp distortion character.</p>
+        <p>Break the symmetry — clip the positive half harder than the
+        negative, which is what an unmatched diode pair does — and even
+        harmonics appear. The 2nd harmonic is an octave up, the 4th is two
+        octaves. They're consonant. That is essentially all "tube warmth"
+        means.</p>
+      `,
+    },
+  },
+
   // No control defaults on the pedals: switching pedals swaps only the knee shape
   // + labels and leaves drive/bias where the user left them. The first pedal's
   // drive still seeds the initial slider value via the control's `def` below.

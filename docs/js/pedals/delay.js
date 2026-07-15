@@ -20,8 +20,8 @@ export class DelayPedal extends Pedal {
   // is the same sine at the same pitch, just enveloped into a burst.
   srcTitles = { sine: "sine burst", guitar: "guitar · A3" };
 
-  constructor({ id, label, tech, outnar, time, feedback }) {
-    super({ id, label, tech, outnar });
+  constructor({ time, feedback, ...opts }) {
+    super(opts);
     this.defaults = { time, feedback };
   }
 
@@ -95,6 +95,7 @@ export const DELAYS = [
     id: "echo",
     tech: DELAY_TECH,
     outnar: "a fading train of repeats",
+    whatChanges: "envelope, seconds-wide; no new frequencies",
     time: 160,
     feedback: 0.45,
   }),
@@ -102,6 +103,7 @@ export const DELAYS = [
     id: "slapback",
     tech: DELAY_TECH,
     outnar: "one quick slap",
+    whatChanges: "one short repeat; reads as thickening, not echo",
     time: 90,
     feedback: 0.15,
   }),
@@ -109,6 +111,7 @@ export const DELAYS = [
     id: "ambient",
     tech: DELAY_TECH,
     outnar: "a long, smeared tail",
+    whatChanges: "long tail near self-oscillation; repeats blur together",
     time: 240,
     feedback: 0.7,
   }),

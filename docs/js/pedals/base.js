@@ -23,8 +23,12 @@ export class Pedal {
   // swaps the knee shape and nothing else.
   defaults = {};
 
-  constructor({ id, label = id, tech = "", outnar = "" }) {
-    Object.assign(this, { id, label, tech, outnar });
+  // whatChanges is the one-line "and so the signal does THIS" the header shows
+  // next to tech for whichever pedal is live. The family's signal class (NL, LTI,
+  // LTV) is deliberately NOT here: it's constant across a family, so it belongs
+  // to the view's lesson, not to each pedal.
+  constructor({ id, label = id, tech = "", outnar = "", whatChanges = "" }) {
+    Object.assign(this, { id, label, tech, outnar, whatChanges });
   }
 
   // The default input: an exact integer number of sine periods (so the spectrum

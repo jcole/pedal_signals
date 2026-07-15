@@ -4,16 +4,27 @@
 <title>pedal demo</title>
 <link rel="stylesheet" href="./css/styles.css">
 
+<!-- The family switcher and the family's explanation on one line. The pedal
+     switcher isn't here: it lives in the PEDAL column's label, on the charts it
+     drives, and that column's headline says what the chosen pedal does. -->
 <div id="bar">
-  <nav id="effnav" class="seg"></nav>
-</div>
-<div id="pedbar">
-  <span id="pedpicker" class="seg"></span>
+  <div class="pickhead">
+    <span class="barlabel">pedal family</span>
+    <nav id="effnav" class="seg"></nav>
+    <div id="transport">
+      <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
+    </div>
+  </div>
+  <div id="lede" style="display:none">
+    <p class="op"><strong>The math:</strong> <b id="lformula"></b> — <span id="lformulanote"></span></p>
+    <p class="klassline"><strong>Class:</strong> <span id="lklass"></span></p>
+    <p class="oneliner"><strong>What it does:</strong> <span id="loneliner"></span></p>
+  </div>
 </div>
 
 <div id="grid">
   <div class="grp">Input</div>
-  <div class="grp">Pedal</div>
+  <div class="grp grp-pedal">Pedal<span id="pedpicker" class="seg"></span></div>
   <div class="grp">Output</div>
   <div class="panel" id="inpanel">
     <h3><span class="nar">your signal</span><span class="tech" id="inh3"></span></h3>
@@ -48,12 +59,22 @@
   <div class="ctlcol">
     <div class="ctl">vol <input id="vout" type="range" min="0" max="1" step="0.01" value="0.8"><output id="vouto">0.80</output></div>
   </div>
+  <!-- spans the two vol sliders it's about: input's in the first column, output's
+       in the third -->
+  <p class="hint" id="volhint">the vol sliders blend in vs out</p>
 </div>
 
-<div id="transport">
-  <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
-  <span style="font-size:12px;color:#5a6152">raise a graph's volume to hear it — blend or solo input vs output</span>
-</div>
+<section id="lesson" style="display:none">
+  <div class="lesson-cols">
+    <div class="col">
+      <div id="lbody"></div>
+    </div>
+    <div class="col" id="lasidewrap">
+      <h3 id="lasidetitle"></h3>
+      <div id="lasidebody"></div>
+    </div>
+  </div>
+</section>
 
 <footer id="gcredit" style="display:none">
   guitar input: a clean Stratocaster A3 (bridge pickup) from

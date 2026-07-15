@@ -7,8 +7,8 @@ import { shapeSignal } from "../dsp.js";
 import { Pedal } from "./base.js";
 
 export class ClippingPedal extends Pedal {
-  constructor({ id, label, tech, outnar, drive, fn }) {
-    super({ id, label, tech, outnar });
+  constructor({ drive, fn, ...opts }) {
+    super(opts);
     Object.assign(this, { drive, fn });
   }
 
@@ -34,6 +34,7 @@ export const CLIPPING = [
     id: "overdrive",
     outnar: "the peaks get clipped",
     tech: "tanh(drive·x + bias)",
+    whatChanges: "soft knee; harmonics roll off gently",
     drive: 6,
     fn: (x, drive, bias) => Math.tanh(drive * x + bias),
   }),
@@ -41,6 +42,7 @@ export const CLIPPING = [
     id: "distortion",
     outnar: "the peaks get squared off",
     tech: "clip(drive·x + bias)",
+    whatChanges: "hard corners; strong high harmonics",
     drive: 4,
     fn: (x, drive, bias) => Math.max(-1, Math.min(1, drive * x + bias)),
   }),
@@ -51,6 +53,7 @@ export const CLIPPING = [
     id: "fuzz",
     outnar: "the wave collapses to a square",
     tech: "clip(drive·x + bias) · asym",
+    whatChanges: "near-square wave; lopsided rails add even harmonics",
     drive: 10,
     fn: (x, drive, bias) => Math.max(-0.6, Math.min(1, drive * x + bias)),
   }),

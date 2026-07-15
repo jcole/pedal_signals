@@ -25,6 +25,43 @@ export default {
   centerTitle: "the pedal rides the volume up and down",
   spectrumTitle: "the envelope traces the LFO — the ear hears it as pulsing",
 
+  lesson: {
+    formula: "y[n] = x[n]·m(t)",
+    formulaNote: "the multiplier depends on the clock, not on the sample",
+    klass: "linear, time-varying (LTV)",
+    oneLiner: "it rides your volume knob for you.",
+    body: `
+      <p><strong>What's actually going on:</strong> a second oscillator — far
+      too slow to hear as a pitch, a few cycles per second — is turning your
+      volume up and down. That's the LFO, and its shape is the whole pedal:
+      a rounded sine gives tremolo's smooth pulse, a square slams the signal
+      on and off, a triangle wobbles. Depth sets how far down the cut goes; at
+      depth 1 the troughs reach silence, at depth 0 the multiplier is a flat 1
+      and nothing happens.</p>
+      <p>Like clipping, this pedal has no memory — it touches one sample at a
+      time. But where clipping asks "how big is this sample?", modulation asks
+      "what time is it?" That's the difference between the two families, and
+      it's why this one is linear: play twice as loud and you get exactly twice
+      as loud out. The pedal isn't bending your signal, it's scaling it.</p>
+    `,
+    aside: {
+      title: "Sidebands, not harmonics",
+      body: `
+        <p>Multiply two sines and the trig gives you a sum and a difference,
+        not a multiple: <code>sin(A)·sin(B)</code> is
+        <code>½[cos(A−B) − cos(A+B)]</code>. So tremolo on a note at f₀ puts
+        new energy at <em>f₀ ± rate</em> — a few hertz either side of the note,
+        not up at 2f₀ and 3f₀ where clipping puts it. That's why the spectrum
+        panel shows the line smearing into a little cluster instead of
+        sprouting a harmonic series.</p>
+        <p>Those sidebands are why the family keeps going. Wind the rate up out
+        of LFO territory and into the audio range and the sidebands move far
+        enough from f₀ to hear as their own tones, inharmonic and clangy —
+        that's a ring modulator, the same equation with a faster clock.</p>
+      `,
+    },
+  },
+
   controls: [
     { id: "rate", label: "rate", min: 0.5, max: 12, step: 0.1, def: 4, fmt: (v) => `${v.toFixed(1)} Hz` },
     { id: "depth", label: "depth", min: 0, max: 1, step: 0.01, def: 0.6, fmt: (v) => v.toFixed(2) },

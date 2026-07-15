@@ -10,7 +10,7 @@ body {
 #grid {
 	display: grid;
 	grid-template-columns: 0.8fr 1fr 1.1fr;
-	grid-template-rows: auto minmax(420px, 56vh);
+	grid-template-rows: auto minmax(380px, 48vh);
 	gap: 8px 44px;
 	max-width: 1360px;
 	margin: 0 auto;
@@ -52,6 +52,28 @@ body {
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
 	color: #c2c9b6;
+}
+/* The PEDAL column's label carries the pedal switcher: it sits on the charts it
+   drives. The buttons keep the label bar's height, so all three group labels
+   stay the same height. */
+.grp-pedal {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding-top: 0;
+	padding-bottom: 0;
+	min-height: 36px;
+}
+.grp-pedal .seg {
+	border-color: #454f39;
+}
+.grp-pedal .pedbtn {
+	background: #232a1c;
+	letter-spacing: 0.08em;
+	padding: 3px 10px;
+}
+.grp-pedal .pedbtn.active {
+	background: #5c7f3e;
 }
 .panel {
 	background: #191c15;
@@ -151,9 +173,7 @@ body {
 	display: inline-block;
 	min-width: 3em;
 }
-#bar,
-#pedbar,
-#transport {
+#bar {
 	max-width: 1360px;
 	margin: 0 auto;
 	padding: 8px;
@@ -162,26 +182,56 @@ body {
 	align-items: center;
 	flex-wrap: wrap;
 }
+/* the play button rides at the top right of the header row, opposite the family
+   switcher */
 #transport {
-	justify-content: center;
+	display: flex;
+	align-items: center;
+	margin-left: auto;
 }
-#bar button {
-	font: inherit;
-	background: #5c7f3e;
-	color: #fff;
-	border: 0;
-	padding: 8px 14px;
-	cursor: pointer;
+.hint {
+	font-size: 12px;
+	color: #5a6152;
+}
+/* sits under the controls, spanning the columns the two vol sliders live in */
+#volhint {
+	grid-column: 1 / -1;
+	margin: 2px 0 0;
+}
+/* one row per switcher: [label + switcher] [its explanation]. The grid's shared
+   first column keeps both explanations on one left edge, and keeps the header
+   short enough that the lesson below the charts breaks the fold. */
+/* the family switcher, with the family's explanation on its own full-width line
+   underneath — the explanation gets the whole page to lay out on, so it stays a
+   single line instead of wrapping in a narrow column */
+#bar {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+	padding-top: 14px;
+}
+.pickhead {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.barlabel {
+	font-size: 10px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: #5a6152;
 }
 #play {
 	width: 44px;
 	height: 44px;
+	border: 0;
 	border-radius: 50%;
 	padding: 0;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	background: #5c7f3e;
+	cursor: pointer;
 	transition: background 0.15s;
 }
 #play svg {
@@ -234,6 +284,76 @@ body {
 #replay:disabled {
 	opacity: 0.4;
 	cursor: default;
+}
+/* the family's explanation, inline beside the family switcher */
+#lede {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px 18px;
+	align-items: baseline;
+	font-size: 13px;
+	line-height: 1.5;
+	color: #8a927e;
+}
+#lede p {
+	margin: 0;
+}
+#lede strong {
+	color: #cdd4c1;
+	font-weight: 600;
+}
+#lede #lformula {
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	color: #c0522f;
+}
+#lede .oneliner strong {
+	color: #d8dbd2;
+}
+#lesson {
+	max-width: 1360px;
+	margin: 8px auto 0;
+	padding: 20px 8px 8px;
+	border-top: 1px solid #2c3125;
+}
+.lesson-cols {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: 8px 44px;
+}
+.lesson-cols .col {
+	max-width: 68ch;
+}
+#lesson .op {
+	font-size: 13px;
+	color: #8a927e;
+	background: #191c15;
+	border-left: 2px solid #c0522f;
+	padding: 9px 14px;
+	margin: 0 0 16px;
+	display: inline-block;
+}
+#lesson .op b {
+	color: #d8dbd2;
+	font-weight: 600;
+}
+#lesson h3 {
+	font-size: 13px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #cdd4c1;
+	margin: 0 0 8px;
+}
+#lesson p {
+	margin: 0 0 14px;
+	line-height: 1.6;
+	color: #c2c9b6;
+}
+#lesson strong {
+	color: #d8dbd2;
+}
+#lesson code {
+	background: #1f231a;
+	padding: 1px 4px;
 }
 footer {
 	max-width: 1360px;
