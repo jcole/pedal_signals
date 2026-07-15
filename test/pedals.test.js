@@ -1,19 +1,25 @@
 // Unit tests for the pedals (docs/js/pedals.js): the Pedal instances (their
 // process/genInput/defaults) plus the delay family's pure DSP — the difference
-// equation and the tap train. Run with `npm test` (i.e. `node --test`). Pure
-// data / pure functions — no browser. The generic engines these feed (shapeSignal,
-// envelope) are tested in dsp.test.js.
-import { test } from "node:test";
+// equation and the tap train — and the modulation family's LFO shapes. Run with
+// `npm test` (i.e. `node --test`). Pure data / pure functions — no browser. The
+// generic engines these feed (shapeSignal, envelope) are tested in dsp.test.js.
+
 import assert from "node:assert/strict";
+import { test } from "node:test";
 
 import {
-  PEDALS,
   CLIPPING,
-  DELAYS,
   ClippingPedal,
+  DELAYS,
   DelayPedal,
   echo,
   impulseResponse,
+  PEDALS,
+  sineShape,
+  squareShape,
+  MODULATIONS,
+  ModulationPedal,
+  triangleShape,
 } from "../docs/js/pedals.js";
 
 test("overdrive is odd-symmetric at bias 0 and monotonic", () => {
@@ -78,9 +84,16 @@ test("clipping pedals carry a curve; delay pedals carry starting knobs", () => {
     assert.equal(typeof p.defaults.time, "number", `${p.id}.defaults.time`);
     assert.equal(typeof p.defaults.feedback, "number", `${p.id}.defaults.feedback`);
   }
+  for (const p of MODULATIONS) {
+    assert.ok(p instanceof ModulationPedal);
+    assert.equal(typeof p.defaults.rate, "number", `${p.id}.defaults.rate`);
+    assert.equal(typeof p.defaults.depth, "number", `${p.id}.defaults.depth`);
+    assert.equal(typeof p.fn, "function", `${p.id}.fn`);
+    assert.equal(typeof p.waveType, "string", `${p.id}.waveType`);
+  }
 });
 
-test("PEDALS is the whole catalog, both families, keyed by id", () => {
+test("PEDALS is the whole catalog, every family, keyed by id", () => {
   assert.deepEqual(Object.keys(PEDALS), [
     "overdrive",
     "distortion",
@@ -88,6 +101,9 @@ test("PEDALS is the whole catalog, both families, keyed by id", () => {
     "echo",
     "slapback",
     "ambient",
+    "tremolo",
+    "chop",
+    "warble",
   ]);
 });
 
@@ -189,4 +205,70 @@ test("impulseResponse at feedback 0 is just the dry tap", () => {
 test("impulseResponse never runs past the panel's span", () => {
   const span = 500;
   for (const t of impulseResponse(120, 0.9, span)) assert.ok(t.ms <= span);
+});
+
+// ---- modulation: LFO shapes (each bipolar in [-1, 1]) ----------------------
+
+test("sineShape, squareShape, and triangleShape stay within [-1, 1]", () => {
+  for (let i = 0; i <= 200; i++) {
+    const phase = (2 * Math.PI * i) / 200;
+    for (const shape of [sineShape, squareShape, triangleShape]) {
+      const v = shape(phase);
+      assert.ok(v >= -1 && v <= 1, `${v} at phase ${phase}`);
+    }
+  }
+});
+
+test("squareShape is a hard ±1 gate, never 0", () => {
+  for (let i = 0; i <= 200; i++) {
+    const v = squareShape((2 * Math.PI * i) / 200);
+    assert.ok(v === 1 || v === -1);
+  }
+});
+
+test("triangleShape hits its extremes a quarter and three-quarters through the cycle", () => {
+  assert.ok(Math.abs(triangleShape(Math.PI / 2) - 1) < 1e-9);
+  assert.ok(Math.abs(triangleShape((3 * Math.PI) / 2) + 1) < 1e-9);
+});
+
+// ---- modulation: ModulationPedal (y[n] = x[n]·m(t)) ------------------------
+
+test("ModulationPedal.curve rides between 1-depth and 1", () => {
+  const trem = PEDALS.tremolo;
+  const m = trem.curve({ rate: 4, depth: 0.6 });
+  let lo = Infinity,
+    hi = -Infinity;
+  for (let ms = 0; ms <= 1000; ms += 1) {
+    const v = m(ms);
+    lo = Math.min(lo, v);
+    hi = Math.max(hi, v);
+  }
+  assert.ok(Math.abs(hi - 1) < 1e-3, "peak reaches ~1 (untouched)");
+  assert.ok(Math.abs(lo - 0.4) < 1e-3, "trough reaches ~1-depth");
+});
+
+test("ModulationPedal.curve at depth 0 is a constant 1 (no effect)", () => {
+  const m = PEDALS.tremolo.curve({ rate: 4, depth: 0 });
+  for (const ms of [0, 37, 250, 999]) assert.equal(m(ms), 1);
+});
+
+test("ModulationPedal.process multiplies sample-by-sample at match=1", () => {
+  const trem = PEDALS.tremolo;
+  const inp = Float64Array.from({ length: 512 }, () => 1); // constant input
+  const { out, match } = trem.process(inp, { rate: 4, depth: 0.6 });
+  assert.equal(match, 1, "no peak-match — the volume swing must stay visible");
+  const m = trem.curve({ rate: 4, depth: 0.6 });
+  for (const i of [0, 100, 300, 511]) {
+    const expected = m((i / 48000) * 1000);
+    assert.ok(Math.abs(out[i] - expected) < 1e-9, `sample ${i}`);
+  }
+});
+
+test("chop (square LFO, depth 0.95) drives the signal near silent at its troughs", () => {
+  const chop = PEDALS.chop;
+  const inp = Float64Array.from({ length: 4096 }, () => 1);
+  const { out } = chop.process(inp, { rate: 7, depth: 0.95 });
+  let lo = Infinity;
+  for (const v of out) lo = Math.min(lo, v);
+  assert.ok(lo < 0.06, "square LFO gates all the way down near 1-depth");
 });

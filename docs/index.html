@@ -52,11 +52,12 @@
   import { mount } from "./js/ui/harness.js";
   import clipping from "./js/ui/clipping.js";
   import delay from "./js/ui/delay.js";
+  import tremolo from "./js/ui/modulation.js";
 
   // Every pedal family's view, keyed by its `id` — also its ?effect= value and
   // its nav link's label. Add a new family here and it shows up in the nav and
   // becomes linkable, no other page changes needed.
-  const EFFECTS = [clipping, delay];
+  const EFFECTS = [clipping, delay, tremolo];
 
   const params = new URLSearchParams(location.search);
   const view = EFFECTS.find((v) => v.id === params.get("effect")) ?? EFFECTS[0];
