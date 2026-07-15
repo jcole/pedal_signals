@@ -15,9 +15,9 @@ import { MODULATIONS, SPANMS_MOD } from "../pedals.js";
 const CURVE_SPAN_MS = 600;
 
 export default {
-  id: "tremolo",
+  id: "modulation",
   navLabel: "modulation",
-  pageTitle: "tremolo — pedal demo",
+  pageTitle: "modulation — pedal demo",
   dual: "⇅ same signal — LFO curve above, envelope below",
   vinDefault: 0.6,
   voutDefault: 0.6,
@@ -140,6 +140,12 @@ export default {
         lfo.frequency.value = params.rate;
         lfoGain.gain.value = params.depth / 2;
         offset.offset.value = 1 - params.depth / 2;
+      },
+      // both are started above, so both must be stopped when the family is
+      // swapped out — a disconnected oscillator still runs.
+      dispose() {
+        lfo.stop();
+        offset.stop();
       },
     };
   },

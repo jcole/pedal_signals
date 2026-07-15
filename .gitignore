@@ -12,6 +12,8 @@ __pycache__/
 # tooling caches
 .pytest_cache/
 .ruff_cache/
+test-results/
+playwright-report/
 
 # scratch
 tmp/

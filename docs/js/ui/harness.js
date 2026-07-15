@@ -20,9 +20,17 @@
 //     controls:[ {id, label, min, max, step, def, fmt?(v)->string}, … ],
 //     drawCenter(F, pedal, params, H),           // draw the center panel
 //     drawSpec(F, inp, out, pedal, src, H),      // draw the output spectrum panel
-//     buildAudio(actx, inGain, H) -> { wetOut, update(pedal, params, state, match) },
+//     buildAudio(actx, inGain, H) -> { wetOut, update(pedal, params, state, match), dispose?() },
 //     buildSource?(actx) -> AudioNode,   // live synthetic source; default: a steady oscillator
 //   };
+//
+// mount(view, {pedal, onPedal}) can be called again with another view to swap
+// families in place. The harness disconnects the old wet chain and calls its
+// dispose() — a view whose buildAudio start()s anything (an LFO, a
+// ConstantSource) must stop it there, or it keeps running, unheard, for the life
+// of the page. `pedal` is the id to open on (an unknown one falls back to the
+// family's first); `onPedal(id)` fires on a user pick, not on that seeding, and
+// is how the page keeps the URL in step with the picker.
 //
 // Each Pedal instance carries what makes it that pedal, and what the harness reads
 // off the *selected* one: sampleCount / spanSamples (analysis sizing), analytic
@@ -43,6 +51,7 @@ const DRY = "#9aa0a6",
 // ---- module-level state ----------------------------------------------------
 let view = null; // the mounted page: pedals + UI hooks
 let pedal = null; // the currently selected Pedal instance
+let onPedal = null; // mount() opt: told the pedal id whenever the user picks one
 const level = 1.0;
 const params = {}; // live control values, keyed by control id
 let srcMode = "sine", // "sine" | "guitar"
@@ -269,10 +278,15 @@ function setParam(id, v) {
 // Select a pedal: swap its labels (formula, output narrative) and snap any knobs
 // it declares defaults for. A pedal with no defaults (the clipping family) leaves
 // the knobs where the user left them — switching there changes only the knee.
-function setPedal(id) {
-  pedal = view.pedals.find((p) => p.id === id);
+// `notify` is false when the page seeds the pedal (on mount, or on a back/forward
+// that already carries the id), so that only a real choice by the user reaches
+// onPedal and writes the URL.
+function setPedal(id, notify = true) {
+  const next = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
+  if (notify && next === pedal) return; // re-picking the open pedal isn't a move
+  pedal = next;
   document.querySelectorAll(".pedbtn").forEach((b) => {
-    b.classList.toggle("active", b.dataset.pedal === id);
+    b.classList.toggle("active", b.dataset.pedal === pedal.id);
   });
   if (pedal.tech) document.getElementById("centertech").textContent = pedal.tech;
   if (pedal.outnar)
@@ -290,6 +304,7 @@ function setPedal(id) {
     if (c) ctlEls[k].input.value = params[k];
   }
   refreshControlOutputs();
+  if (notify) onPedal?.(pedal.id);
   schedule();
 }
 
@@ -385,13 +400,29 @@ function ensureAudio() {
   wetGain = actx.createGain();
   dryGain = actx.createGain();
   master = actx.createGain();
+  master.connect(actx.destination);
+  connectView();
+}
+// Build the mounted view's wet chain onto the standing dry/wet/master graph, and
+// (re)connect the two paths into it. Called on first play and again after a
+// family swap, which leaves the context and the outer graph alone.
+function connectView() {
   audio = view.buildAudio(actx, inGain, H);
   audio.wetOut.connect(wetGain).connect(master); // wet path
   inGain.connect(dryGain).connect(master); // dry path
-  master.connect(actx.destination);
   updateAudio();
   setVol();
   startSource();
+}
+// Drop the mounted view's wet chain. inGain feeds both the view's input and the
+// dry tap, so it's cut wholesale here and the dry tap is remade by connectView.
+function disconnectView() {
+  stopSource();
+  inGain.disconnect();
+  wetGain.disconnect();
+  audio.wetOut.disconnect();
+  audio.dispose?.();
+  audio = null;
 }
 function wireTransport() {
   vinS().oninput = setVol;
@@ -460,11 +491,42 @@ function renderLesson(lesson) {
 }
 
 // ---- mount -----------------------------------------------------------------
-export function mount(v) {
+// Everything a view owns is torn down here, so mount() can hand the page to a
+// different family without a reload: its wet chain, its knobs, and the live
+// values keyed by knob id (a stale `time` from delay must not reach tremolo).
+// What survives a swap is what isn't the view's: the AudioContext and its outer
+// graph, the guitar buffer, the source mode, and the once-wired listeners.
+function unmount() {
+  if (raf) cancelAnimationFrame(raf);
+  raf = 0;
+  if (actx) disconnectView();
+  for (const k of Object.keys(params)) delete params[k];
+  for (const k of Object.keys(ctlEls)) delete ctlEls[k];
+  lastState = null;
+  lastMatch = 1;
+}
+
+// Move the picker to a pedal the page already knows about — a back/forward inside
+// one family. Deliberately not a mount(): the family hasn't changed, so its audio
+// chain and knobs are left standing rather than torn down and rebuilt under a
+// note that's still sounding. Silent, since the URL already says this.
+export function selectPedal(id) {
+  setPedal(id, false);
+}
+
+let wired = false;
+export function mount(v, opts = {}) {
+  if (view) unmount();
   view = v;
+  onPedal = opts.onPedal ?? null;
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
+  // page furniture the view owns
+  document.title = view.pageTitle;
+  document.getElementById("dualtxt").textContent = view.dual;
+  document.getElementById("vin").value = view.vinDefault;
+  document.getElementById("vout").value = view.voutDefault;
   // headlines the view owns
   if (view.centerTitle)
     document.getElementById("centernar").textContent = view.centerTitle;
@@ -472,11 +534,25 @@ export function mount(v) {
     document.getElementById("specnar").textContent = view.spectrumTitle;
   renderLesson(view.lesson);
   buildControls();
-  setPedal(pedal.id); // seed labels + apply the first pedal's defaults
-  wireSourceToggle();
-  wireTransport();
+  // seed labels + defaults from the asked-for pedal, falling back to the
+  // family's first for an id the URL made up
+  setPedal(opts.pedal, false);
+  if (actx) connectView(); // playing already? swap the chain under the audio
+  else setVol(); // otherwise just show the new family's starting volumes
 
-  // load the real note straight from the WAV (no AudioContext needed here)
+  if (!wired) {
+    wired = true;
+    wireSourceToggle();
+    wireTransport();
+    addEventListener("resize", render);
+    loadGuitar();
+  }
+  render();
+}
+
+// The real note, straight from the WAV (no AudioContext needed here). Fetched
+// once for the page, not per family.
+function loadGuitar() {
   const gbtn = () => document.querySelector('.srcbtn[data-src="guitar"]');
   fetch("guitar_clean.wav")
     .then((r) => r.arrayBuffer())
@@ -489,7 +565,4 @@ export function mount(v) {
     .catch(() => {
       gbtn().textContent = "guitar ✕";
     });
-
-  addEventListener("resize", render);
-  render();
 }

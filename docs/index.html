@@ -83,36 +83,69 @@
 </footer>
 
 <script type="module">
-  import { mount } from "./js/ui/harness.js";
+  import { mount, selectPedal } from "./js/ui/harness.js";
   import clipping from "./js/ui/clipping.js";
   import delay from "./js/ui/delay.js";
-  import tremolo from "./js/ui/modulation.js";
+  import modulation from "./js/ui/modulation.js";
 
   // Every pedal family's view, keyed by its `id` — also its ?effect= value and
   // its nav link's label. Add a new family here and it shows up in the nav and
   // becomes linkable, no other page changes needed.
-  const EFFECTS = [clipping, delay, tremolo];
+  const EFFECTS = [clipping, delay, modulation];
 
-  const params = new URLSearchParams(location.search);
-  const view = EFFECTS.find((v) => v.id === params.get("effect")) ?? EFFECTS[0];
+  // The URL is the address of what you're looking at, so it carries both
+  // switchers: ?effect= names the family, ?pedal= the pedal within it. Either may
+  // be absent (a bare / opens the first family's first pedal) or wrong — an id
+  // nobody recognizes falls back rather than failing.
+  const viewFor = (id) => EFFECTS.find((v) => v.id === id) ?? EFFECTS[0];
+  const asked = () => new URLSearchParams(location.search);
+  const urlFor = (effect, pedal) =>
+    `?effect=${effect}` + (pedal ? `&pedal=${pedal}` : "");
 
-  document.title = view.pageTitle;
-  document.getElementById("dualtxt").textContent = view.dual;
-  const vin = document.getElementById("vin"),
-    vout = document.getElementById("vout");
-  vin.value = view.vinDefault;
-  vout.value = view.voutDefault;
-  document.getElementById("vino").textContent = view.vinDefault.toFixed(2);
-  document.getElementById("vouto").textContent = view.voutDefault.toFixed(2);
-
+  // The nav entries stay real links — right-click, ⌘-click and copy-link all keep
+  // working, and ?effect= URLs still load cold, since the query is only ever read
+  // by this script (a static host serves index.html either way). A plain left
+  // click is handled here instead: pushState swaps the URL, mount() swaps the
+  // family, and neither costs a reload.
   const nav = document.getElementById("effnav");
-  for (const v of EFFECTS) {
+  const links = EFFECTS.map((v) => {
     const a = document.createElement("a");
-    a.href = `?effect=${v.id}`;
+    a.href = urlFor(v.id); // the family, at whichever pedal it opens on
     a.textContent = v.navLabel;
-    a.className = v === view ? "navbtn active" : "navbtn";
+    a.className = "navbtn";
+    a.onclick = (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      if (v.id === current) return;
+      history.pushState(null, "", a.href);
+      show(v);
+    };
     nav.appendChild(a);
+    return a;
+  });
+
+  // Both switchers push: they look alike and they mean alike, so back undoes
+  // either one. Landing on a family that's already up (back across a pedal pick)
+  // moves the picker only — remounting would rebuild the family's audio chain
+  // under a note that's still playing, to arrive at the same place.
+  let current = null;
+  function show(v, pedal) {
+    links.forEach((a, i) => {
+      a.classList.toggle("active", EFFECTS[i].id === v.id);
+    });
+    if (v.id === current) {
+      selectPedal(pedal);
+      return;
+    }
+    current = v.id;
+    mount(v, {
+      pedal,
+      onPedal: (id) => history.pushState(null, "", urlFor(v.id, id)),
+    });
   }
 
-  mount(view);
+  addEventListener("popstate", () => {
+    show(viewFor(asked().get("effect")), asked().get("pedal")); // back/forward
+  });
+  show(viewFor(asked().get("effect")), asked().get("pedal"));
 </script>
