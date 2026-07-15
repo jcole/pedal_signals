@@ -1,7 +1,7 @@
 <!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>pedal demo</title>
+<title>delay — pedal demo</title>
 <link rel="stylesheet" href="./css/styles.css">
 
 <div id="bar">
@@ -14,7 +14,7 @@
   <div class="grp">Pedal</div>
   <div class="grp">Output</div>
   <div class="panel" id="inpanel">
-    <h3><span class="nar">your signal</span><span class="tech" id="inh3">sine</span></h3>
+    <h3><span class="nar">your signal</span><span class="tech" id="inh3">sine burst</span></h3>
     <canvas data-c="input"></canvas>
     <div class="ctl">
       <span class="seg">
@@ -23,21 +23,21 @@
       </span>
       <button id="replay" disabled title="restart the note from the pluck">↻ pluck</button>
     </div>
-    <div class="ctl">vol <input id="vin" type="range" min="0" max="1" step="0.01" value="0"><output id="vino">0.00</output></div>
+    <div class="ctl">vol <input id="vin" type="range" min="0" max="1" step="0.01" value="0.6"><output id="vino">0.60</output></div>
   </div>
   <div class="panel flowarr">
-    <h3><span class="nar" id="centernar">the pedal bends every sample</span><span class="tech" id="centertech"></span></h3>
+    <h3><span class="nar" id="centernar">one hit → a train of repeats</span><span class="tech" id="centertech"></span></h3>
     <canvas data-c="center"></canvas>
     <div id="centerctls"></div>
   </div>
   <div class="stack flowarr">
     <div class="panel">
-      <h3><span class="nar" id="outnar">the peaks get clipped</span><span class="tech">time · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
+      <h3><span class="nar" id="outnar">a fading train of repeats</span><span class="tech">time · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
       <canvas data-c="time"></canvas>
-      <div class="ctl">vol <input id="vout" type="range" min="0" max="1" step="0.01" value="0.8"><output id="vouto">0.80</output></div>
+      <div class="ctl">vol <input id="vout" type="range" min="0" max="1" step="0.01" value="0.6"><output id="vouto">0.60</output></div>
     </div>
-    <div class="dual">⇅ same signal — time above, spectrum below</div>
-    <div class="panel"><h3><span class="nar" id="specnar">new harmonics — the tone you hear</span><span class="tech">spectrum · <span class="dry">in</span> vs <span class="wet">out</span> (dB)</span></h3><canvas data-c="spec"></canvas></div>
+    <div class="dual">⇅ same signal — waveform above, envelope below</div>
+    <div class="panel"><h3><span class="nar" id="specnar">each repeat is quieter — feedback sets the decay</span><span class="tech">envelope · <span class="dry">in</span> vs <span class="wet">out</span></span></h3><canvas data-c="spec"></canvas></div>
   </div>
 </div>
 
@@ -49,6 +49,6 @@
 
 <script type="module">
   import { mount } from "./js/ui/harness.js";
-  import clipping from "./js/ui/clipping.js";
-  mount(clipping);
+  import delay from "./js/ui/delay.js";
+  mount(delay);
 </script>

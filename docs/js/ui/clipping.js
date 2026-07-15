@@ -1,37 +1,22 @@
-// Clipping-family effect module (overdrive / distortion / fuzz). A pedal here is
-// a per-sample transfer curve out = f(drive·x + bias); the three presets differ
-// only in the knee shape. This module owns everything clipping-specific — the
-// transfer-curve center panel, the harmonic-stem spectrum, and the WaveShaper
-// audio node — and declares its presets/controls for the harness to render. The
-// The clipping transfer curves live in the shared pedals.js catalog (alongside
-// every other pedal's definition); the generic engine (shapeSignal) and analysis
-// core (FFT/spectrum, windowing) come from dsp.js. This module adds only the
-// clipping-specific presentation: presets, controls, panels, and audio node.
-import { PEDALS } from "./pedals.js";
-import { shapeSignal, specDb, windowed, KBIN, F0, FMAX, SR, N } from "./dsp.js";
-
-// the current preset's curve, bound to the live drive/bias
-const bound = (params) => {
-  const p = PEDALS[params.preset];
-  return (x) => p.fn(x, params.drive, params.bias);
-};
+// Clipping-family VIEW (overdrive / distortion / fuzz): only the UI. What a
+// clipping pedal IS — its transfer curve out = f(drive·x + bias), and how it
+// processes a buffer — lives on the ClippingPedal instances in pedals.js. This
+// module renders them: the transfer-curve center panel, the harmonic-stem
+// spectrum, the drive/bias controls, and the WaveShaper audio node. The analysis
+// core (FFT/spectrum, windowing) comes from dsp.js.
+import { CLIPPING } from "../pedals.js";
+import { specDb, windowed, KBIN, F0, FMAX, SR, N } from "../dsp.js";
 
 export default {
+  pedals: CLIPPING,
   centerTitle: "the pedal bends every sample",
   spectrumTitle: "new harmonics — the tone you hear",
 
-  // No control defaults: switching pedals swaps only the knee shape + labels and
-  // leaves drive/bias where the user left them (per-pedal p.drive still seeds the
-  // initial slider value via the control's `def` below).
-  presets: Object.entries(PEDALS).map(([id, p]) => ({
-    id,
-    label: id,
-    tech: p.tech,
-    outnar: p.outnar,
-  })),
-
+  // No control defaults on the pedals: switching pedals swaps only the knee shape
+  // + labels and leaves drive/bias where the user left them. The first pedal's
+  // drive still seeds the initial slider value via the control's `def` below.
   controls: [
-    { id: "drive", label: "drive", min: 1, max: 40, step: 0.1, def: PEDALS.overdrive.drive, fmt: (v) => v.toFixed(1) },
+    { id: "drive", label: "drive", min: 1, max: 40, step: 0.1, def: CLIPPING[0].drive, fmt: (v) => v.toFixed(1) },
     {
       id: "bias",
       label: "bias",
@@ -43,18 +28,11 @@ export default {
     },
   ],
 
-  // shape the input, drop DC, peak-match to input; hand the DC back so the audio
-  // graph can strip it from the WaveShaper curve too.
-  process(inp, params) {
-    const { out, outDc, outMatch } = shapeSignal(inp, bound(params));
-    return { out, match: outMatch, state: { outDc } };
-  },
-
   // center panel: the transfer curve itself, with y=x reference + zero axes
-  drawCenter(F, params, H) {
+  drawCenter(F, pedal, params, H) {
     const { g, L, R, T, B } = F;
     const { GRID, ZERO, ACCENT } = H.colors;
-    const nl = bound(params);
+    const nl = pedal.curve(params);
     const sx = (x) => L + ((x + 1) / 2) * (R - L),
       sy = (y) => B - ((y + 1) / 2) * (B - T);
     g.strokeStyle = GRID;
@@ -87,7 +65,7 @@ export default {
   },
 
   // sine → clean line spectrum on exact harmonic bins; guitar → continuous curves
-  drawSpec(F, inp, out, _params, src, H) {
+  drawSpec(F, inp, out, _pedal, src, H) {
     if (src === "guitar") drawSpecCont(F, inp, out, H);
     else drawSpecStems(F, specDb(inp), specDb(out), H);
   },
@@ -99,10 +77,10 @@ export default {
     shaper.oversample = "4x";
     const wetTrim = actx.createGain();
     inGain.connect(shaper).connect(wetTrim);
-    const makeCurve = (params, outDc) => {
+    const makeCurve = (pedal, params, outDc) => {
       const n = 1024,
         a = new Float32Array(n),
-        nl = bound(params);
+        nl = pedal.curve(params);
       for (let i = 0; i < n; i++) {
         const x = -1 + (2 * i) / (n - 1);
         a[i] = nl(x) - outDc;
@@ -111,8 +89,8 @@ export default {
     };
     return {
       wetOut: wetTrim,
-      update(params, state, match) {
-        shaper.curve = makeCurve(params, state ? state.outDc : 0);
+      update(pedal, params, state, match) {
+        shaper.curve = makeCurve(pedal, params, state ? state.outDc : 0);
         wetTrim.gain.value = match;
       },
     };

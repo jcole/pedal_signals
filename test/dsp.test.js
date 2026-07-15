@@ -1,4 +1,4 @@
-// Unit tests for the pure DSP core (docs/src/dsp.js). Run with `npm test`
+// Unit tests for the pure DSP core (docs/js/dsp.js). Run with `npm test`
 // (i.e. `node --test`). No browser, no dependencies — everything here is plain
 // data-in / data-out.
 import { test } from "node:test";
@@ -14,10 +14,18 @@ import {
   shapeSignal,
   specDb,
   windowed,
-} from "../docs/src/dsp.js";
-import { PEDALS } from "../docs/src/pedals.js"; // fixtures: real transfer curves
+  envelope,
+} from "../docs/js/dsp.js";
+import { PEDALS, echo } from "../docs/js/pedals.js"; // fixtures: real pedal DSP
 
 // ---- helpers ---------------------------------------------------------------
+
+// a unit impulse: the cleanest probe for a follower or a difference equation
+function impulse(len) {
+  const s = new Float64Array(len);
+  s[0] = 1;
+  return s;
+}
 
 // Build a minimal 16-bit PCM mono WAV (RIFF/fmt/data) around known samples, so
 // parseWav has a deterministic buffer to decode.
@@ -199,4 +207,35 @@ test("windowed applies a Hann taper: zero at the ends, ~unity in the middle", ()
   assert.ok(Math.abs(w[0]) < 1e-12, "starts at zero");
   assert.ok(Math.abs(w[w.length - 1]) < 1e-12, "ends at zero");
   assert.ok(Math.abs(w[512] - 1) < 1e-3, "middle ~ unity");
+});
+
+// ---- envelope --------------------------------------------------------------
+
+test("envelope never dips below the signal it traces", () => {
+  const sig = Float64Array.from({ length: 500 }, (_, i) =>
+    Math.sin(i / 3) * Math.exp(-i / 120),
+  );
+  const e = envelope(sig);
+  for (let i = 0; i < sig.length; i++) {
+    assert.ok(e[i] >= Math.abs(sig[i]) - 1e-12, `envelope covers |sig| at ${i}`);
+    assert.ok(e[i] >= 0, "envelope is non-negative");
+  }
+});
+
+test("envelope jumps to a peak instantly, then releases downward", () => {
+  const n = 2000; // ~42 ms — several 9 ms release constants, so it reaches silence
+  const e = envelope(impulse(n));
+  assert.equal(e[0], 1, "instant attack");
+  for (let i = 1; i < n; i++) assert.ok(e[i] < e[i - 1], "monotonic release");
+  assert.ok(e[n - 1] < 0.05, "and it actually decays away");
+});
+
+test("envelope reads an echo train as one hump per repeat", () => {
+  // repeats far enough apart that the follower falls between them
+  const out = echo(impulse(24000), 8000, 0.5);
+  const e = envelope(out);
+  assert.ok(Math.abs(e[0] - 1) < 1e-12, "dry hump");
+  assert.ok(Math.abs(e[8000] - 0.5) < 1e-12, "1st repeat's hump = fb");
+  assert.ok(Math.abs(e[16000] - 0.25) < 1e-12, "2nd repeat's hump = fb^2");
+  assert.ok(e[7999] < 0.01, "and it has fallen back to silence in between");
 });

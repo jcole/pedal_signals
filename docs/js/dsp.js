@@ -1,8 +1,9 @@
 // Generic signal-analysis + IO core, shared by every effect module and the Node
 // tests. Nothing in here touches the DOM, canvas, or Web Audio — every function
 // is a plain data-in / data-out transform, so it runs identically in a browser
-// and under `node --test`. Per-effect DSP and the UI/audio/canvas glue live in
-// the harness (harness.js) and the effect modules (clipping.js, delay.js, …).
+// and under `node --test`. The per-pedal DSP each effect is built from lives in
+// pedals.js; the UI/audio/canvas glue lives in the harness (harness.js) and the
+// effect modules (clipping.js, delay.js, …).
 
 // ---- constants -------------------------------------------------------------
 export const SR = 48000;
@@ -105,6 +106,23 @@ export function shapeSignal(inp, fn) {
   } // centre (drop DC)
   const outMatch = ipk / Math.max(1e-9, pk); // then peak-match to input, so only shape differs
   return { out, outDc, outMatch };
+}
+
+// ---- envelope --------------------------------------------------------------
+// A peak-follower envelope: instant attack, exponential release. Traces the top
+// of |sig| so a train of separated echoes reads as a row of decaying humps even
+// when the raw waveform is a dense scribble. Pure, single pass, O(n).
+export function envelope(sig, releaseMs = 9) {
+  const n = sig.length,
+    e = new Float64Array(n),
+    rel = Math.exp(-1 / ((releaseMs / 1000) * SR));
+  let env = 0;
+  for (let i = 0; i < n; i++) {
+    const a = Math.abs(sig[i]);
+    env = a > env ? a : env * rel;
+    e[i] = env;
+  }
+  return e;
 }
 
 // ---- FFT / spectrum --------------------------------------------------------

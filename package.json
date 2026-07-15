@@ -6,7 +6,7 @@
   "description": "Interactive browser demos of how guitar effects pedals reshape a signal.",
   "scripts": {
     "test": "node --test",
-    "lint": "biome lint docs/src test"
+    "lint": "biome lint docs/js test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.3"

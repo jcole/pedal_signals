@@ -1,39 +1,33 @@
-// Effect-neutral harness. Everything that isn't specific to one effect lives
-// here: the input generation, the generic panels (input waveform, dry-vs-wet
-// time), the transport, the dry/wet blend audio graph, the source toggle, and
-// the control UI that's generated from an effect module's declarations. The
-// pure DSP (WAV parse, FFT, spectrum) is imported from dsp.js.
+// Effect-neutral harness. Everything that isn't specific to one page lives here:
+// the generic panels (input waveform, dry-vs-wet time), the transport, the
+// dry/wet blend audio graph, the source toggle, and the control UI. It renders a
+// VIEW over a list of PEDALS: the pedals (from pedals.js) are the model — each one
+// knows how to generate its input and process it; the view is the page's UI — its
+// panels, its controls, its live audio graph. The pure DSP (WAV parse, FFT,
+// spectrum) is imported from dsp.js.
 //
-// An effect module (clipping.js, delay.js, …) fills in only what's genuinely
-// effect-specific and hands it to mount(). The contract:
+// A view module (clipping.js, delay.js, …) supplies only the family's UI and its
+// list of pedals, and hands it to mount(). The contract:
 //
-//   const effect = {
-//     centerTitle,        // center-panel headline ("the pedal bends every sample")
-//     spectrumTitle,      // output spectrum-panel headline
-//     presets: [ {id, label, tech, outnar, defaults:{ctlId:val, …}}, … ],
+//   const view = {
+//     pedals: [ Pedal, … ],   // the buttons; the selected one drives input+process
+//     centerTitle,            // center-panel headline ("the pedal bends every sample")
+//     spectrumTitle,          // output spectrum-panel headline
 //     controls:[ {id, label, min, max, step, def, fmt?(v)->string}, … ],
-//     process(inp, params) -> { out:Float64Array, match:number, state?:any },
-//     drawCenter(F, params, H),          // draw the center panel
-//     drawSpec(F, inp, out, params, src, H),  // draw the output spectrum panel
-//     buildAudio(actx, inGain, H) -> { wetOut, update(params, state, match) },
+//     drawCenter(F, pedal, params, H),           // draw the center panel
+//     drawSpec(F, inp, out, pedal, src, H),      // draw the output spectrum panel
+//     buildAudio(actx, inGain, H) -> { wetOut, update(pedal, params, state, match) },
+//     buildSource?(actx) -> AudioNode,   // live synthetic source; default: a steady oscillator
 //   };
 //
-// H is the harness helper bundle: drawing primitives and the shared palette,
-// passed into the effect's draw/audio hooks. The DSP core (specDb, windowed) and
-// the constants (SR, N, KBIN, …) live in dsp.js; effect modules import whichever
-// of those they need straight from there.
-import {
-  SR,
-  N,
-  KBIN,
-  F0,
-  CYCLES,
-  SPAN,
-  GOFF,
-  MSMAX,
-  parseWav,
-  normalize,
-} from "./dsp.js";
+// Each Pedal instance carries what makes it that pedal, and what the harness reads
+// off the *selected* one: sampleCount / spanSamples (analysis sizing), analytic
+// (redraw the input smoothly?), srcTitles ({sine, guitar} input-panel labels),
+// defaults (knobs to snap to on select — empty = leave them put), genInput(...)
+// and process(...). H is the harness helper bundle: drawing primitives and the
+// shared palette, passed into the view's draw/audio hooks. The DSP core (specDb,
+// windowed) and constants (SR, N, KBIN, …) live in dsp.js.
+import { SR, F0, CYCLES, SPAN, MSMAX, parseWav, normalize } from "../dsp.js";
 
 // ---- colors (shared palette; effects read ACCENT for their center curve) ----
 const DRY = "#9aa0a6",
@@ -43,10 +37,10 @@ const DRY = "#9aa0a6",
   ZERO = "#3a4030";
 
 // ---- module-level state ----------------------------------------------------
-let effect = null;
+let view = null; // the mounted page: pedals + UI hooks
+let pedal = null; // the currently selected Pedal instance
 const level = 1.0;
 const params = {}; // live control values, keyed by control id
-let preset = null; // current preset id (null if the effect has no presets)
 let srcMode = "sine", // "sine" | "guitar"
   guitar = null; // Float32Array of the clean note, 48 kHz mono
 let lastState = null,
@@ -112,31 +106,34 @@ const H = {
   colors: { DRY, WET, ACCENT, GRID, ZERO },
 };
 
-// ---- input generation (shared) ---------------------------------------------
-// One N-sample buffer: an exact integer number of sine periods (clean line
-// spectrum), or a slice of the real note starting past the pick attack.
+// ---- pedal-declared sizing --------------------------------------------------
+// A per-sample pedal analyses N samples and shows ~13.5 ms of them; a time-based
+// one asks for more of both. Everything downstream reads the selected pedal, not
+// the consts. (Pedals on one page share a family, so these don't jump on select.)
+const spanMs = () =>
+  pedal.spanSamples === SPAN ? MSMAX : (pedal.spanSamples / SR) * 1000;
+// input-panel headline per source; a pedal renames them (a delay's "sine" is a pluck)
+const srcTitle = (m) => pedal.srcTitles[m] ?? m;
+
+// ---- input generation ------------------------------------------------------
+// The selected pedal makes its own input buffer — a steady sine (Pedal's default),
+// a mid-note guitar slice, or something its lesson needs (a delay makes a transient
+// pluck, since a steady tone can't show a repeat).
 function genInput() {
-  const inp = new Float64Array(N);
-  const guitarOn = srcMode === "guitar" && guitar;
-  for (let n = 0; n < N; n++) {
-    inp[n] = guitarOn
-      ? guitar[GOFF + n] || 0
-      : level * Math.sin((2 * Math.PI * KBIN * n) / N);
-  }
-  return inp;
+  return pedal.genInput({ srcMode, guitar, n: pedal.sampleCount });
 }
 
 // ---- render (effect-neutral orchestration) ---------------------------------
 function render() {
   const inp = genInput();
-  const r = effect.process(inp, params);
+  const r = pedal.process(inp, params);
   lastState = r.state ?? null;
   lastMatch = r.match ?? 1;
 
   drawInput(inp);
-  effect.drawCenter(frame(C.center), params, H);
+  view.drawCenter(frame(C.center), pedal, params, H);
   drawTime(inp, r.out, lastMatch);
-  effect.drawSpec(frame(C.spec), inp, r.out, params, srcMode, H);
+  view.drawSpec(frame(C.spec), inp, r.out, pedal, srcMode, H);
 }
 
 function drawInput(inp) {
@@ -151,10 +148,14 @@ function drawInput(inp) {
   g.stroke();
   const xs = [],
     ys = [];
-  if (srcMode === "guitar" && guitar) {
-    for (let i = 0; i < SPAN; i++) {
-      xs.push(i / SPAN);
-      ys.push(inp[i]);
+  // A generated steady sine is redrawn analytically (smooth at any width); any
+  // real buffer — the guitar, or a pedal that makes its own input — is plotted as
+  // samples. `analytic` marks a pedal whose sine input is that redrawable sine.
+  if (!(pedal.analytic && srcMode === "sine")) {
+    const span = pedal.spanSamples;
+    for (let i = 0; i < span; i++) {
+      xs.push(i / span);
+      ys.push(inp[i] || 0);
     }
     line(g, xs, ys, sx, sy, DRY, 1.5);
   } else {
@@ -169,14 +170,14 @@ function drawInput(inp) {
   txt(g, "0", L - 5, sy(0), "end", "middle");
   txt(g, "-1", L - 5, sy(-1), "end", "middle");
   txt(g, "0", sx(0), B + 3, "start", "top");
-  txt(g, MSMAX.toFixed(0), sx(1), B + 3, "end", "top");
+  txt(g, spanMs().toFixed(0), sx(1), B + 3, "end", "top");
   titles(g, F, "amplitude", "time (ms)");
 }
 
 function drawTime(inp, out, match) {
   const F = frame(C.time),
     { g, L, R, T, B } = F;
-  const span = SPAN;
+  const span = pedal.spanSamples;
   const sx = (i) => L + (i / span) * (R - L),
     sy = (y) => (T + B) / 2 - y * ((B - T) / 2 - 4);
   g.strokeStyle = ZERO;
@@ -196,33 +197,32 @@ function drawTime(inp, out, match) {
   txt(g, "0", L - 5, sy(0), "end", "middle");
   txt(g, "-1", L - 5, sy(-1), "end", "middle");
   txt(g, "0", sx(0), B + 3, "start", "top");
-  txt(g, MSMAX.toFixed(0), sx(span), B + 3, "end", "top");
+  txt(g, spanMs().toFixed(0), sx(span), B + 3, "end", "top");
   titles(g, F, "amplitude", "time (ms)");
 }
 
-// ---- control UI (generated from effect.presets + effect.controls) ----------
+// ---- control UI (generated from view.pedals + view.controls) ---------------
 const ctlEls = {}; // id -> {input, output, ctl}
 function buildControls() {
   const host = document.getElementById("centerctls");
   host.innerHTML = "";
-  // preset segment (optional)
-  if (effect.presets?.length) {
-    preset = effect.presets[0].id;
-    params.preset = preset;
+  // pedal-select segment (one button per pedal; skipped if there's only one)
+  pedal = view.pedals[0];
+  if (view.pedals.length > 1) {
     const ctl = el("div", "ctl");
     const seg = el("span", "seg");
-    for (const p of effect.presets) {
-      const b = el("button", `pedbtn${p.id === preset ? " active" : ""}`);
+    for (const p of view.pedals) {
+      const b = el("button", `pedbtn${p === pedal ? " active" : ""}`);
       b.textContent = p.label;
-      b.dataset.preset = p.id;
-      b.onclick = () => setPreset(p.id);
+      b.dataset.pedal = p.id;
+      b.onclick = () => setPedal(p.id);
       seg.appendChild(b);
     }
     ctl.appendChild(seg);
     host.appendChild(ctl);
   }
   // sliders
-  for (const c of effect.controls) {
+  for (const c of view.controls) {
     const ctl = el("div", "ctl");
     const label = el("label");
     label.textContent = c.label;
@@ -262,18 +262,19 @@ function setParam(id, v) {
   ctlEls[id].output.textContent = fmtCtl(c, params[id]);
   schedule();
 }
-// Apply a preset: swap its per-preset labels (formula, output narrative) and
-// snap any controls the preset overrides to their preset defaults.
-function setPreset(id) {
-  preset = id;
-  params.preset = id;
-  const p = effect.presets.find((x) => x.id === id);
+// Select a pedal: swap its labels (formula, output narrative) and snap any knobs
+// it declares defaults for. A pedal with no defaults (the clipping family) leaves
+// the knobs where the user left them — switching there changes only the knee.
+function setPedal(id) {
+  pedal = view.pedals.find((p) => p.id === id);
   document.querySelectorAll(".pedbtn").forEach((b) => {
-    b.classList.toggle("active", b.dataset.preset === id);
+    b.classList.toggle("active", b.dataset.pedal === id);
   });
-  if (p.tech) document.getElementById("centertech").textContent = p.tech;
-  if (p.outnar) document.getElementById("outnar").textContent = p.outnar;
-  for (const [k, v] of Object.entries(p.defaults || {})) {
+  if (pedal.tech) document.getElementById("centertech").textContent = pedal.tech;
+  if (pedal.outnar)
+    document.getElementById("outnar").textContent = pedal.outnar;
+  document.getElementById("inh3").textContent = srcTitle(srcMode);
+  for (const [k, v] of Object.entries(pedal.defaults)) {
     const c = ctlEls[k]?.def;
     params[k] = c ? clampCtl(c, v) : v;
     if (c) ctlEls[k].input.value = params[k];
@@ -303,8 +304,7 @@ function wireSourceToggle() {
       document.querySelectorAll(".srcbtn").forEach((x) => {
         x.classList.toggle("active", x === b);
       });
-      document.getElementById("inh3").textContent =
-        srcMode === "guitar" ? "guitar · A3" : "sine";
+      document.getElementById("inh3").textContent = srcTitle(srcMode);
       document.getElementById("gcredit").style.display =
         srcMode === "guitar" ? "" : "none";
       document.getElementById("replay").disabled = srcMode !== "guitar";
@@ -335,6 +335,8 @@ function startSource() {
     srcNode = actx.createBufferSource();
     srcNode.buffer = ab;
     srcNode.loop = true;
+  } else if (view.buildSource) {
+    srcNode = view.buildSource(actx); // the view's own synthetic source (started below)
   } else {
     srcNode = actx.createOscillator();
     srcNode.frequency.value = F0;
@@ -363,7 +365,7 @@ function setVol() {
 function updateAudio() {
   if (!actx) return;
   inGain.gain.value = level;
-  audio.update(params, lastState, lastMatch);
+  audio.update(pedal, params, lastState, lastMatch);
   master.gain.value = 0.3; // headroom: dry+wet can sum, keep below clipping
 }
 function ensureAudio() {
@@ -373,7 +375,7 @@ function ensureAudio() {
   wetGain = actx.createGain();
   dryGain = actx.createGain();
   master = actx.createGain();
-  audio = effect.buildAudio(actx, inGain, H);
+  audio = view.buildAudio(actx, inGain, H);
   audio.wetOut.connect(wetGain).connect(master); // wet path
   inGain.connect(dryGain).connect(master); // dry path
   master.connect(actx.destination);
@@ -415,18 +417,18 @@ function wireTransport() {
 }
 
 // ---- mount -----------------------------------------------------------------
-export function mount(fx) {
-  effect = fx;
+export function mount(v) {
+  view = v;
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
-  // headlines the effect owns
-  if (fx.centerTitle)
-    document.getElementById("centernar").textContent = fx.centerTitle;
-  if (fx.spectrumTitle)
-    document.getElementById("specnar").textContent = fx.spectrumTitle;
+  // headlines the view owns
+  if (view.centerTitle)
+    document.getElementById("centernar").textContent = view.centerTitle;
+  if (view.spectrumTitle)
+    document.getElementById("specnar").textContent = view.spectrumTitle;
   buildControls();
-  if (effect.presets?.length) setPreset(preset); // seed labels
+  setPedal(pedal.id); // seed labels + apply the first pedal's defaults
   wireSourceToggle();
   wireTransport();
 
