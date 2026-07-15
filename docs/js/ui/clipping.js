@@ -4,8 +4,9 @@
 // module renders them: the transfer-curve center panel, the harmonic-stem
 // spectrum, the drive/bias controls, and the WaveShaper audio node. The analysis
 // core (FFT/spectrum, windowing) comes from dsp.js.
+
+import { F0, FMAX, KBIN, N, SR, specDb, windowed } from "../dsp.js";
 import { CLIPPING } from "../pedals.js";
-import { specDb, windowed, KBIN, F0, FMAX, SR, N } from "../dsp.js";
 
 export default {
   id: "clipping",

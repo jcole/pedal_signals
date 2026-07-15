@@ -5,8 +5,8 @@
 // envelope panel, the time/feedback controls, and the live DelayNode feedback
 // loop. The peak-follower envelope comes from dsp.js; the tap train + the live
 // source's pluck come from pedals.js (they're the delay's own DSP).
-import { SR, envelope } from "../dsp.js";
-import { DELAYS, SPANMS, impulseResponse, pluck } from "../pedals.js";
+import { envelope, SR } from "../dsp.js";
+import { DELAYS, impulseResponse, pluck, SPANMS } from "../pedals.js";
 
 export default {
   id: "delay",

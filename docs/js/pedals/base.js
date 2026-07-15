@@ -1,0 +1,49 @@
+// What a pedal is, family-agnostic. Nothing in this file touches the DOM,
+// canvas, or Web Audio, so all of it runs under `node --test`. The generic
+// engines a family's process() leans on (shapeSignal, FFT/spectrum, windowing,
+// envelope, WAV) live in ../dsp.js. The UI each family needs — panels,
+// controls, the live audio graph — lives in the view modules (ui/clipping.js,
+// ui/delay.js) the harness renders through.
+import { GOFF, KBIN, N, SPAN } from "../dsp.js";
+
+// One Pedal instance = one button on one page. A subclass supplies the family's
+// shared behaviour (its process(), its lesson's sizing); each instance supplies
+// only what makes it that pedal — its curve, its formula, its starting knobs.
+// The defaults below suit a per-sample effect; a time-based one overrides them.
+export class Pedal {
+  sampleCount = N; // analysis buffer length
+  spanSamples = SPAN; // samples drawn in the time panels
+  // The input is a generated steady sine, so the view can redraw it analytically
+  // (smooth at any width). A pedal that generates its own buffer clears this and
+  // gets plotted sample-by-sample instead.
+  analytic = true;
+  srcTitles = { sine: "sine", guitar: "guitar · A3" };
+  // Knobs to snap to when this pedal is selected. Empty = leave them where the
+  // user left them, which is what the clipping family wants: switching there
+  // swaps the knee shape and nothing else.
+  defaults = {};
+
+  constructor({ id, label = id, tech = "", outnar = "" }) {
+    Object.assign(this, { id, label, tech, outnar });
+  }
+
+  // The default input: an exact integer number of sine periods (so the spectrum
+  // is a clean line spectrum, no FFT leakage), or a slice of the real note taken
+  // past the pick attack. A pedal whose lesson needs a different signal — a delay
+  // needs a transient, since a steady tone can't show a repeat — overrides this.
+  genInput({ srcMode, guitar, n }) {
+    const inp = new Float64Array(n);
+    const guitarOn = srcMode === "guitar" && guitar;
+    for (let i = 0; i < n; i++) {
+      inp[i] = guitarOn
+        ? guitar[GOFF + i] || 0
+        : Math.sin((2 * Math.PI * KBIN * i) / n);
+    }
+    return inp;
+  }
+
+  // (Float64Array, params) -> { out, match, state? }
+  process() {
+    throw new Error(`${this.id}: process() not implemented`);
+  }
+}
