@@ -42,11 +42,20 @@
 import { SR, F0, CYCLES, SPAN, MSMAX, parseWav, normalize } from "../dsp.js";
 
 // ---- colors (shared palette; effects read ACCENT for their center curve) ----
-const DRY = "#9aa0a6",
-  WET = "#C0522F",
-  ACCENT = "#7fa650",
-  GRID = "#2c3125",
-  ZERO = "#3a4030";
+// styles.css owns these: the page paints the "in"/"out" legend words in a panel
+// header with the same --dry/--wet the canvas strokes its traces with, and two
+// copies of a color that must match is how they drift. So read them off :root
+// rather than restating them. The literals below are fallbacks for a missing or
+// unparsed stylesheet only — keep them equal to the CSS, and change the CSS when
+// you want a different color.
+const css = (name, fallback) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
+  fallback;
+const DRY = css("--dry", "#9aa0a6"),
+  WET = css("--wet", "#dd7048"),
+  ACCENT = css("--accent-lo", "#7fa650"),
+  GRID = css("--grid", "#2c3125"),
+  ZERO = css("--zero", "#3a4030");
 
 // ---- module-level state ----------------------------------------------------
 let view = null; // the mounted page: pedals + UI hooks

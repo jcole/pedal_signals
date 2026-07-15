@@ -37,8 +37,21 @@
 	--inst-ink-lo: #a2aa94;
 	--inst-edge: #0f110c;
 
-	/* signal colors, shared across the seam */
-	--wet: #c0522f;
+	/* Signal colors. These are the source of truth for the charts too — harness.js
+	   reads --dry/--wet/--grid/--zero/--accent-lo off :root at load, so a trace and
+	   the legend word naming it in a panel header are literally one value and can't
+	   drift. Rename one and you must rename it there.
+
+	   The wet orange needs two values, not one, for the same reason everything else
+	   here splits: --wet is tuned to carry on the dark panels (4.9:1 on the header,
+	   where the old #c0522f managed 3.4:1 and failed AA), and that same orange only
+	   reaches 3.2:1 on white. So the page gets --wet-ink, darker, for the formula
+	   and any <b>. No single orange clears 4.5:1 on both. */
+	--dry: #9aa0a6;
+	--wet: #dd7048;
+	--wet-ink: #c0522f;
+	--grid: #2c3125;
+	--zero: #3a4030;
 	--accent: #5c7f3e;
 	--accent-lo: #7fa650;
 }
@@ -176,11 +189,14 @@ body {
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
 }
+/* These two words are a key: each is painted the color of the trace it names, so
+   they take the same vars the canvas reads. Don't retune one for legibility on
+   its own — it stops matching the line it points at. */
 .panel h3 .dry {
-	color: #9aa0a6;
+	color: var(--dry);
 }
 .panel h3 .wet {
-	color: #c0522f;
+	color: var(--wet);
 	font-weight: 700;
 }
 /* the one machine caption that sits on the page rather than on a panel — it
@@ -304,8 +320,10 @@ body {
 	fill: #fff;
 	display: block;
 }
+/* page-side, so it takes the darker orange: the white ▶ needs to hold against it,
+   and --wet is built to glow on a dark panel, not to be a button on white */
 #play.playing {
-	background: var(--wet);
+	background: var(--wet-ink);
 }
 .seg {
 	display: inline-flex;
@@ -385,7 +403,7 @@ body {
 /* the formula is the machine talking, mid-sentence — the one mono island here */
 #lede #lformula {
 	font-family: var(--mono);
-	color: var(--wet);
+	color: var(--wet-ink);
 }
 #lede .oneliner strong {
 	color: var(--ink-hi);
@@ -411,7 +429,7 @@ body {
 	font-size: 13px;
 	color: var(--ink-lo);
 	background: var(--sunk);
-	border-left: 2px solid var(--wet);
+	border-left: 2px solid var(--wet-ink);
 	padding: 9px 14px;
 	margin: 0 0 16px;
 	display: inline-block;
@@ -464,5 +482,5 @@ footer a:hover {
 	text-decoration: underline;
 }
 b {
-	color: var(--wet);
+	color: var(--wet-ink);
 }
