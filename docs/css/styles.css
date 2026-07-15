@@ -1,11 +1,19 @@
+/* Two faces, on purpose. Monospace is the instrument: switchers, control values,
+   axis labels, formulas — anything that reads as a machine's own lettering, or
+   that has to align in a column. Everything the page says in English gets the
+   proportional face, because prose is what monospace is worst at. Reach for
+   var(--mono) deliberately; the default is sans. */
+:root {
+	--sans:
+		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial,
+		sans-serif;
+	--mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 body {
 	margin: 0;
 	background: #12140f;
 	color: #d8dbd2;
-	font:
-		14px ui-monospace,
-		Menlo,
-		monospace;
+	font: 15px var(--sans);
 }
 #grid {
 	display: grid;
@@ -44,14 +52,17 @@ body {
 	line-height: 1;
 	pointer-events: none;
 }
+/* The one place uppercase-with-letterspacing is allowed to shout: the three
+   column names are the rig's own labels. Everything below them nests quieter. */
 .grp {
 	background: #2f3626;
 	padding: 9px 10px;
+	font-family: var(--mono);
 	font-size: 12px;
 	font-weight: 700;
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
-	color: #c2c9b6;
+	color: #d3dac7;
 }
 /* The PEDAL column's label carries the pedal switcher: it sits on the charts it
    drives. The buttons keep the label bar's height, so all three group labels
@@ -98,26 +109,30 @@ body {
 .panel h3 {
 	margin: 0;
 	padding: 6px 8px;
-	font-size: 11px;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: #8a927e;
-	font-weight: 600;
 	background: #1f231a;
 	border-bottom: 1px solid #0f110c;
 }
+/* The teaching voice — a sentence, so it's set like one. It's the loudest thing
+   in the panel because it's the thing to read first. */
 .panel h3 .nar {
 	display: block;
-	color: #cdd4c1;
-	font-weight: 700;
+	font-size: 14px;
+	font-weight: 650;
+	letter-spacing: 0;
+	text-transform: none;
+	color: #dfe5d6;
+	line-height: 1.3;
 }
+/* The machine's caption under it: what's plotted, in the instrument's lettering. */
 .panel h3 .tech {
 	display: block;
-	margin-top: 2px;
+	margin-top: 3px;
+	font-family: var(--mono);
 	font-size: 10px;
-	color: #6b7361;
+	color: #858d78;
 	font-weight: 400;
 	letter-spacing: 0.06em;
+	text-transform: uppercase;
 }
 .panel h3 .dry {
 	color: #9aa0a6;
@@ -127,10 +142,11 @@ body {
 	font-weight: 700;
 }
 .dual {
+	font-family: var(--mono);
 	font-size: 10px;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	color: #6b7361;
+	color: #858d78;
 	text-align: center;
 	padding: 1px 0;
 	line-height: 1;
@@ -148,14 +164,17 @@ body {
 	flex-direction: column;
 	background: #191c15;
 }
+/* Knobs are instrument chrome: mono keeps the labels and their readouts on a
+   fixed grid, so a value doesn't shuffle its own row while you drag. */
 .ctl {
 	padding: 8px;
 	border-top: 1px solid #0f110c;
 	display: flex;
 	gap: 8px;
 	align-items: center;
+	font-family: var(--mono);
 	font-size: 12px;
-	color: #8a927e;
+	color: #a2aa94;
 }
 .ctlcol .ctl:first-child {
 	border-top: 0;
@@ -191,7 +210,7 @@ body {
 }
 .hint {
 	font-size: 12px;
-	color: #5a6152;
+	color: #7d856f;
 }
 /* sits under the controls, spanning the columns the two vol sliders live in */
 #volhint {
@@ -216,10 +235,11 @@ body {
 	gap: 10px;
 }
 .barlabel {
+	font-family: var(--mono);
 	font-size: 10px;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
-	color: #5a6152;
+	color: #767e69;
 }
 #play {
 	width: 44px;
@@ -252,7 +272,7 @@ body {
 .srcbtn,
 .pedbtn,
 .navbtn {
-	font: inherit;
+	font: 14px var(--mono);
 	background: #12140f;
 	color: #8a927e;
 	border: 0;
@@ -272,7 +292,7 @@ body {
 	cursor: default;
 }
 #replay {
-	font: inherit;
+	font: 14px var(--mono);
 	background: #2c3125;
 	color: #d8dbd2;
 	border: 0;
@@ -291,20 +311,21 @@ body {
 	flex-wrap: wrap;
 	gap: 2px 18px;
 	align-items: baseline;
-	font-size: 13px;
+	font-size: 14px;
 	line-height: 1.5;
-	color: #8a927e;
+	color: #a2aa94;
 }
 #lede p {
 	margin: 0;
 }
 #lede strong {
-	color: #cdd4c1;
+	color: #d3dac7;
 	font-weight: 600;
 }
+/* the formula is the machine talking, mid-sentence — the one mono island here */
 #lede #lformula {
-	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-	color: #c0522f;
+	font-family: var(--mono);
+	color: #d2673d;
 }
 #lede .oneliner strong {
 	color: #d8dbd2;
@@ -320,12 +341,15 @@ body {
 	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 	gap: 8px 44px;
 }
+/* ch is the width of a "0", so a proportional face fits more characters per ch
+   than a mono one did — this is narrower than the old 68ch on purpose, to land
+   near the same ~70-character line. */
 .lesson-cols .col {
-	max-width: 68ch;
+	max-width: 58ch;
 }
 #lesson .op {
 	font-size: 13px;
-	color: #8a927e;
+	color: #a2aa94;
 	background: #191c15;
 	border-left: 2px solid #c0522f;
 	padding: 9px 14px;
@@ -336,22 +360,29 @@ body {
 	color: #d8dbd2;
 	font-weight: 600;
 }
+/* Sentence case: the source already writes these as sentences, and at this size
+   the weight alone is enough to head a column. */
 #lesson h3 {
-	font-size: 13px;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	color: #cdd4c1;
-	margin: 0 0 8px;
+	font-size: 16px;
+	font-weight: 650;
+	letter-spacing: 0;
+	color: #dfe5d6;
+	margin: 0 0 10px;
 }
+/* the reading column — the one block on the page that's purely prose */
 #lesson p {
 	margin: 0 0 14px;
-	line-height: 1.6;
-	color: #c2c9b6;
+	font-size: 15px;
+	line-height: 1.65;
+	color: #c8cfbc;
 }
 #lesson strong {
-	color: #d8dbd2;
+	color: #e4e9dc;
+	font-weight: 600;
 }
 #lesson code {
+	font-family: var(--mono);
+	font-size: 0.9em;
 	background: #1f231a;
 	padding: 1px 4px;
 }
@@ -359,8 +390,8 @@ footer {
 	max-width: 1360px;
 	margin: 0 auto;
 	padding: 10px 8px 20px;
-	font-size: 11px;
-	color: #5a6152;
+	font-size: 12px;
+	color: #7d856f;
 	line-height: 1.5;
 }
 footer a {
