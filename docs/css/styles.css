@@ -61,6 +61,12 @@ body {
 	color: var(--ink);
 	font: 15px var(--sans);
 }
+/* <b> is the page's "this is a signal term" mark. An element default, so it sits
+   with the other defaults and ahead of anything that overrides it (#lesson .op b
+   does, on the sunk block where this orange would be shouting). */
+b {
+	color: var(--wet-ink);
+}
 /* full-bleed on purpose: the bench runs edge to edge, so the rig reads as one
    band across the page rather than a card floating in it */
 #rig {
@@ -121,6 +127,39 @@ body {
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
 	color: var(--inst-ink);
+}
+/* ---- switchers ------------------------------------------------------------
+   Every picker on the page is one of these: the family switcher in the header,
+   the pedal switcher in the PEDAL label, the sine/guitar switcher in the input
+   controls. The base look lives here and the three placements override it below.
+
+   Base first, overrides after — the order matters and it isn't only tidiness.
+   A weaker rule sitting below a stronger one still loses, so reading the file
+   top-to-bottom stops predicting what wins, which is how the #bar .navbtn rule
+   below quietly beat .navbtn.active and dropped the active pill's green. */
+.seg {
+	display: inline-flex;
+	border: 1px solid #2c3125;
+	border-radius: 4px;
+	overflow: hidden;
+}
+.srcbtn,
+.pedbtn,
+.navbtn {
+	font: 14px var(--mono);
+	background: #12140f;
+	color: #8a927e;
+	border: 0;
+	padding: 4px 10px;
+	cursor: pointer;
+	text-decoration: none;
+	display: inline-block;
+}
+.srcbtn.active,
+.pedbtn.active,
+.navbtn.active {
+	background: var(--accent);
+	color: #fff;
 }
 /* The PEDAL column's label carries the pedal switcher: it sits on the charts it
    drives. The buttons keep the label bar's height, so all three group labels
@@ -328,30 +367,6 @@ body {
 #play.playing {
 	background: var(--wet-ink);
 }
-.seg {
-	display: inline-flex;
-	border: 1px solid #2c3125;
-	border-radius: 4px;
-	overflow: hidden;
-}
-.srcbtn,
-.pedbtn,
-.navbtn {
-	font: 14px var(--mono);
-	background: #12140f;
-	color: #8a927e;
-	border: 0;
-	padding: 4px 10px;
-	cursor: pointer;
-	text-decoration: none;
-	display: inline-block;
-}
-.srcbtn.active,
-.pedbtn.active,
-.navbtn.active {
-	background: var(--accent);
-	color: #fff;
-}
 /* The family switcher is the only picker living on the page instead of on the
    rig — the source and pedal pickers sit inside a control column and a panel
    label, which are both dark. So it alone takes page colors; left dark it read
@@ -483,7 +498,4 @@ footer a {
 }
 footer a:hover {
 	text-decoration: underline;
-}
-b {
-	color: var(--wet-ink);
 }

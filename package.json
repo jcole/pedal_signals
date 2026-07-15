@@ -7,7 +7,8 @@
   "scripts": {
     "test": "node --test",
     "test:e2e": "playwright test",
-    "lint": "biome lint docs/js test e2e"
+    "lint": "biome lint",
+    "check": "npm run lint && npm test && npm run test:e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.3",
