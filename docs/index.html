@@ -5,9 +5,10 @@
 <link rel="stylesheet" href="./css/styles.css">
 
 <div id="bar">
-  <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
-  <span style="font-size:12px;color:#5a6152">raise a graph's volume to hear it — blend or solo input vs output</span>
   <nav id="effnav" class="seg"></nav>
+</div>
+<div id="pedbar">
+  <span id="pedpicker" class="seg"></span>
 </div>
 
 <div id="grid">
@@ -40,6 +41,11 @@
     <div class="dual" id="dualtxt"></div>
     <div class="panel"><h3><span class="nar" id="specnar"></span><span class="tech">spectrum · <span class="dry">in</span> vs <span class="wet">out</span> (dB)</span></h3><canvas data-c="spec"></canvas></div>
   </div>
+</div>
+
+<div id="transport">
+  <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
+  <span style="font-size:12px;color:#5a6152">raise a graph's volume to hear it — blend or solo input vs output</span>
 </div>
 
 <footer id="gcredit" style="display:none">

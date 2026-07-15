@@ -210,20 +210,20 @@ const ctlEls = {}; // id -> {input, output, ctl}
 function buildControls() {
   const host = document.getElementById("centerctls");
   host.innerHTML = "";
-  // pedal-select segment (one button per pedal; skipped if there's only one)
+  // pedal-select segment (one button per pedal; skipped if there's only one),
+  // rendered into the top pedal-picker bar rather than the Pedal panel itself.
   pedal = view.pedals[0];
+  const pedpicker = document.getElementById("pedpicker");
+  pedpicker.innerHTML = "";
+  pedpicker.style.display = view.pedals.length > 1 ? "" : "none";
   if (view.pedals.length > 1) {
-    const ctl = el("div", "ctl");
-    const seg = el("span", "seg");
     for (const p of view.pedals) {
       const b = el("button", `pedbtn${p === pedal ? " active" : ""}`);
       b.textContent = p.label;
       b.dataset.pedal = p.id;
       b.onclick = () => setPedal(p.id);
-      seg.appendChild(b);
+      pedpicker.appendChild(b);
     }
-    ctl.appendChild(seg);
-    host.appendChild(ctl);
   }
   // sliders
   for (const c of view.controls) {

@@ -135,7 +135,9 @@ body {
 	display: inline-block;
 	min-width: 3em;
 }
-#bar {
+#bar,
+#pedbar,
+#transport {
 	max-width: 1360px;
 	margin: 0 auto;
 	padding: 8px;
@@ -144,8 +146,8 @@ body {
 	align-items: center;
 	flex-wrap: wrap;
 }
-#effnav {
-	margin-left: auto;
+#transport {
+	justify-content: center;
 }
 #bar button {
 	font: inherit;

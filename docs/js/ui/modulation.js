@@ -16,7 +16,7 @@ const CURVE_SPAN_MS = 600;
 
 export default {
   id: "tremolo",
-  navLabel: "tremolo",
+  navLabel: "modulation",
   pageTitle: "tremolo — pedal demo",
   dual: "⇅ same signal — LFO curve above, envelope below",
   vinDefault: 0.6,
