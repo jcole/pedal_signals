@@ -294,6 +294,7 @@ function setPedal(id) {
   // the pedal's own, not the family's, which is the difference between this row
   // and the band that used to sit above it.
   document.getElementById("benchop").textContent = pedal.tech ?? "";
+  document.getElementById("benchnote").textContent = pedal.techNote ?? "";
   document.getElementById("benchwhat").textContent = pedal.whatChanges ?? "";
   // The FAMILY cell. Just the name and an arrow — the column header says what
   // kind of noun it is, which is the one thing the bench never used to say
@@ -310,12 +311,11 @@ function setPedal(id) {
   // the one label on the rig that isn't furniture, because it's the one the
   // reader chose.
   //
-  // The panel under it used to carry the pedal's whatChanges ("near-square wave;
-  // lopsided rails add even harmonics"), which was a caption for the wrong panel:
-  // this one plots the transfer curve, and the wave that line describes is the
-  // OUTPUT panel's chart, which was already saying so itself. It now sits in the
-  // lede, where the pedal's row states it once against the family it's an
-  // instance of.
+  // The panel under it used to carry the pedal's whatChanges, which was a caption
+  // for the wrong panel: this one plots the transfer curve, and whatChanges
+  // describes the output, which the panels downstream were already saying
+  // themselves. It now sits in the lede, where the pedal's row states it once
+  // against the family it's an instance of.
   document.getElementById("pedalgrp").textContent = pedal.label;
   // The tab names the pedal for the same reason the bar does, and it's the same
   // fact: the URL is ?pedal=overdrive, so a tab that said "clipping" would be

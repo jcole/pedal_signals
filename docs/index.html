@@ -47,12 +47,20 @@
   <div id="lede">
     <div id="ledehead"></div>
     <div class="catrow">
-      <!-- The PEDAL cell: the picker, and nothing else. This row is now one line
-           of text tall, which is the whole reason the play button isn't in it —
-           a 44px control sets the height of everything beside it, and the lesson
-           below the rig was paying for that. -->
+      <!-- The PEDAL cell: the picker, and nothing else. This row is two lines of
+           small text tall, which is the whole reason the play button isn't in it
+           — a 44px control sets the height of everything beside it, and the
+           lesson below the rig was paying for that. The second line arrived with
+           the note under the formula and cost about 12px; a button costs 44 and
+           buys the row nothing it doesn't already say. -->
       <div id="pedalpick"></div>
-      <code class="catop" id="benchop"></code>
+      <!-- The formula over its plain-English reading, the same stack the catalog
+           page's rows build (see pedalRow). The second line is what stops this
+           cell being addressed to people who already read tanh. -->
+      <span class="catcell">
+        <code class="catop" id="benchop"></code>
+        <span class="catnote" id="benchnote"></span>
+      </span>
       <span class="catwhat" id="benchwhat"></span>
       <!-- A fourth column the catalog page doesn't have, riding in slack the bar
            was wasting rather than on a line of its own under the picker.

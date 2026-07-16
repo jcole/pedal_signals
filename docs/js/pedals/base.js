@@ -28,10 +28,34 @@ export class Pedal {
   // operation that does it. They're the two columns a pedal fills in under its
   // family's — on the catalog page for every pedal, in the bench's lede for the
   // one that's up (see ui/rows.js, which renders both). Not on the rig: the
-  // panels there caption their own charts, and whatChanges describes the output
-  // wave, which is one panel's chart and not the other two's. The family's signal
-  // class (NL, LTI, LTV) is deliberately NOT here: it's constant across a family,
-  // so it belongs to the view's lesson, not to each pedal.
+  // panels there caption their own charts, and whatChanges describes the output,
+  // which is one panel's chart and not the other two's. It says what the family's
+  // mechanism DOES to the signal, never what the pedal's own maths looks like —
+  // "hard corners" is the shape of distortion's knee, which is `techNote`'s job
+  // below and the thing its siblings differ on, not a change to anything. The
+  // blank each row fills in is the family's one-liner made specific: under
+  // clipping's "it flattens the peaks", three answers to what the flattening
+  // leaves behind. The family's signal class (NL, LTI, LTV) is deliberately NOT
+  // here: it's constant across a family, so it belongs to the view's lesson, not
+  // to each pedal.
+  //
+  // `techNote` reads `tech` back in English, and is the gloss under it in the
+  // operation column — exactly what the family's formulaNote is to its formula
+  // ("y[n] = f(x[n])" / "one sample in, one sample out, no memory"), one altitude
+  // down. It's what makes the column legible to a reader who doesn't know the
+  // notation: "tanh(drive·x + bias)" only says soft knee to someone who already
+  // knows tanh, and the pedal a player would recognise from that phrase is the
+  // one this row is about.
+  //
+  // Optional, and what decides it is whether a family's pedals differ IN the
+  // formula. Clipping's and modulation's do, down to a single token — tanh vs
+  // clip, sin vs square vs tri — so that token is carrying the whole difference
+  // between three pedals while being the least readable thing on the row; those
+  // six all have a note. Delay's three share one identical `tech`, so there's
+  // nothing to gloss per row: the note would be the same sentence three times,
+  // and it's already said once where it belongs, as the band's formulaNote
+  // directly above them. An empty note renders as no line at all, not a blank
+  // one (.catnote:empty in the stylesheet).
   //
   // `search` is the names this pedal answers to that aren't its label. The labels
   // are deliberately generic — a real pedal's name is usually a brand's — so the
@@ -42,11 +66,20 @@ export class Pedal {
     id,
     label = id,
     tech = "",
+    techNote = "",
     outnar = "",
     whatChanges = "",
     search = [],
   }) {
-    Object.assign(this, { id, label, tech, outnar, whatChanges, search });
+    Object.assign(this, {
+      id,
+      label,
+      tech,
+      techNote,
+      outnar,
+      whatChanges,
+      search,
+    });
   }
 
   // The default input: an exact integer number of sine periods (so the spectrum

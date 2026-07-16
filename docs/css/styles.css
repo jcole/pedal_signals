@@ -632,7 +632,8 @@ b {
    the first three keep the exact widths they have at 1000px (1fr ≈ 272 either
    way). So the columns still read at the proportions they were spaced for, and
    the link rides in slack the bar was wasting rather than on a line of its own —
-   it used to stack under the picker and put 24px on a row that's one line tall. */
+   it used to stack under the picker and put 24px on a row that pays for its
+   height in single lines of 12px text. */
 #lede {
 	max-width: 1240px;
 }
@@ -796,10 +797,16 @@ b {
 	font-weight: 400;
 	font-size: inherit;
 }
-/* Each cell is its value over its gloss — the same shape .catped has under it
-   (a pedal's name over its aliases), so a family reads as the generic case of
-   the row rather than as a different kind of thing. */
-.famcell {
+/* Each cell is its value over its gloss — a family's name over its class, its
+   formula over the note reading that formula back in English — and the rows
+   below are the same shape cell for cell: .catped is a pedal's name over its
+   aliases, .catcell its formula over its own note. Which is what lets a family
+   read as the generic case of the row rather than as a different kind of thing:
+   every line in the band has a line under it doing the same job one altitude
+   down. One rule for all three, because the day they drift is the day the
+   columns stop lining up. */
+.famcell,
+.catcell {
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
@@ -814,6 +821,23 @@ b {
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
 	color: var(--ink-hi);
+}
+/* "family", riding after the name inside it (see famRow) and undoing everything
+   the name does to a word: the caps, the tracking and the weight are what make
+   CLIPPING read as a heading, and this is the small quiet noun telling you what
+   kind of heading. Set like the glosses rather than like the name — same 11.5px
+   and --ink-lo as the class under it — because that's what it is, and a "family"
+   in the band's own caps would just be a second word shouting.
+
+   No margin: the gap is the space in front of the word (famRow explains why it's
+   text and not CSS), which lands at ~7px here, plus the tracking the name leaves
+   trailing its last letter. */
+.famnoun {
+	font-size: 11.5px;
+	font-weight: 400;
+	letter-spacing: normal;
+	text-transform: none;
+	color: var(--ink-lo);
 }
 /* The general form of the column it heads, so it takes that column's color: the
    orange is the page's "this is a signal term" mark, and these ARE the same term
@@ -879,10 +903,25 @@ a.catrow:focus-visible {
 a.catrow:hover .catlabel {
 	color: var(--accent);
 }
-.catalias {
+/* The two glosses on a pedal's row: the aliases under its name, the formula read
+   back in English under the formula. Same size and color as .famnote/.famklass,
+   the glosses in the band above — the gloss is one thing on this page, not a
+   family's thing and a pedal's thing.
+
+   Not mono, unlike the .catop it sits under: it's prose about the notation, and
+   setting it in the notation's own face would make it read as more notation. */
+.catalias,
+.catnote {
 	font-size: 11.5px;
 	line-height: 1.45;
 	color: var(--ink-lo);
+}
+/* A pedal with nothing to gloss leaves the note empty rather than absent — the
+   bench's row is standing markup and its cells get filled, not built. Empty, the
+   span still takes the cell's 3px gap, so the formula would sit 3px higher on
+   the families that have a note than on the ones that don't. */
+.catnote:empty {
+	display: none;
 }
 .catop {
 	font-family: var(--mono);
@@ -917,6 +956,7 @@ a.catrow:hover .catlabel {
 	   contents are spans — left inline they'd set a pedal's name and its aliases
 	   as one run of text. */
 	.catped > *,
+	.catcell > *,
 	.famcell > * {
 		display: block;
 	}
@@ -948,10 +988,19 @@ a.catrow:hover .catlabel {
 		minmax(0, 0.8fr);
 }
 #lede .catrow {
-	/* Baseline is right for a row of text, and this row is one — except for the
-	   picker, a bordered control whose text sits 6px below its own top edge. On a
-	   baseline the row hangs the flat text off the picker's and opens a gap. */
-	align-items: center;
+	/* No align-items here on purpose: it takes the shared baseline, same as every
+	   row on the catalog page. It used to centre, because a bordered control's
+	   text sits 6px below its own top edge and this row was otherwise one line
+	   tall — so the picker was the tallest thing in it, and on a baseline the flat
+	   text hung off the picker's and opened a gap under the column names.
+	   The operation cell is two lines now (a formula over its note), which is
+	   taller than the picker and makes the row's height its own. That took the
+	   reason away and left the damage: centring a two-line cell against one-line
+	   ones pushes every other column's text down to meet the middle of it, so
+	   WHAT CHANGES sat lower than the formula it's the consequence of. Four
+	   columns at four sizes (14px picker, 12px formula, 13px prose, 12px link)
+	   have no shared top edge to align on — a baseline is the line all four
+	   actually share, and it's the one the eye reads across. */
 	/* Closed up under the column names. The catalog's 11px is the air between one
 	   pedal and the next in a long list; there's no list here, and the only thing
 	   above this row is the names of its own cells. They should touch. */

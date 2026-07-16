@@ -37,10 +37,16 @@ test("each family heads its pedals with its signal class and formula", async ({
   page,
 }) => {
   await page.goto("/pedals.html");
+  // "family" is part of the name, not decoration around it: this name sits in a
+  // column headed PEDAL, one row above three things that are pedals, so the noun
+  // is what stops CLIPPING reading as a fourth. Asserted as text rather than as a
+  // separate element because that's the failure worth catching — draw the gap in
+  // CSS and the words come apart on screen while the name still says
+  // "clippingfamily" to a screen reader.
   await expect(page.locator(".famname")).toHaveText([
-    "clipping",
-    "delay",
-    "modulation",
+    "clipping family",
+    "delay family",
+    "modulation family",
   ]);
   // the class named the way the demo's header names it — same phrase, so the two
   // pages teach one term and not a page-local shorthand
@@ -80,7 +86,13 @@ test("a row carries the pedal's operation and what it changes", async ({
   await page.goto("/pedals.html");
   const fuzz = rows(page).filter({ has: page.locator("text=fuzz") }).first();
   await expect(fuzz.locator(".catop")).toHaveText("clip(drive·x + bias) · asym");
-  await expect(fuzz.locator(".catwhat")).toContainText("near-square");
+  // The operation, then the operation in English, then the consequence — three
+  // facts the row keeps apart on purpose. "asym" is the entire difference between
+  // this row and distortion's and the least readable thing on it, so the gloss is
+  // what makes the column say anything to a reader who doesn't have the notation;
+  // and what CHANGES is the harmonics, never the shape of fuzz's own curve.
+  await expect(fuzz.locator(".catnote")).toContainText("rails are uneven");
+  await expect(fuzz.locator(".catwhat")).toContainText("even harmonics");
   // the aliases the picker only searches are printed here — they're what a
   // reader scanning for their pedal actually knows it by
   await expect(fuzz.locator(".catalias")).toContainText("big muff");
