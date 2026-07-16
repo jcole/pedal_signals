@@ -190,8 +190,14 @@
     <canvas data-c="center"></canvas>
   </div>
   <div class="stack">
+    <!-- Neither output panel is the same chart on every page, so neither one's
+         tech line is this file's to write: harness.js fills both from the
+         mounted family. This one is the waveform on clipping, where 13.5 ms of
+         a 222 Hz carrier is a wave you can read; the families whose span is
+         sized for something slower than the carrier draw the envelope here
+         instead, because at their zoom a waveform is a solid band. -->
     <div class="panel">
-      <h3><span class="nar" id="outnar"></span><span class="tech">time · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
+      <h3><span class="nar" id="outnar"></span><span class="tech"><span id="timetech"></span> · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
       <canvas data-c="time"></canvas>
     </div>
     <div class="dual" id="dualtxt"></div>

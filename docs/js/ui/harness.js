@@ -17,6 +17,9 @@
 //     vinDefault, voutDefault, // starting volumes for the input/output sliders
 //     pedals: [ Pedal, … ],   // what the picker lists for this family; the
 //                             // selected one drives input+process
+//     timeTech?,              // what the output TOP panel plots; defaults to
+//                             // "time" (the generic dry-vs-wet waveform below).
+//                             // A family that overrides drawTime renames it here.
 //     spectrumTitle,          // output bottom-panel headline
 //     spectrumTech,           // what that panel plots ("spectrum", "envelope"):
 //                             // the tech line reads "<spectrumTech> · in vs out"
@@ -27,7 +30,12 @@
 //                             // the rig. Omit it and both sections stay hidden.
 //     controls:[ {id, label, min, max, step, def, fmt?(v)->string}, … ],
 //     drawCenter(F, pedal, params, H),           // draw the center panel
-//     drawSpec(F, inp, out, pedal, src, H),      // draw the output spectrum panel
+//     drawTime?(F, inp, out, pedal, src, H),     // draw the output TOP panel.
+//                             // Optional: omit it and the harness draws its own
+//                             // dry-vs-wet waveform (drawTime below), which is
+//                             // right for a family whose span is a few carrier
+//                             // cycles wide and useless for one whose isn't.
+//     drawSpec(F, inp, out, pedal, src, H),      // draw the output BOTTOM panel
 //     buildAudio(actx, inGain, H) -> { wetOut, update(pedal, params, state, match), dispose?() },
 //     buildSource?(actx) -> AudioNode,   // live synthetic source; default: a steady oscillator
 //   };
@@ -112,7 +120,8 @@ function render() {
 
   drawInput(inp);
   view.drawCenter(frame(C.center), pedal, params, H);
-  drawTime(inp, r.out, lastMatch);
+  if (view.drawTime) view.drawTime(frame(C.time), inp, r.out, pedal, srcMode, H);
+  else drawTime(inp, r.out, lastMatch);
   view.drawSpec(frame(C.spec), inp, r.out, pedal, srcMode, H);
 }
 
@@ -154,6 +163,13 @@ function drawInput(inp) {
   titles(g, F, "amplitude", "time (ms)");
 }
 
+// The output top panel's default: dry and wet waveforms on shared axes. Only
+// legible while spanSamples stays within a few carrier cycles — clipping shows
+// 3 of them across ~13.5 ms, which is ~5 px a cycle. A family whose span is
+// sized for something slower than the carrier (an LFO, a row of echoes) is
+// asking this to draw hundreds of cycles into a few hundred pixels, where a
+// polyline can only come out a solid band; those families override drawTime and
+// plot what survives the zoom instead. See the view contract at the top.
 function drawTime(inp, out, match) {
   const F = frame(C.time),
     { g, L, R, T, B } = F;
@@ -509,9 +525,11 @@ export function mount(v, opts = {}) {
   // pedal, not the family, so setPedal() writes it at the end of this function.
   if (view.spectrumTitle)
     document.getElementById("specnar").textContent = view.spectrumTitle;
-  // What the bottom panel actually plots. Only clipping's is a spectrum in dB;
-  // the families that draw an envelope say so, rather than inheriting a word the
-  // page used to hardcode for all three.
+  // What the two output panels actually plot. Neither word is the page's to
+  // hardcode — it did, for all three families, and both lines went quietly wrong
+  // the moment a family drew something else. The top defaults to "time" because
+  // the harness's own waveform is what it draws unless a view says otherwise.
+  document.getElementById("timetech").textContent = view.timeTech ?? "time";
   document.getElementById("spectech").textContent = view.spectrumTech;
   document.getElementById("specunit").textContent = view.spectrumUnit
     ? ` (${view.spectrumUnit})`
