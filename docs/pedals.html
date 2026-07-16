@@ -1,0 +1,37 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>every pedal — pedal demo</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./css/styles.css">
+
+<!-- The whole catalog on one page, which the demo can't be: the demo is one
+     pedal at a time, and its picker only shows you a name once you've already
+     opened it. This is the page you send someone who doesn't yet know what
+     they're looking for. It's all lit page, no rig — nothing here plays, every
+     row just points at the demo that does. -->
+<article id="cat">
+  <header class="cathdr">
+    <a class="catlink" href="./">← back to the bench</a>
+    <h1>Every pedal</h1>
+    <!-- No counts. Everything below this line is rendered from the catalog, so a
+         number written here is the one thing on the page that a new pedal would
+         make wrong. -->
+    <p class="catlede">Grouped by the mechanism behind them: the pedal you know
+    by name is an instance of one.
+    Pick any row to open it on the bench — you'll get its charts, its knobs, and
+    the note running through it.</p>
+  </header>
+  <div id="catlist"></div>
+</article>
+
+<script type="module">
+  import { mountCatalog } from "./js/ui/catalog.js";
+  import clipping from "./js/ui/clipping.js";
+  import delay from "./js/ui/delay.js";
+  import modulation from "./js/ui/modulation.js";
+
+  // Same list, same order, as the demo's EFFECTS: this page is a second reading
+  // of one catalog, not a copy of it.
+  mountCatalog(document.getElementById("catlist"), [clipping, delay, modulation]);
+</script>

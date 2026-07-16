@@ -573,3 +573,233 @@ b {
 	background: var(--sunk);
 	padding: 1px 4px;
 }
+
+/* ---- the catalog page (pedals.html) ---------------------------------------
+   All lit side. There's no rig on that page — nothing plays, nothing is a
+   scope — so none of the instrument vars belong here, and the whole thing is
+   ink on white like the prose it sits next to. The one borrowed piece is the
+   mono face, which does the same job it does everywhere else: it's on the
+   formulas and the machine's own lettering, never on the English. */
+#cat {
+	max-width: 1000px;
+	margin: 0 auto;
+	padding: 28px 16px 60px;
+}
+.cathdr h1 {
+	font-size: 30px;
+	font-weight: 650;
+	letter-spacing: -0.01em;
+	color: var(--ink-hi);
+	margin: 0 0 8px;
+}
+.catlede {
+	margin: 0;
+	max-width: 62ch;
+	font-size: 15px;
+	line-height: 1.6;
+	color: var(--ink-lo);
+}
+.fam {
+	margin: 40px 0 0;
+}
+/* The three things that lay out in columns — the column names, a family, a
+   pedal — are one geometry, declared once. Each lays out its OWN three columns
+   rather than the page laying one grid over all of them, because a row is an <a>
+   and a grid item can't also be the grid its cells sit in without subgrid; a
+   link that isn't one box is a link you can't reliably click. Fixed fraction
+   tracks are what keeps them lined up regardless. The 3px left border is
+   transparent here and green only on a family band — every one of these boxes
+   has to reserve it, or the band's columns would sit 3px off from the rows'.
+   Change a track, a gap or a padding and you change all three. */
+.cathead,
+.famhead,
+.catrow {
+	display: grid;
+	grid-template-columns: minmax(9rem, 1fr) minmax(11rem, 1.15fr) minmax(
+			11rem,
+			1.3fr
+		);
+	align-items: baseline;
+	gap: 8px 20px;
+	padding: 11px 10px;
+	border-left: 3px solid transparent;
+}
+/* Spaced to belong to the table below it, not to the prose above it: a column
+   name touching the lede and floating 40px clear of the rows is labelling the
+   paragraph. So the air goes above — the same gap that separates the families
+   from each other — and only the 7px stays below. */
+.cathead {
+	font-family: var(--mono);
+	font-size: 10px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--ink-lo);
+	margin-top: 40px;
+	padding-top: 0;
+	padding-bottom: 7px;
+}
+/* The first family owns no gap — the header row already opened it, and .fam's
+   own 40px is what holds the families apart further down. */
+.cathead + .fam {
+	margin-top: 0;
+}
+/* A band, because the rig marks its column names with one (.grp) and this row
+   does that same job here — it's the name the pedals under it hang off. It can't
+   BE that slab, though: .grp is instrument-dark and this page has no rig on it,
+   so the band takes --tray, the lit page's own step down from white. The band is
+   what separates the families for real: at 40px apart with a hairline under each
+   name, the eye read the page as one long table with some stray labels in it,
+   which loses the grouping that IS the page.
+
+   --tray and not --sunk, even though an inset block is what --sunk is for,
+   because --sunk is already spoken for two rules down: it's what a hovered row
+   wears, the same as a pointed-at option in the picker. A band painted the color
+   of the hover state is a family that looks like it's under the cursor — which
+   is exactly how it read. Structure and state can't share a fill, so the band
+   takes the heavier of the two and hover keeps the site's word for hover. */
+.famhead {
+	margin: 0 0 2px;
+	background: var(--tray);
+	border-left-color: var(--accent);
+	font-weight: 400;
+	font-size: inherit;
+}
+/* Each cell is its value over its gloss — the same shape .catped has under it
+   (a pedal's name over its aliases), so a family reads as the generic case of
+   the row rather than as a different kind of thing. */
+.famcell {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+/* The family name gets the rig's uppercase-mono treatment: on this page the
+   families ARE the column names — the three headings the whole list hangs off —
+   which is the job .grp does over on the bench. */
+.famname {
+	font-family: var(--mono);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--ink-hi);
+}
+/* The general form of the column it heads, so it takes that column's color: the
+   orange is the page's "this is a signal term" mark, and these ARE the same term
+   at two altitudes. */
+.famop {
+	font-family: var(--mono);
+	font-size: 12.5px;
+	font-weight: 400;
+}
+/* The two glosses: the class under the family's name, the note under its
+   formula. Same size and color as .catalias, the gloss in the rows below. */
+.famklass,
+.famnote {
+	font-size: 11.5px;
+	line-height: 1.45;
+	color: var(--ink-lo);
+	font-weight: 400;
+}
+.famwhat {
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--ink);
+	font-weight: 400;
+}
+.catrow {
+	text-decoration: none;
+	color: inherit;
+	border-top: 1px solid var(--rule);
+	border-radius: 3px;
+}
+.catrow:hover {
+	background: var(--sunk);
+}
+.catrow:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: -2px;
+}
+/* Indented, because nothing else here says "these belong to the family above
+   them". A band and a row share three columns on purpose — that's what makes the
+   formula column read general → instance — but sharing them also flattens the
+   two into one long list where CLIPPING is just another name in the PEDAL
+   column. Nesting is the oldest fix for that and it costs no words.
+   Deliberately only this cell: indent the whole row and the operation column
+   goes with it, which would break the alignment the layout exists for. So the
+   names make a tree and the formulas stay a column. */
+.catped {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	padding-left: 16px;
+}
+.catlabel {
+	font-family: var(--mono);
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--ink-hi);
+}
+.catrow:hover .catlabel {
+	color: var(--accent);
+}
+.catalias {
+	font-size: 11.5px;
+	line-height: 1.45;
+	color: var(--ink-lo);
+}
+.catop {
+	font-family: var(--mono);
+	font-size: 12px;
+	color: var(--wet-ink);
+	overflow-wrap: anywhere;
+}
+.catwhat {
+	font-size: 13px;
+	line-height: 1.5;
+}
+/* Under ~640px the three columns stop being columns — the formulas are the
+   widest thing on the page and they'd wrap to nothing. So the row stacks and
+   the header, which only names columns that no longer exist, goes away. */
+@media (max-width: 640px) {
+	.catrow,
+	.famhead {
+		display: block;
+	}
+	.cathead {
+		display: none;
+	}
+	.catrow > *,
+	.famhead > * {
+		display: block;
+		margin-top: 5px;
+	}
+	.famhead > *:first-child {
+		margin-top: 0;
+	}
+	/* Stacking the row flattens the cells that were flex columns, and their
+	   contents are spans — left inline they'd set a pedal's name and its aliases
+	   as one run of text. */
+	.catped > *,
+	.famcell > * {
+		display: block;
+	}
+}
+/* the way back to the bench, and the way out to the catalog: one small mono
+   link, on the page side both times */
+.catlink {
+	font-family: var(--mono);
+	font-size: 12px;
+	color: var(--ink-lo);
+	text-decoration: none;
+	border-bottom: 1px solid var(--rule);
+	padding-bottom: 1px;
+	white-space: nowrap;
+}
+.catlink:hover {
+	color: var(--accent);
+	border-bottom-color: var(--accent);
+}
+.cathdr .catlink {
+	display: inline-block;
+	margin-bottom: 14px;
+}
