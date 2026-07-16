@@ -18,9 +18,10 @@ export class Pedal {
   // gets plotted sample-by-sample instead.
   analytic = true;
   srcTitles = { sine: "sine", guitar: "guitar · A3" };
-  // Knobs to snap to when this pedal is selected. Empty = leave them where the
-  // user left them, which is what the clipping family wants: switching there
-  // swaps the knee shape and nothing else.
+  // Knobs to snap to when this pedal is selected; a knob left out keeps whatever
+  // value the user left on it. Per-knob on purpose — a pedal usually wants to
+  // place the knob that defines it (a fuzz's drive) and leave the one the user is
+  // experimenting with (bias) alone.
   defaults = {};
 
   // whatChanges is the one-line "and so the signal does THIS" the header shows

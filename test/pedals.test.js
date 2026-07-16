@@ -76,8 +76,10 @@ test("clipping pedals carry a curve; delay pedals carry starting knobs", () => {
     assert.ok(p instanceof ClippingPedal);
     assert.equal(typeof p.fn, "function", `${p.id}.fn`);
     assert.equal(typeof p.drive, "number", `${p.id}.drive`);
-    // no defaults: switching clipping pedals leaves the knobs where they were
-    assert.deepEqual(p.defaults, {}, `${p.id} declares no knob defaults`);
+    // each pedal snaps drive to its own starting point on select...
+    assert.deepEqual(p.defaults, { drive: p.drive }, `${p.id}.defaults`);
+    // ...but never bias, which stays where the user left it across a switch
+    assert.ok(!("bias" in p.defaults), `${p.id} must not default bias`);
   }
   for (const p of DELAYS) {
     assert.ok(p instanceof DelayPedal);

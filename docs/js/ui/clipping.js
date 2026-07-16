@@ -55,9 +55,10 @@ export default {
     },
   },
 
-  // No control defaults on the pedals: switching pedals swaps only the knee shape
-  // + labels and leaves drive/bias where the user left them. The first pedal's
-  // drive still seeds the initial slider value via the control's `def` below.
+  // Each pedal declares its own starting drive, so selecting one snaps that knob
+  // to where its knee reads best. bias isn't declared by any of them, so it stays
+  // where the user left it across a switch. `def` below only seeds the very first
+  // render, before any pedal has been selected.
   controls: [
     { id: "drive", label: "drive", min: 1, max: 40, step: 0.1, def: CLIPPING[0].drive, fmt: (v) => v.toFixed(1) },
     {

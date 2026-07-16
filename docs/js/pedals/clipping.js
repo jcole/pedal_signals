@@ -7,9 +7,14 @@ import { shapeSignal } from "../dsp.js";
 import { Pedal } from "./base.js";
 
 export class ClippingPedal extends Pedal {
+  // Each pedal starts the drive knob where its own knee reads clearest — a fuzz
+  // wants slamming, an overdrive wants to sit on the edge of breakup. bias is
+  // deliberately absent: it starts centred for every pedal, and moving it is the
+  // user's experiment, not the pedal's identity.
   constructor({ drive, fn, ...opts }) {
     super(opts);
     Object.assign(this, { drive, fn });
+    this.defaults = { drive };
   }
 
   // this pedal's curve bound to the live knobs — the panel draws the same one
@@ -49,8 +54,9 @@ export const CLIPPING = [
     fn: (x, drive, bias) => Math.max(-1, Math.min(1, drive * x + bias)),
   }),
   // Rails clip at different levels (+1 vs -0.6): asymmetry like a real transistor
-  // fuzz -> strong even AND odd harmonics, and a visibly lopsided curve. Higher
-  // default drive slams it near-square. bias still slides it for even more.
+  // fuzz -> strong even AND odd harmonics, and a visibly lopsided curve. Its
+  // drive starts highest of the three, which slams it near-square on arrival.
+  // bias still slides it for even more.
   new ClippingPedal({
     id: "fuzz",
     search: ["fuzz face", "big muff", "octavia"],
