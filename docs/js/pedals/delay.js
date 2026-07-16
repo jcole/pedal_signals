@@ -18,7 +18,14 @@ export class DelayPedal extends Pedal {
   analytic = false; // the input is a pluck we generate — plot the real samples
   // Still the synthetic-vs-real axis the clipping family uses: the synthetic
   // source is the same sine at the same pitch, just enveloped into a burst.
-  srcTitles = { sine: "sine burst", guitar: "guitar · A3" };
+  //
+  // Both titles carry the qualifier, because on this page both sources are cut
+  // differently from every other page's. "burst" was already here saying so for
+  // the sine; the guitar was left reading "guitar · A3" — the same words the
+  // clipping page uses for a slice taken somewhere else entirely (13 ms from the
+  // middle of the note, vs 683 ms from the pick). Same recording, same note, and
+  // nothing on either page said which part of it you were looking at.
+  srcTitles = { sine: "sine burst", guitar: "guitar · A3 (pick attack)" };
 
   constructor({ time, feedback, ...opts }) {
     super(opts);

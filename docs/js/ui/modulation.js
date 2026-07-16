@@ -17,7 +17,11 @@ const CURVE_SPAN_MS = 600;
 export default {
   id: "modulation",
   navLabel: "modulation",
-  dual: "⇅ same signal — LFO curve above, envelope below",
+  // The panel this sits under is the waveform, the same one delay's caption
+  // names. The LFO curve is the CENTRE panel, off to the left — a different
+  // chart, of a different quantity (m(t), on a gain axis), and saying its name
+  // here sent readers looking for it above and finding a solid band of carrier.
+  dual: "⇅ same signal — waveform above, envelope below",
   vinDefault: 0.6,
   voutDefault: 0.6,
   pedals: MODULATIONS,
