@@ -10,8 +10,8 @@
 // list of pedals, and hands it to mount(). The contract:
 //
 //   const view = {
-//     id, navLabel,           // URL ?effect= value + the family's name, which the
-//                             // picker uses twice: the heading over this family's
+//     id, navLabel,           // this family's key + its name, which the picker
+//                             // uses twice: the heading over this family's
 //                             // pedals, and the gloss under the chosen one
 //     pageTitle,               // <title> for this family's demo
 //     dual,                    // the "⇅ ..." caption between the output panels

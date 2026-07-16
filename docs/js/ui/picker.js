@@ -14,11 +14,10 @@
 // order (see each family's file), so a search narrows the list without ever
 // reshuffling it out of the sequence the lesson intends.
 //
-// mountPicker(host, {families, onPick}) -> {select(effectId, pedalId)}
-// `families` are the view modules ({id, navLabel, pedals}); onPick(effectId,
-// pedalId) fires only on a real user choice. select() reflects state the page
-// set some other way (a cold load, a back/forward) and deliberately does NOT
-// call back.
+// mountPicker(host, {families, onPick}) -> {select(pedalId)}
+// `families` are the view modules ({id, navLabel, pedals}); onPick(pedalId)
+// fires only on a real user choice. select() reflects state the page set some
+// other way (a cold load, a back/forward) and deliberately does NOT call back.
 
 export function mountPicker(host, { families, onPick }) {
   // Every pedal on the page, each still knowing its family. This is the list
@@ -169,7 +168,7 @@ export function mountPicker(host, { families, onPick }) {
     if (e === current) return; // re-picking what's already up isn't a move
     current = e;
     label();
-    onPick?.(e.f.id, e.p.id);
+    onPick?.(e.p.id);
   }
 
   // Arrow keys walk the filtered list, not the catalog: what you see is what you
@@ -236,12 +235,8 @@ export function mountPicker(host, { families, onPick }) {
     // Reflect state the page arrived at some other way — a cold ?pedal= load, or
     // a back/forward. Silent by design: the URL is already right, and calling
     // onPick here would push a duplicate entry onto the history it came from.
-    select(effectId, pedalId) {
-      const hit =
-        entries.find((e) => e.f.id === effectId && e.p.id === pedalId) ??
-        entries.find((e) => e.p.id === pedalId) ??
-        entries.find((e) => e.f.id === effectId) ??
-        entries[0];
+    select(pedalId) {
+      const hit = entries.find((e) => e.p.id === pedalId) ?? entries[0];
       current = hit;
       label();
       if (open) render();

@@ -102,25 +102,20 @@
   import delay from "./js/ui/delay.js";
   import modulation from "./js/ui/modulation.js";
 
-  // Every pedal family's view, keyed by its `id` — also its ?effect= value and
-  // the heading it gets in the picker. Add a new family here and it shows up in
-  // the picker and becomes linkable, no other page changes needed.
+  // Every pedal family's view, keyed by its `id` — the heading it gets in the
+  // picker. Add a new family here and it shows up in the picker and becomes
+  // linkable, no other page changes needed.
   const EFFECTS = [clipping, delay, modulation];
 
-  // The URL still says both, because both are true and a link that reads
-  // ?effect=delay&pedal=echo says where you are without being decoded. But only
-  // one of them is load-bearing: pedal ids are unique across the whole catalog
-  // (that's what PEDALS in pedals/index.js keys on), so a pedal names its own
-  // family and ?pedal=echo alone is enough. ?effect= alone still means "open this
-  // family", which is what a link to a lesson wants. Either may be absent or
-  // wrong — an id nobody recognizes falls back rather than failing.
-  const asked = () => new URLSearchParams(location.search);
-  const urlFor = (effect, pedal) =>
-    `?effect=${effect}` + (pedal ? `&pedal=${pedal}` : "");
-  const viewFor = (effect, pedal) =>
-    EFFECTS.find((v) => v.pedals.some((p) => p.id === pedal)) ??
-    EFFECTS.find((v) => v.id === effect) ??
-    EFFECTS[0];
+  // The URL names a pedal and nothing else. Pedal ids are unique across the whole
+  // catalog (that's what PEDALS in pedals/index.js keys on), so a pedal names its
+  // own family — and since the picker is one list over that catalog, picking a
+  // family without a pedal isn't a place you can be. May be absent or wrong: an id
+  // nobody recognizes falls back rather than failing.
+  const asked = () => new URLSearchParams(location.search).get("pedal");
+  const urlFor = (pedal) => `?pedal=${pedal}`;
+  const viewFor = (pedal) =>
+    EFFECTS.find((v) => v.pedals.some((p) => p.id === pedal)) ?? EFFECTS[0];
 
   // A pick pushes, so back undoes it. Landing on a family that's already up (back
   // across a pedal pick, or a pick within the family) moves the labels and knobs
@@ -129,7 +124,7 @@
   let current = null;
   function show(v, pedalId) {
     const p = v.pedals.find((x) => x.id === pedalId) ?? v.pedals[0];
-    picker.select(v.id, p.id);
+    picker.select(p.id);
     if (v.id === current) {
       selectPedal(p.id);
       return;
@@ -140,15 +135,15 @@
 
   const picker = mountPicker(document.getElementById("pedalpick"), {
     families: EFFECTS,
-    onPick: (effect, pedal) => {
-      history.pushState(null, "", urlFor(effect, pedal));
-      show(viewFor(effect, pedal), pedal);
+    onPick: (pedal) => {
+      history.pushState(null, "", urlFor(pedal));
+      show(viewFor(pedal), pedal);
     },
   });
 
   addEventListener("popstate", () => {
-    const q = asked(); // back/forward
-    show(viewFor(q.get("effect"), q.get("pedal")), q.get("pedal"));
+    const pedal = asked(); // back/forward
+    show(viewFor(pedal), pedal);
   });
-  show(viewFor(asked().get("effect"), asked().get("pedal")), asked().get("pedal"));
+  show(viewFor(asked()), asked());
 </script>
