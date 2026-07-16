@@ -3,10 +3,10 @@
 // and how it processes a buffer — lives on the ModulationPedal instances in
 // pedals/. This module renders them: the LFO-curve center panel, the
 // wet-vs-dry envelope panel, the rate/depth controls, and the live
-// gain-modulation audio graph. The peak-follower envelope comes from dsp.js;
+// gain-modulation audio graph. The held-peak envelope comes from dsp.js;
 // the LFO curve comes from the pedal's own curve(params) (they're the
 // modulation family's own DSP).
-import { envelope } from "../dsp.js";
+import { envelopeHeld } from "../dsp.js";
 import { MODULATIONS, SPANMS_MOD } from "../pedals/index.js";
 
 // The center panel plots the LFO curve directly (analytic, like the clipping
@@ -109,8 +109,11 @@ export default {
     const span = out.length;
     const sx = (i) => L + (i / span) * (R - L),
       sy = (v) => B - Math.min(1, v) * (B - T - 4);
-    const de = envelope(inp),
-      we = envelope(out);
+    // Held, not released: the carrier under this family is a sustained tone, and
+    // a follower that coasts between its peaks draws its own 18% ripple over
+    // every LFO curve here. See dsp.js — the delay page wants the other one.
+    const de = envelopeHeld(inp),
+      we = envelopeHeld(out);
     const xs = new Array(span);
     for (let i = 0; i < span; i++) xs[i] = i;
     H.line(g, xs, de, sx, sy, DRY, 1.5);

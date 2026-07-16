@@ -9,12 +9,15 @@ import { fileURLToPath } from "node:url";
 import {
   N,
   KBIN,
+  SR,
+  F0,
   parseWav,
   normalize,
   shapeSignal,
   specDb,
   windowed,
   envelope,
+  envelopeHeld,
 } from "../docs/js/dsp.js";
 import { PEDALS, echo } from "../docs/js/pedals/index.js"; // fixtures: real pedal DSP
 
@@ -238,4 +241,47 @@ test("envelope reads an echo train as one hump per repeat", () => {
   assert.ok(Math.abs(e[8000] - 0.5) < 1e-12, "1st repeat's hump = fb");
   assert.ok(Math.abs(e[16000] - 0.25) < 1e-12, "2nd repeat's hump = fb^2");
   assert.ok(e[7999] < 0.01, "and it has fallen back to silence in between");
+});
+
+// The follower the delay page can't use and the modulation page can't do without.
+// Both of these are the ripple bug stated as a test: the first says what went
+// wrong on screen, the second says why the fix isn't just "release more slowly".
+
+test("envelopeHeld is flat on a steady tone, where envelope ripples", () => {
+  const n = 24000; // 0.5 s of carrier
+  const sig = Float64Array.from({ length: n }, (_, i) =>
+    Math.sin((2 * Math.PI * F0 * i) / SR),
+  );
+  // A steady sine's envelope IS flat 1. Skip the first window, which is still
+  // filling: before the carrier's first peak there genuinely is no peak to hold.
+  const e = envelopeHeld(sig);
+  let lo = 1;
+  for (let i = 480; i < n; i++) lo = Math.min(lo, e[i]);
+  assert.ok(lo > 0.999, `held: flat to <0.1% (dipped to ${lo.toFixed(4)})`);
+  // and the contrast that makes it worth a second function
+  const r = envelope(sig);
+  let rlo = 1;
+  for (let i = 480; i < n; i++) rlo = Math.min(rlo, r[i]);
+  assert.ok(rlo < 0.9, `released: ripples >10% on the same input (${rlo.toFixed(4)})`);
+});
+
+test("envelopeHeld holds a peak for one window, then drops it", () => {
+  const W = Math.round((SR * 1) / F0); // the default hold: one carrier period
+  const e = envelopeHeld(impulse(4000));
+  assert.equal(e[0], 1, "instant attack");
+  // The window is the W samples ending at i, so a peak at 0 is in view for
+  // 0..W-1 and has aged out exactly at W — held for its full window, not one
+  // sample longer.
+  assert.equal(e[W - 1], 1, "still holding as the window closes");
+  assert.equal(e[W], 0, "and gone the sample it ages out");
+});
+
+test("envelopeHeld never dips below the signal it traces", () => {
+  const sig = Float64Array.from({ length: 500 }, (_, i) =>
+    Math.sin(i / 3) * Math.exp(-i / 120),
+  );
+  const e = envelopeHeld(sig);
+  for (let i = 0; i < sig.length; i++) {
+    assert.ok(e[i] >= Math.abs(sig[i]) - 1e-12, `covers |sig| at ${i}`);
+  }
 });

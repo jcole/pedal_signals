@@ -109,9 +109,27 @@ export function shapeSignal(inp, fn) {
 }
 
 // ---- envelope --------------------------------------------------------------
+// Two followers, because the two families that draw envelopes feed them opposite
+// signals and a follower can only be right about one of them.
+//
+// Both trace the top of |sig|, and the choice between them is the choice of what
+// to do BETWEEN the carrier's peaks — |sig| touches its true envelope only twice
+// a cycle (every ~2.2 ms at F0) and is below it the rest of the time. envelope()
+// coasts down from the last peak; envelopeHeld() holds it. Coasting is right when
+// the signal really is dying away and wrong when it isn't; holding is the reverse.
+// Pick by the signal, not by the panel: a transient wants envelope(), a sustained
+// tone wants envelopeHeld().
+
 // A peak-follower envelope: instant attack, exponential release. Traces the top
 // of |sig| so a train of separated echoes reads as a row of decaying humps even
 // when the raw waveform is a dense scribble. Pure, single pass, O(n).
+//
+// For TRANSIENTS — the delay family's plucks. The release has to be quick enough
+// to fall with the hit it's tracing (9 ms against the pluck's own 12 ms decay, so
+// the panel reports the pluck and not the follower: slow this to 25 ms and the
+// humps decay in 25 ms no matter what the pluck does, which would make the echo
+// page's whole subject an artifact of its drawing code). Quick release is also
+// exactly why this ripples ~18 % on a sustained tone — see envelopeHeld().
 export function envelope(sig, releaseMs = 9) {
   const n = sig.length,
     e = new Float64Array(n),
@@ -121,6 +139,44 @@ export function envelope(sig, releaseMs = 9) {
     const a = Math.abs(sig[i]);
     env = a > env ? a : env * rel;
     e[i] = env;
+  }
+  return e;
+}
+
+// The peak over a trailing window: instant attack, and no release at all — a
+// level only leaves when it falls out the back of the window. Pure, O(n): each
+// sample is pushed and popped from `q` once.
+//
+// For SUSTAINED TONE — the modulation family, where the carrier runs flat and the
+// LFO is the only thing moving. envelope() can't draw that: coasting for the
+// ~2.2 ms between peaks costs it 18 % before the next peak snaps it back, so a
+// steady sine — whose envelope is FLAT 1 — comes out as an 18 % sawtooth band,
+// and every LFO curve wears the same fuzz. Holding instead is exact there: the
+// window always contains a peak, so the trace is flat to <0.1 %.
+//
+// The default window is one carrier period, which is two half-periods of |sig| —
+// i.e. twice the headroom it strictly needs, so it stays exact for anything down
+// to ~F0/2 (~111 Hz), well under the guitar's A3. It costs a lag of at most one
+// window (~4.5 ms) on the way DOWN, since a peak has to age out before the level
+// can drop. That's the trade: on a sustained tone there's nothing to lag behind,
+// which is why this is not the delay page's follower — there, 4.5 ms of hold on a
+// 12 ms decay is the whole hump.
+export function envelopeHeld(sig, holdMs = 1000 / F0) {
+  const n = sig.length,
+    W = Math.max(1, Math.round((holdMs / 1000) * SR)),
+    e = new Float64Array(n),
+    // indices into sig, |sig| descending: the front is the window's peak, and
+    // anything smaller behind it can never be (a bigger, younger sample outlives
+    // it), so it's dropped on arrival rather than compared with later.
+    q = new Int32Array(n);
+  let head = 0,
+    tail = 0;
+  for (let i = 0; i < n; i++) {
+    const a = Math.abs(sig[i]);
+    while (tail > head && Math.abs(sig[q[tail - 1]]) <= a) tail--;
+    q[tail++] = i;
+    if (q[head] <= i - W) head++; // the front aged out of the window
+    e[i] = Math.abs(sig[q[head]]);
   }
   return e;
 }
