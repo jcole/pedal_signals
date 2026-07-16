@@ -11,17 +11,17 @@ export {
   echo,
   impulseResponse,
   NLONG,
-  pluck,
   PLUCK_MS,
+  pluck,
   SPANMS,
   TAP_FLOOR,
 } from "./delay.js";
 export {
-  ModulationPedal,
   MODULATIONS,
+  ModulationPedal,
   NMOD,
-  sineShape,
   SPANMS_MOD,
+  sineShape,
   squareShape,
   triangleShape,
 } from "./modulation.js";

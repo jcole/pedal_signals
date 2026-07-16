@@ -10,8 +10,8 @@ import { envelope, envelopeHeld, SR } from "../dsp.js";
 import {
   DELAYS,
   impulseResponse,
-  pluck,
   PLUCK_MS,
+  pluck,
   SPANMS,
   TAP_FLOOR,
 } from "../pedals/index.js";
@@ -47,9 +47,16 @@ let loopEnd = GAP_MAX_MS / 1000,
 export default {
   id: "delay",
   navLabel: "delay",
+  // PROTOTYPE: the rail. Its charts are NOT sorted — the top one is still the
+  // harness waveform over 683 ms, which is the same solid band modulation just
+  // got rid of. The layout and the charts are separate questions; this is the
+  // layout, and leaving delay behind on the chain would only cost it the blend.
+  layout: "outputs",
   dual: "⇅ same signal — waveform above, envelope below",
-  vinDefault: 0.6,
-  voutDefault: 0.6,
+  // Half. This family's wet chain carries ONLY the repeats — the dry tap is
+  // where your note itself comes from — so a full-wet delay is echoes of a note
+  // you never hear.
+  blendDefault: 0.5,
   pedals: DELAYS,
   spectrumTitle: "each repeat is quieter — feedback sets the decay",
   // Not a spectrum: drawSpec draws peak-follower envelopes against time, on a

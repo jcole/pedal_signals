@@ -11,9 +11,11 @@ import { CLIPPING } from "../pedals/index.js";
 export default {
   id: "clipping",
   navLabel: "clipping",
+  layout: "outputs",
   dual: "⇅ same signal — time above, spectrum below",
-  vinDefault: 0,
-  voutDefault: 0.8,
+  // The pedal alone. Clipping peak-matches wet to dry, so blending your note
+  // back in only dilutes the one thing the page is showing you.
+  blendDefault: 1,
   pedals: CLIPPING,
   spectrumTitle: "new harmonics — the tone you hear",
   spectrumTech: "spectrum",

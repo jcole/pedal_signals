@@ -21,8 +21,14 @@
      the fold, and a masthead that stacks costs the lesson its first line. -->
 <header id="masthead">
   <h1 class="sitetitle">Pedal signals</h1>
+  <!-- Where to look, and it has to be re-aimed whenever the rig moves: this said
+       "in the middle panel, and in the note on the right" back when the rig was
+       three columns with the transfer curve in the middle. There is no middle
+       panel now — the pedal's math is a glyph in the rail, and the charts to the
+       right are the only thing that was ever the answer. -->
   <p class="sitelede">A guitar pedal is a piece of math on a signal. Pick one, press
-  play, and watch it work — in the middle panel, and in the note on the right.</p>
+  play, and watch it work — the math on the left, what it does to your note on the
+  right.</p>
   <!-- The way out to the catalog, opposite pedals.html's "← back to the bench":
        same .catlink, same corner of the same header, so the two pages point at
        each other from the same place. The bar below has a link to that page too,
@@ -144,9 +150,9 @@
        are the generic thing that's always true, and the box between them is
        whatever you picked, so it's the only one of the three with a name to
        give. The harness fills it — see setPedal(). -->
-  <div class="grp">Input</div>
+  <div class="grp" id="ingrp">Input</div>
   <div class="grp flowarr" id="pedalgrp"></div>
-  <div class="grp flowarr">Output</div>
+  <div class="grp flowarr" id="outgrp">Output</div>
   <!-- Both of these headers are one line now: the bar above each already names
        it ("INPUT", the pedal), so the panel only has to say what's plotted. What
        went was two restatements — "your signal" under INPUT, and the pedal's
@@ -209,12 +215,42 @@
 </div>
 
 <div id="controls">
+  <!-- The transport, and the line under it is sharper than "these are buttons":
+       these are the only controls on the page that change nothing on a chart.
+       render() reads the source and the knobs; it has never read play, ↻ pluck,
+       or the blend — those three reach the AudioContext and stop. So they aren't
+       a stage of the chain, they're how you listen to it, and the decks below are
+       the model. Which is also why there's no OUTPUT deck: the only thing that
+       was ever in it was a level, and a level is this row's business.
+       (play is moved in here by harness.js — it starts life on the centre panel's
+       header, where the chain layout wants it.) -->
+  <div class="railonly" id="railtop">
+    <button id="replay" hidden title="restart the note from the pluck">↻ pluck</button>
+    <!-- One knob where there were two. They were a dry level and a wet level,
+         which is a blend written as two numbers that are free to disagree:
+         nothing made them sum to anything, so moving between "hear the pedal"
+         and "hear your note" changed the LOUDNESS as well as the tone — the one
+         thing an A/B must not do. A crossfade can't: dry is whatever wet isn't.
+         dry/wet because that is what the knob is called on the box this page is
+         about. -->
+    <label class="blendctl">dry/wet
+      <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5" title="0 is your note alone, 1 is the pedal alone">
+      <output id="blendo">0.50</output>
+    </label>
+  </div>
   <div class="ctlcol">
-    <!-- PROTOTYPE (outputs layout): the rail's head, and where the play button
-         moves to when there's no centre panel to hang it on. Empty in the chain
-         layout, where it collapses (.ctl:empty) and play stays on the centre
-         header. -->
-    <div class="ctl" id="railtop"></div>
+    <!-- PROTOTYPE (outputs layout): what's going in, at three carrier periods and
+         with no axes on it. Not the input panel shrunk — that panel plots
+         spanSamples, which on this family is 1365 ms of a 222 Hz carrier and
+         can only draw as a solid band. This is a glyph: it says "a steady tone"
+         or "a plucked note" and claims nothing about how long. The axes are what
+         made the old panel a lie (a hardcoded 3 cycles under a 0–1365 ms label);
+         take them away and there's no span left to be wrong about.
+
+         On top, because that's where the pedal deck's curve is and where both
+         output panels put their trace: every deck in the rail reads picture
+         first, then the controls that shape it. -->
+    <div class="ctl railonly"><canvas class="glyph" data-c="srcglyph" aria-hidden="true"></canvas></div>
     <!-- Everything about the signal going in: which source it is, and ↻ pluck to
          restart the note. Play/stop is arguably the third of those — it's the
          same question, "is it running?" — and it sat here for a while. It's on
@@ -225,17 +261,23 @@
         <button class="srcbtn active" data-src="sine">sine</button>
         <button class="srcbtn" data-src="guitar" disabled>guitar ⏳</button>
       </span>
-      <button id="replay" disabled title="restart the note from the pluck">↻ pluck</button>
     </div>
-    <div class="ctl">vol <input id="vin" type="range" min="0" max="1" step="0.01" value="0"><output id="vino">0.00</output></div>
   </div>
-  <div class="ctlcol" id="centerctls"></div>
-  <div class="ctlcol">
-    <div class="ctl">vol <input id="vout" type="range" min="0" max="1" step="0.01" value="0.8"><output id="vouto">0.80</output></div>
+  <!-- The rail's middle deck is the pedal: what it does to the signal, and the
+       knobs that shape it. The canvas is the same drawCenter the catalog's
+       thumbnails call — the family's own curve, minus the axis labels, live on
+       the knobs directly under it. #centerctls stays its own element because
+       buildControls() wipes it, and standing DOM can't live inside the thing
+       that clears its own host. -->
+  <div class="ctlcol" id="pedalcol">
+    <div class="ctl railonly"><canvas class="glyph glyph--curve" data-c="curve" aria-hidden="true"></canvas></div>
+    <div id="centerctls"></div>
   </div>
-  <!-- both hints span the columns: the vol one is about the sliders on either
-       side of them, and the credit is about the guitar button in the first -->
-  <p class="hint ctlhint" id="volhint">the vol sliders blend in vs out</p>
+  <!-- Spans the columns; it's about the guitar button in the first. It used to
+       have a companion — "the vol sliders blend in vs out" — which was a caption
+       for two sliders that are now captioned by the decks they sit in: one under
+       INPUT, one under OUTPUT. The hint existed because in a row of three columns
+       both of them just said "vol" and only their position said which. -->
   <p class="hint ctlhint" id="gcredit" style="display:none">
     guitar input: a clean Stratocaster A3 (bridge pickup) from
     <a href="https://egfxset.github.io/">EGFxSet</a> — Pedroza, Meza &amp; Roman,

@@ -14,7 +14,8 @@
 //                             // uses twice: the heading over this family's
 //                             // pedals, and the gloss under the chosen one
 //     dual,                    // the "⇅ ..." caption between the output panels
-//     vinDefault, voutDefault, // starting volumes for the input/output sliders
+//     blendDefault,           // where the dry/wet crossfade starts: 0 is your
+//                             // note alone, 1 is the pedal alone
 //     pedals: [ Pedal, … ],   // what the picker lists for this family; the
 //                             // selected one drives input+process
 //     timeTech?,              // what the output TOP panel plots; defaults to
@@ -57,23 +58,25 @@
 // and process(...). H is the harness helper bundle: drawing primitives and the
 // shared palette, passed into the view's draw/audio hooks. The DSP core (specDb,
 // windowed) and constants (SR, N, KBIN, …) live in dsp.js.
-import { SR, F0, CYCLES, SPAN, MSMAX, parseWav, normalize } from "../dsp.js";
+import { CYCLES, F0, MSMAX, normalize, parseWav, SPAN, SR } from "../dsp.js";
 // The toy pedal in the bench row's PEDAL cell — what the row says to someone who
 // hasn't read it yet. That file is where the reasoning lives.
 import { pedalArt } from "./art.js";
-// The bench row's column names, from the same module the catalog page takes
-// theirs from — the two pages name their columns once, together. The row under
-// them is authored in index.html rather than built here, because the PEDAL cell
-// is standing DOM that a re-render would destroy. Neither page owns the geometry;
-// that's one rule in the stylesheet.
-import { headRow } from "./rows.js";
-
 // The drawing primitives and the palette, which this file used to own. They moved
 // out when the catalog page started drawing the same curves at row size and had
 // to draw them in the same ink — see draw.js. `H` is the bundle handed to a
 // view's hooks; the three colours below are the ones this file's own panels
 // stroke with.
 import { frame as fit, H, line, titles, txt } from "./draw.js";
+// The bench row's column names, from the same module the catalog page takes
+// theirs from — the two pages name their columns once, together. The row under
+// them is authored in index.html rather than built here, because the PEDAL cell
+// is standing DOM that a re-render would destroy. Neither page owns the geometry;
+// that's one rule in the stylesheet.
+import { headRow } from "./rows.js";
+// PROTOTYPE: the rail's curve glyph is the catalog's thumbnail, live. See drawRail.
+import { drawThumb } from "./thumb.js";
+
 const { DRY, WET, ZERO } = H.colors;
 
 // ---- module-level state ----------------------------------------------------
@@ -118,11 +121,54 @@ function render() {
   lastState = r.state ?? null;
   lastMatch = r.match ?? 1;
 
-  drawInput(inp);
-  view.drawCenter(frame(C.center), pedal, params, H);
+  if (view.layout === "outputs") drawRail(inp);
+  else {
+    drawInput(inp);
+    view.drawCenter(frame(C.center), pedal, params, H);
+  }
   if (view.drawTime) view.drawTime(frame(C.time), inp, r.out, pedal, srcMode, H);
   else drawTime(inp, r.out, lastMatch);
   view.drawSpec(frame(C.spec), inp, r.out, pedal, srcMode, H);
+}
+
+// PROTOTYPE: the rail's two glyphs, which are what's left of the input and centre
+// panels when neither is a chart any more. The curve is the catalog's thumbnail
+// — literally drawThumb, so it's the family's own drawCenter with the labels
+// struck out — handed the LIVE knobs rather than the pedal's defaults.
+//
+// The source glyph draws SPAN samples, not spanSamples: three carrier periods,
+// which is a wave on every family and every source. That's the whole trick. The
+// input panel had to plot the family's own span, and a span sized for an LFO
+// makes a band; a glyph owes the reader a picture of the SIGNAL, not of the
+// window, so it takes the only zoom at which the signal is one.
+function drawRail(inp) {
+  // Square the CANVAS for a family that reads its curve against a y = x, rather
+  // than squaring the plot inside a wide one. marginsFor() does the latter and
+  // spends the slack on the right — deliberately, so the catalog's clipping rows
+  // start at the same left edge as delay's and modulation's, which is the one
+  // thing that column is for. There's no column here: it's one curve in a deck,
+  // where left-aligned just reads as fallen over. A square canvas leaves
+  // marginsFor nothing to distribute and CSS centres the box instead, so neither
+  // page has to know about the other.
+  C.curve.classList.toggle("glyph--square", !!view.thumbSquare);
+  drawThumb(C.curve, view, pedal, params);
+  const F = frame(C.srcglyph, { L: 2, R: 2, T: 2, B: 2 }),
+    { g, L, R, T, B } = F;
+  const n = Math.min(SPAN, inp.length);
+  const sx = (i) => L + (i / (n - 1)) * (R - L),
+    sy = (y) => (T + B) / 2 - y * ((B - T) / 2 - 2);
+  g.strokeStyle = ZERO;
+  g.beginPath();
+  g.moveTo(L, sy(0));
+  g.lineTo(R, sy(0));
+  g.stroke();
+  const xs = new Array(n),
+    ys = new Array(n);
+  for (let i = 0; i < n; i++) {
+    xs[i] = i;
+    ys[i] = inp[i] || 0;
+  }
+  line(g, xs, ys, sx, sy, DRY, 1.5);
 }
 
 function drawInput(inp) {
@@ -329,7 +375,7 @@ function wireSourceToggle() {
       document.getElementById("inh3").textContent = srcTitle(srcMode);
       document.getElementById("gcredit").style.display =
         srcMode === "guitar" ? "" : "none";
-      document.getElementById("replay").disabled = srcMode !== "guitar";
+      showReplay();
       if (actx) startSource();
       schedule();
     };
@@ -374,14 +420,26 @@ function stopSource() {
   srcNode.disconnect();
   srcNode = null;
 }
-const vinS = () => document.getElementById("vin"),
-  voutS = () => document.getElementById("vout");
-function setVol() {
-  document.getElementById("vino").textContent = (+vinS().value).toFixed(2);
-  document.getElementById("vouto").textContent = (+voutS().value).toFixed(2);
+// ↻ pluck restarts the note, and there's only a note to restart in guitar mode —
+// the sine is a continuous oscillator with no beginning to go back to. It used to
+// sit here greyed out on every other view of the page, which is a control
+// advertising a capability the page doesn't have: a disabled button says "not
+// yet", and this one means "not here". Gone instead, and the transport is two
+// things whenever it's two things.
+function showReplay() {
+  document.getElementById("replay").hidden = srcMode !== "guitar";
+}
+
+// One crossfade, where there were two independent levels. See index.html for why
+// two numbers were the wrong shape for one question; here it just means the pair
+// can't drift, because there's only one of them: dry is whatever wet isn't.
+const blendS = () => document.getElementById("blend");
+function setBlend() {
+  const b = +blendS().value;
+  document.getElementById("blendo").textContent = b.toFixed(2);
   if (actx) {
-    dryGain.gain.value = +vinS().value;
-    wetGain.gain.value = +voutS().value;
+    dryGain.gain.value = 1 - b;
+    wetGain.gain.value = b;
   }
 }
 function updateAudio() {
@@ -408,7 +466,7 @@ function connectView() {
   audio.wetOut.connect(wetGain).connect(master); // wet path
   inGain.connect(dryGain).connect(master); // dry path
   updateAudio();
-  setVol();
+  setBlend();
   startSource();
 }
 // Drop the mounted view's wet chain. inGain feeds both the view's input and the
@@ -422,8 +480,7 @@ function disconnectView() {
   audio = null;
 }
 function wireTransport() {
-  vinS().oninput = setVol;
-  voutS().oninput = setVol;
+  blendS().oninput = setBlend;
   const playBtn = document.getElementById("play");
   const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>';
   const ICON_STOP =
@@ -528,15 +585,36 @@ export function mount(v, opts = {}) {
   // first column, which is what the slab was buying.
   const play = document.getElementById("play");
   if (view.layout === "outputs") {
-    document.getElementById("railtop").appendChild(play);
+    document.getElementById("railtop").prepend(play); // first: it starts the rest
     play.classList.remove("inviting");
   } else {
     document.getElementById("centerhead").appendChild(play);
   }
+  // PROTOTYPE: the chain's three bars. INPUT → PEDAL → OUTPUT looked like the
+  // price of dropping the three columns, and it isn't: the rail's three decks
+  // ARE those three things, stacked, so the bars that labelled the columns
+  // caption the decks instead and the chain turns ninety degrees. It has to be
+  // these elements and not copies of them — setPedal() writes the middle one's
+  // text on every pick, and must keep finding the one that's on screen.
+  //
+  // Which also settles what the decks were missing: two of them said "vol" and
+  // nothing else, and in the chain layout it was the column over each that told
+  // you which was which.
+  const grps = ["ingrp", "pedalgrp"].map((id) => document.getElementById(id));
+  if (view.layout === "outputs") {
+    const cols = document.querySelectorAll("#controls .ctlcol");
+    grps.forEach((g, i) => {
+      cols[i].prepend(g);
+    });
+  } else {
+    // Back in front of the bar that never left, so the row reads in → pedal →
+    // out again. Before #inpanel would put them AFTER it.
+    const outgrp = document.getElementById("outgrp");
+    for (const g of grps) outgrp.parentNode.insertBefore(g, outgrp);
+  }
   // page furniture the view owns
   document.getElementById("dualtxt").textContent = view.dual;
-  document.getElementById("vin").value = view.vinDefault;
-  document.getElementById("vout").value = view.voutDefault;
+  document.getElementById("blend").value = view.blendDefault;
   // headlines the view owns. The centre bar's isn't one of them: it names the
   // pedal, not the family, so setPedal() writes it at the end of this function.
   if (view.spectrumTitle)
@@ -556,7 +634,7 @@ export function mount(v, opts = {}) {
   // family's first for an id the URL made up
   setPedal(opts.pedal);
   if (actx) connectView(); // playing already? swap the chain under the audio
-  else setVol(); // otherwise just show the new family's starting volumes
+  else setBlend(); // otherwise just show the new family's starting mix
 
   if (!wired) {
     wired = true;
@@ -567,6 +645,7 @@ export function mount(v, opts = {}) {
     document.getElementById("ledehead").appendChild(headRow("family"));
     wireSourceToggle();
     wireTransport();
+    showReplay();
     addEventListener("resize", render);
     loadGuitar();
   }

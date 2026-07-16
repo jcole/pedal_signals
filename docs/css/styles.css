@@ -59,8 +59,15 @@
 	   The wet orange needs two values, not one, for the same reason everything else
 	   here splits: --wet is tuned to carry on the dark panels (4.9:1 on the header,
 	   where the old #c0522f managed 3.4:1 and failed AA), and that same orange only
-	   reaches 3.2:1 on white. So the page gets --wet-ink, darker, for the formula
-	   and any <b>. No single orange clears 4.5:1 on both. */
+	   reaches 3.2:1 on white. So the page gets --wet-ink, darker, for any <b>. No
+	   single orange clears 4.5:1 on both.
+
+	   Orange means OUT, and only out — the panel headers paint the literal word in
+	   it off --wet, so the word and the trace it names are one value. Green
+	   (--accent) means the pedal's own math: every family's centre curve is drawn
+	   in it (draw.js), and so are the formulas that curve is a picture of (.catop,
+	   .famop). Grey means in. Reach for one of the three by what a thing IS, not by
+	   how it should look; that's the whole reason they're named after signals. */
 	--dry: #9aa0a6;
 	--wet: #dd7048;
 	--wet-ink: #c0522f;
@@ -282,11 +289,6 @@ b {
 .ctlcol .ctl:first-child {
 	border-top: 0;
 }
-/* The rail's head is empty unless the play button has moved into it, and an
-   empty .ctl is still 8px of padding and a rule. */
-.ctl:empty {
-	display: none;
-}
 
 /* ---- PROTOTYPE: the all-output-charts layout -------------------------------
    Opt-in, per view (harness.js writes data-layout off view.layout), so the two
@@ -334,11 +336,95 @@ b {
 }
 /* The input panel is the grey trace on both charts to its right; the centre is
    the curve the envelope panel measures. Neither is the output against the
-   input, which is the only thing this layout draws. */
+   input, which is the only thing this layout draws. Both survive in the rail as
+   glyphs — see .glyph, and drawRail in harness.js. */
 #rig[data-layout="outputs"] #inpanel,
-#rig[data-layout="outputs"] #centerpanel,
-#rig[data-layout="outputs"] .grp {
+#rig[data-layout="outputs"] #centerpanel {
 	display: none;
+}
+/* The chain, ninety degrees over: the decks are input → pedal → output stacked,
+   so the bars that named the three columns caption the three decks instead.
+   harness.js moves the bars; this is only how they sit.
+
+   No arrow. Across a row of three it was doing real work — it said the columns
+   were a sequence and not a set, which nothing else on that line said. Stacked,
+   reading order says it for free, and a ↓ in every gap is the diagram insisting
+   on something the reader has already done. */
+#rig[data-layout="outputs"] #controls {
+	gap: 14px;
+}
+#rig[data-layout="outputs"] .flowarr::before {
+	content: none;
+}
+/* Play sits on the tray, not on a deck — it's the only control here that isn't
+   a stage of the chain, and inside the INPUT block it read as a property of the
+   source rather than of the whole rig. */
+#rig[data-layout="outputs"] #railtop {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	align-items: center;
+	gap: 8px 10px;
+	padding: 0 2px 8px;
+}
+/* Its own line: the rail is 240px, and a 60px button, a ↻ pluck and a labelled
+   slider are not 240px. */
+.blendctl {
+	flex: 1 0 100%;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-family: var(--mono);
+	font-size: 12px;
+	color: var(--ink-lo);
+}
+.blendctl input[type="range"] {
+	flex: 1;
+	accent-color: var(--accent-lo);
+}
+.blendctl output {
+	min-width: 2.6em;
+	text-align: right;
+}
+/* There is no OUTPUT deck for this bar to caption — the level that was the only
+   thing under it belongs to the transport now. Left in the markup because the
+   chain layout still lays out three columns and still wants it. */
+#rig[data-layout="outputs"] #outgrp {
+	display: none;
+}
+/* The rail's glyphs exist only in the rail: the chain layout has both of them
+   full size, as the two panels this layout dropped. */
+#rig[data-layout="chain"] .railonly {
+	display: none;
+}
+/* #centerctls is the pedal deck's knobs, but the deck is now the canvas AND the
+   knobs, so the element stops being the deck and its children become it. */
+#pedalcol > #centerctls {
+	display: contents;
+}
+.glyph {
+	display: block;
+	width: 100%;
+	height: 46px;
+	touch-action: none;
+}
+/* Not taller: modulation's LFO only ever uses the gain axis from 1−depth up to
+   1, so the bottom of that plot is empty by construction and every pixel of
+   height spends 40% of itself drawing the gap under the trough. */
+.glyph--curve {
+	height: 96px;
+}
+/* Clipping's curve is read against a y = x that has to actually sit at 45°, so
+   its box is square and centred. Square here rather than via marginsFor's
+   right-hand slack — see drawRail for why that rule is the catalog's and not
+   this one's. */
+.glyph--curve.glyph--square {
+	width: 96px;
+	margin-inline: auto;
+}
+.ctl:has(> .glyph) {
+	display: block;
+	padding: 6px 8px;
 }
 .ctl input[type="range"] {
 	flex: 1;
@@ -588,6 +674,26 @@ b {
 	/* the triangle's own mass sits left of its bounding box's centre; nudged so it
 	   looks centred in the disc rather than measuring as it */
 	margin-left: 4px;
+}
+
+/* Big, and permanently. 28px is what this button is worth in a caption bar —
+   the transport you reach for once you know where it is — and .inviting's 88px
+   slab over the centre chart was what found it for you the first time. There is
+   no centre chart to lift a slab over now, so this one button has to do both
+   jobs at once: the only control on the tray, at the head of the rail, at a size
+   that doesn't need a slab to advertise it. Which is .inviting retired for good
+   rather than hidden — see harness.js, which drops the class here.
+
+   Sits below the #play rules it overrides rather than up with the rest of the
+   outputs layout: it is more specific than they are, and above them it would be
+   the one selector making every plain #play rule below it read as descending. */
+#rig[data-layout="outputs"] #play {
+	width: 60px;
+	height: 60px;
+}
+#rig[data-layout="outputs"] #play svg {
+	width: 28px;
+	height: 28px;
 }
 /* ---- the pedal picker -----------------------------------------------------
    The one picker living on the page instead of on the rig — the source switcher
@@ -1015,13 +1121,17 @@ b {
 	text-transform: none;
 	color: var(--ink-lo);
 }
-/* The general form of the column it heads, so it takes that column's color: the
-   orange is the page's "this is a signal term" mark, and these ARE the same term
-   at two altitudes. */
+/* The general form of the column it heads, so it takes that column's color, and
+   these ARE the same term at two altitudes. Which means it must be said here:
+   this is a <b>, so without a color of its own it takes the orange the element
+   default gives every other <b> on the site, and .catop moved to green. Two
+   altitudes of one formula in two colors is the one thing this pairing exists to
+   prevent. */
 .famop {
 	font-family: var(--mono);
 	font-size: 12.5px;
 	font-weight: 400;
+	color: var(--accent);
 }
 /* The two glosses: the class under the family's name, the note under its
    formula. Same size and color as .catalias, the gloss in the rows below. */
@@ -1099,10 +1209,21 @@ a.catrow:hover .catlabel {
 .catnote:empty {
 	display: none;
 }
+/* Green, because green is what the pedal's own math is drawn in everywhere else:
+   draw.js hands every family's drawCenter the ACCENT for its curve, and the rail
+   plots THIS FORMULA in it. The two were one object in two colors — the operation
+   column said x[n]·(1 − d/2 + …) in orange while the deck beside it drew that
+   exact equation in green.
+   Orange had to go because orange is not a mood here, it's a referent: the panel
+   headers paint the literal word "out" in it, off the same custom property the
+   trace is stroked with, so that the word and the line can't drift. A formula
+   wearing it says the formula is the output. It's the operation that makes one.
+   Free, as it happens — 4.60:1 on white against --wet-ink's 4.68:1, so the swap
+   is semantic and costs no contrast. */
 .catop {
 	font-family: var(--mono);
 	font-size: 12px;
-	color: var(--wet-ink);
+	color: var(--accent);
 	overflow-wrap: anywhere;
 }
 .catwhat {

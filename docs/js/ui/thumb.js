@@ -87,10 +87,16 @@ function paramsFor(view, pedal) {
 // Draw one pedal into one canvas. Separate from the element that holds it because
 // a canvas can only be drawn once it has been laid out — it takes its size from
 // its CSS box, and asks the box for it. See mountCatalog.
-export function drawThumb(cv, view, pedal) {
+//
+// `params` is for the rig's rail, which draws this same thumbnail live: the knobs
+// are right there under it, and a curve that ignored them would be the only dead
+// control on the page. The catalog passes none and gets paramsFor() — the knobs
+// as you'd find them on arrival, which is the only honest answer on a page with
+// no knobs to read.
+export function drawThumb(cv, view, pedal, params) {
   if (!cv.clientWidth) return; // not laid out (or display:none) — nothing to size to
   const F = frame(cv, marginsFor(view, cv));
-  view.drawCenter(F, pedal, paramsFor(view, pedal), THUMB_H);
+  view.drawCenter(F, pedal, params ?? paramsFor(view, pedal), THUMB_H);
 }
 
 // aria-hidden, and it carries no label: the row it sits in is already the pedal's

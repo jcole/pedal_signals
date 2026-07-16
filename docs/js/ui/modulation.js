@@ -40,8 +40,9 @@ export default {
   // own outline filled in solid. The envelope is that chart, drawn by something
   // that can draw it, and the slot it vacated goes to the sidebands.
   dual: "⇅ same signal — envelope above, spectrum below",
-  vinDefault: 0.6,
-  voutDefault: 0.6,
+  // Half, which on this family is a real pedal's mix knob: the dry path is
+  // unmodulated, so blending it back in is what shallows the pulse.
+  blendDefault: 0.5,
   pedals: MODULATIONS,
   // The top panel is the envelope, not the harness's waveform — see drawTime.
   timeTech: "envelope",
