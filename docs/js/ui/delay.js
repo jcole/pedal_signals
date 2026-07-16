@@ -51,6 +51,9 @@ export default {
   voutDefault: 0.6,
   pedals: DELAYS,
   spectrumTitle: "each repeat is quieter — feedback sets the decay",
+  // Not a spectrum: drawSpec draws peak-follower envelopes against time, on a
+  // 0..1 level axis. Nothing here takes an FFT or a logarithm.
+  spectrumTech: "envelope",
 
   lesson: {
     formula: "y[n] = x[n] + fb·y[n−D]",

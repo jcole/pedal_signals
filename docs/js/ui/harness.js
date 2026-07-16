@@ -17,7 +17,11 @@
 //     vinDefault, voutDefault, // starting volumes for the input/output sliders
 //     pedals: [ Pedal, … ],   // what the picker lists for this family; the
 //                             // selected one drives input+process
-//     spectrumTitle,          // output spectrum-panel headline
+//     spectrumTitle,          // output bottom-panel headline
+//     spectrumTech,           // what that panel plots ("spectrum", "envelope"):
+//                             // the tech line reads "<spectrumTech> · in vs out"
+//     spectrumUnit?,          // its unit, parenthesized ("dB"); omit if the
+//                             // panel's axis is unitless (a 0..1 level)
 //     lesson?,                // {formula, formulaNote, klass?, oneLiner, body,
 //                             // aside?:{title, body}} — the prose above and below
 //                             // the rig. Omit it and both sections stay hidden.
@@ -505,6 +509,13 @@ export function mount(v, opts = {}) {
   // pedal, not the family, so setPedal() writes it at the end of this function.
   if (view.spectrumTitle)
     document.getElementById("specnar").textContent = view.spectrumTitle;
+  // What the bottom panel actually plots. Only clipping's is a spectrum in dB;
+  // the families that draw an envelope say so, rather than inheriting a word the
+  // page used to hardcode for all three.
+  document.getElementById("spectech").textContent = view.spectrumTech;
+  document.getElementById("specunit").textContent = view.spectrumUnit
+    ? ` (${view.spectrumUnit})`
+    : "";
   renderLesson();
   buildControls();
   // seed labels + defaults from the asked-for pedal, falling back to the

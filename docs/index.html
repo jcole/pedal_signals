@@ -195,7 +195,10 @@
       <canvas data-c="time"></canvas>
     </div>
     <div class="dual" id="dualtxt"></div>
-    <div class="panel"><h3><span class="nar" id="specnar"></span><span class="tech">spectrum · <span class="dry">in</span> vs <span class="wet">out</span> (dB)</span></h3><canvas data-c="spec"></canvas></div>
+    <!-- The bottom panel isn't a spectrum on every page — only clipping's is.
+         So what it plots, and the unit it plots in, are the view's words, not
+         this file's: harness.js fills both from the mounted family. -->
+    <div class="panel"><h3><span class="nar" id="specnar"></span><span class="tech"><span id="spectech"></span> · <span class="dry">in</span> vs <span class="wet">out</span><span id="specunit"></span></span></h3><canvas data-c="spec"></canvas></div>
   </div>
 </div>
 

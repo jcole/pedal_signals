@@ -22,6 +22,9 @@ export default {
   voutDefault: 0.6,
   pedals: MODULATIONS,
   spectrumTitle: "the envelope traces the LFO — the ear hears it as pulsing",
+  // Same as delay's: envelopes against time, not a spectrum. The headline above
+  // has always said "envelope" — this is the tech line finally agreeing with it.
+  spectrumTech: "envelope",
 
   lesson: {
     formula: "y[n] = x[n]·m(t)",
