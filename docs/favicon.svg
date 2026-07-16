@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- A clipped sine on an instrument-panel ground: the site's one idea at 16px.
+       Colors are hardcoded rather than pulled from styles.css because the
+       browser loads this file on its own, with no stylesheet in scope. Keep them
+       in step by hand with the inst, zero, and wet custom properties there. -->
+  <rect width="32" height="32" rx="7" fill="#191c15"/>
+  <path d="M2 16H30" stroke="#3a4030" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M2 16C3 16 3.5 7 5 7H11C12.5 7 13 16 16 16C19 16 19.5 25 21 25H27C28.5 25 29 16 30 16"
+        fill="none" stroke="#dd7048" stroke-width="3.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
