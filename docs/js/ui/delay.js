@@ -159,8 +159,23 @@ export default {
       we = env(out);
     const xs = new Array(span);
     for (let i = 0; i < span; i++) xs[i] = i;
-    H.line(g, xs, de, sx, sy, DRY, 1.5);
+    // Dry LAST and dashed, which is this panel's alone and not the harness's
+    // habit. Everywhere else the two traces differ and painting order is a
+    // detail; here the output CONTAINS the input — out[i] === inp[i] until the
+    // first repeat lands — so a solid dry goes under a solid wet in exactly the
+    // place it matters and is never seen again. Dashed and on top, it rides the
+    // first hump instead of hiding beneath it, and the eye gets the page's whole
+    // argument for free: your note is the dashed one, it stopped there, and
+    // every hump after it is the pedal's.
+    //
+    // Dashes only work here because these are smooth curves. The waveform panel
+    // above can't have this: a canvas dash walks PATH length, and a trace that
+    // swings ±1 at 222 Hz spends ~500px of path in every 3px of width, so the
+    // pattern chops the verticals into stipple rather than drawing a dashed line.
     H.line(g, xs, we, sx, sy, WET, 2);
+    g.setLineDash([6, 4]);
+    H.line(g, xs, de, sx, sy, DRY, 1.5);
+    g.setLineDash([]);
     H.txt(g, "1", L - 5, sy(1), "end", "middle");
     H.txt(g, "0", L - 5, sy(0), "end", "middle");
     H.txt(g, "0", sx(0), B + 3, "start", "top");
