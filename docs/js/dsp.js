@@ -2,8 +2,8 @@
 // tests. Nothing in here touches the DOM, canvas, or Web Audio — every function
 // is a plain data-in / data-out transform, so it runs identically in a browser
 // and under `node --test`. The per-pedal DSP each effect is built from lives in
-// pedals/; the UI/audio/canvas glue lives in the harness (harness.js) and the
-// effect modules (clipping.js, delay.js, …).
+// pedals/; the UI/audio/canvas glue lives in ui/ — the harness (ui/harness.js)
+// and the per-family view modules (ui/clipping.js, ui/delay.js, …).
 
 // ---- constants -------------------------------------------------------------
 export const SR = 48000;

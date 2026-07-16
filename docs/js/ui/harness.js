@@ -20,6 +20,9 @@
 //                             // selected one drives input+process
 //     centerTitle,            // center-panel headline ("the pedal bends every sample")
 //     spectrumTitle,          // output spectrum-panel headline
+//     lesson?,                // {formula, formulaNote, klass?, oneLiner, body,
+//                             // aside?:{title, body}} — the prose above and below
+//                             // the rig. Omit it and both sections stay hidden.
 //     controls:[ {id, label, min, max, step, def, fmt?(v)->string}, … ],
 //     drawCenter(F, pedal, params, H),           // draw the center panel
 //     drawSpec(F, inp, out, pedal, src, H),      // draw the output spectrum panel
@@ -138,7 +141,7 @@ const H = {
 // the consts. (Pedals on one page share a family, so these don't jump on select.)
 const spanMs = () =>
   pedal.spanSamples === SPAN ? MSMAX : (pedal.spanSamples / SR) * 1000;
-// input-panel headline per source; a pedal renames them (a delay's "sine" is a pluck)
+// input-panel headline per source; a pedal renames them (a delay's "sine" is a burst)
 const srcTitle = (m) => pedal.srcTitles[m] ?? m;
 
 // ---- input generation ------------------------------------------------------

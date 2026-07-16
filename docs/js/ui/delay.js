@@ -68,7 +68,7 @@ export default {
     const { GRID, ZERO, ACCENT } = H.colors;
     const sx = (ms) => L + (ms / SPANMS) * (R - L),
       sy = (v) => B - v * (B - T - 6);
-    g.strokeStyle = GRID; // baseline
+    g.strokeStyle = GRID;
     g.lineWidth = 1;
     g.beginPath();
     g.moveTo(L, sy(0));
@@ -143,8 +143,8 @@ export default {
       wet = actx.createGain();
     inGain.connect(delay);
     delay.connect(fb);
-    fb.connect(delay); // feedback loop
-    delay.connect(wet); // wet = the repeats
+    fb.connect(delay);
+    delay.connect(wet);
     return {
       wetOut: wet,
       update(_pedal, params) {

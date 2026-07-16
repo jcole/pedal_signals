@@ -5,10 +5,10 @@
 // already know which family their pedal lived in before they could look for it.
 //
 // The families don't disappear, they become the list's headings. That's the
-// point rather than the decoration: someone who searches "chorus" and lands on
-// it under MODULATED DELAY has been taught the page's actual thesis — that the
-// pedal you know is an instance of a mechanism — without reading a word of
-// prose. The taxonomy teaches on the way to the answer.
+// point rather than the decoration: someone who searches "reverb" and lands on
+// ambient under DELAY has been taught the page's actual thesis — that the pedal
+// you know is an instance of a mechanism — without reading a word of prose. The
+// taxonomy teaches on the way to the answer.
 //
 // Order is never ranked, only filtered: the catalog's own order is the teaching
 // order (see each family's file), so a search narrows the list without ever
@@ -112,8 +112,8 @@ export function mountPicker(host, { families, onPick }) {
       list.appendChild(grp);
     }
     // The empty state names the query. This page's catalog is a work in
-    // progress, so "no pedal called chorus" is a real answer — and a truer one
-    // than an empty box, which reads as a broken search.
+    // progress, so "we haven't built that one" is a real answer — and a truer
+    // one than an empty box, which reads as a broken search.
     empty.hidden = hits.length > 0;
     empty.textContent = `no pedal matches “${search.value.trim()}” — not built yet?`;
     search.setAttribute(
@@ -180,7 +180,7 @@ export function mountPicker(host, { families, onPick }) {
     setActive(hits[(i + d + hits.length) % hits.length]);
   }
 
-  // Keep focus where it is, the same trick the options use below, and for the
+  // Keep focus where it is, the same trick the options use above, and for the
   // same reason: this button's click has to survive the blur that precedes it.
   // Safari doesn't focus a button when you click it, so with the popup open the
   // mousedown blurs the search field, focusout closes the popup, and the click

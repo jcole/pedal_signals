@@ -98,8 +98,10 @@ export default {
     H.titles(g, F, "gain", "time (ms)");
   },
 
-  // bottom panel: the wet envelope (orange) tracing the chop over the dry
-  // envelope (grey, flat at 1) — the row of pulses the LFO carves into the tone.
+  // bottom panel: the wet envelope (orange) tracing the chop over the dry one
+  // (grey) — the row of pulses the LFO carves into the tone. On the sine source
+  // the dry envelope is flat, so the pulses are the only thing moving; on the
+  // guitar it decays, and the chop rides that decay.
   drawSpec(F, inp, out, _pedal, _src, H) {
     const { g, L, R, T, B } = F;
     const { DRY, WET } = H.colors;

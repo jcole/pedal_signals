@@ -11,8 +11,11 @@
 import { F0, GOFF, SR } from "../dsp.js";
 import { Pedal } from "./base.js";
 
-// ~1.37 s of 48 kHz audio (power of two — the spectrum panel's FFT wants one).
-// Long enough to show several chop cycles even at the slowest rate on the slider.
+// ~1.37 s of 48 kHz audio (power of two, though nothing here needs the FFT — the
+// modulation family's output panel draws envelopes, not a spectrum). Long enough
+// to show several cycles at the rates these pedals start at; wind the rate slider
+// down to its slowest and it holds under one, which the envelope panel shows
+// honestly as a single slow swell.
 export const NMOD = 65536;
 export const SPANMS_MOD = (NMOD / SR) * 1000;
 

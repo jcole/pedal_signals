@@ -16,8 +16,8 @@ export class DelayPedal extends Pedal {
   sampleCount = NLONG;
   spanSamples = NLONG;
   analytic = false; // the input is a pluck we generate — plot the real samples
-  // Still the synthetic-vs-real axis the clipping demo uses: the synthetic source
-  // is the same sine at the same pitch, just enveloped into a burst.
+  // Still the synthetic-vs-real axis the clipping family uses: the synthetic
+  // source is the same sine at the same pitch, just enveloped into a burst.
   srcTitles = { sine: "sine burst", guitar: "guitar · A3" };
 
   constructor({ time, feedback, ...opts }) {
@@ -25,7 +25,7 @@ export class DelayPedal extends Pedal {
     this.defaults = { time, feedback };
   }
 
-  // The harness's steady sine is useless here (a delayed copy of a continuous
+  // The base class's steady sine is useless here (a delayed copy of a continuous
   // tone just overlaps the original): synthetic -> a decaying pluck; guitar ->
   // the real note from its pick attack (offset 0), so the transient repeats too.
   genInput({ srcMode, guitar, n }) {

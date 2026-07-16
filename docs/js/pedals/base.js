@@ -3,7 +3,7 @@
 // engines a family's process() leans on (shapeSignal, FFT/spectrum, windowing,
 // envelope, WAV) live in ../dsp.js. The UI each family needs — panels,
 // controls, the live audio graph — lives in the view modules (ui/clipping.js,
-// ui/delay.js) the harness renders through.
+// ui/delay.js, ui/modulation.js) the harness renders through.
 import { GOFF, KBIN, N, SPAN } from "../dsp.js";
 
 // One Pedal instance = one button on one page. A subclass supplies the family's
@@ -11,8 +11,8 @@ import { GOFF, KBIN, N, SPAN } from "../dsp.js";
 // only what makes it that pedal — its curve, its formula, its starting knobs.
 // The defaults below suit a per-sample effect; a time-based one overrides them.
 export class Pedal {
-  sampleCount = N; // analysis buffer length
-  spanSamples = SPAN; // samples drawn in the time panels
+  sampleCount = N;
+  spanSamples = SPAN;
   // The input is a generated steady sine, so the view can redraw it analytically
   // (smooth at any width). A pedal that generates its own buffer clears this and
   // gets plotted sample-by-sample instead.

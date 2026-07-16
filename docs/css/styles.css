@@ -286,7 +286,8 @@ b {
 	font-size: 12px;
 	color: var(--ink-lo);
 }
-/* the hint lines under the controls, each spanning the columns it's about */
+/* the hint lines under the controls: each spans the full width, since both are
+   about controls sitting in more than one column */
 .ctlhint {
 	grid-column: 1 / -1;
 	margin: 2px 0 0;
@@ -435,7 +436,8 @@ b {
 
    Each family is a .pickgroup wrapping its own options, so the heading's spacing
    hangs off the group and not off its position in one flat list — which is why
-   the rule below reaches for the group's first-child and not the heading's. */
+   the rule below matches the heading inside the first .pickgroup, rather than
+   asking whether the heading itself happens to come first. */
 .pickgrp {
 	font-family: var(--mono);
 	font-size: 10px;
