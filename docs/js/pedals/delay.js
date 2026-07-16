@@ -78,13 +78,17 @@ export function impulseResponse(delayMs, feedback, spanMs, floor = TAP_FLOOR) {
   return taps;
 }
 
+// How long the hit itself lasts. Exported because a caller spacing plucks apart
+// has to outlast the pluck as well as its echoes.
+export const PLUCK_MS = 70;
+
 // A short decaying tone-burst: the transient a delay needs to make repeats
 // visible (and the "hit" the impulse-response panel idealizes). One pluck at the
-// note's pitch, ~12 ms decay, silent after ~70 ms so echoes land in clear air.
+// note's pitch, ~12 ms decay, silent after PLUCK_MS so echoes land in clear air.
 export function pluck(n) {
   const out = new Float64Array(n),
     tau = 0.012 * SR,
-    len = Math.min(n, Math.round(0.07 * SR));
+    len = Math.min(n, Math.round((PLUCK_MS / 1000) * SR));
   for (let i = 0; i < len; i++)
     out[i] = Math.sin((2 * Math.PI * F0 * i) / SR) * Math.exp(-i / tau);
   return out;

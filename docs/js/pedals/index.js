@@ -12,6 +12,7 @@ export {
   impulseResponse,
   NLONG,
   pluck,
+  PLUCK_MS,
   SPANMS,
   TAP_FLOOR,
 } from "./delay.js";

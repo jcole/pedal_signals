@@ -10,6 +10,7 @@ import {
   DELAYS,
   impulseResponse,
   pluck,
+  PLUCK_MS,
   SPANMS,
   TAP_FLOOR,
 } from "../pedals/index.js";
@@ -19,10 +20,28 @@ import {
 // the sliders drift apart.
 const TIME_MAX = 400, // ms
   FB_MAX = 0.85;
-// Repeats fade by fb each pass, so they fall under the tap panel's "too quiet to
-// matter" floor after log(floor)/log(fb) of them — each TIME_MAX apart at worst.
-const TAIL_MS =
-  Math.ceil(Math.log(TAP_FLOOR) / Math.log(FB_MAX)) * TIME_MAX;
+// The shortest rest that still reads as one hit rather than a stutter. Slapback's
+// echoes are gone 250 ms in, but re-plucking four times a second is a machine gun,
+// not a demo of a doubling — so the gap answers to the ear's spacing as well as to
+// the decay, and takes whichever is longer.
+const MIN_GAP_MS = 800; // ~75 bpm: a slow deliberate strum
+
+// How long one hit's echoes need: repeats fade by fb a pass, so the last one still
+// above the tap panel's "too quiet to matter" floor is the log(floor)/log(fb)-th,
+// each `time` after the one before — and then it takes the pluck's own decay to
+// ring out. Same count impulseResponse stops drawing at, so the tail ends where the
+// panel's last stem does.
+const tailMs = (time, fb) =>
+  (fb > 0 ? Math.floor(Math.log(TAP_FLOOR) / Math.log(fb)) * time : 0) + PLUCK_MS;
+const gapMs = (time, fb) => Math.max(tailMs(time, fb), MIN_GAP_MS);
+// The longest gap the sliders can ask for — the buffer has to hold it, since the
+// buffer is allocated once and the knobs move afterwards.
+const GAP_MAX_MS = gapMs(TIME_MAX, FB_MAX);
+
+// Where the loop currently turns over, in seconds. update() writes it as the
+// knobs move and buildSource reads it, so whichever runs first, the two agree.
+let loopEnd = GAP_MAX_MS / 1000,
+  srcNode = null;
 
 export default {
   id: "delay",
@@ -140,18 +159,21 @@ export default {
   // so you'd see a pluck but hear no repeat. Loop one pluck followed by silence
   // instead, so each hit's echoes ring out in the gap before the next.
   //
-  // The gap is sized for the worst case the knobs allow, because the buffer is
-  // built once at mount and the knobs move afterwards: anything shorter and the
-  // loop restarts on top of a still-loud echo at high feedback. The cost is real
-  // — at gentler settings the tail dies long before the next pluck, so you wait
-  // through the remaining silence.
+  // The buffer holds the worst-case gap, because it's allocated once at mount and
+  // the knobs move afterwards. The loop point doesn't have to sit at its end,
+  // though: only the first PLUCK_MS carries the hit and the rest is silence, so
+  // update() below turns the loop over wherever *this* setting's echoes have
+  // finished. Moving loopEnd is silence-to-silence — no reallocation mid-drag,
+  // and nothing to click.
   buildSource(actx) {
-    const len = Math.round((TAIL_MS / 1000) * SR);
+    const len = Math.round((GAP_MAX_MS / 1000) * SR);
     const buf = actx.createBuffer(1, len, SR);
     buf.copyToChannel(Float32Array.from(pluck(len)), 0);
     const src = actx.createBufferSource();
     src.buffer = buf;
     src.loop = true;
+    src.loopEnd = loopEnd;
+    srcNode = src;
     return src;
   },
 
@@ -171,6 +193,11 @@ export default {
         delay.delayTime.value = params.time / 1000;
         fb.gain.value = params.feedback;
         wet.gain.value = 1;
+        // Re-space the plucks for the tail these knobs just asked for. Shortening
+        // the gap while the playhead is out in the silence past the new turnover
+        // wraps it there and then, which is only the next hit arriving early.
+        loopEnd = gapMs(params.time, params.feedback) / 1000;
+        if (srcNode) srcNode.loopEnd = loopEnd;
       },
     };
   },
