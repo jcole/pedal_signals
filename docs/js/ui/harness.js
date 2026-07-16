@@ -1,7 +1,7 @@
 // Effect-neutral harness. Everything that isn't specific to one page lives here:
 // the generic panels (input waveform, dry-vs-wet time), the transport, the
 // dry/wet blend audio graph, the source toggle, and the control UI. It renders a
-// VIEW over a list of PEDALS: the pedals (from pedals.js) are the model — each one
+// VIEW over a list of PEDALS: the pedals (from pedals/) are the model — each one
 // knows how to generate its input and process it; the view is the page's UI — its
 // panels, its controls, its live audio graph. The pure DSP (WAV parse, FFT,
 // spectrum) is imported from dsp.js.

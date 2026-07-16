@@ -16,7 +16,7 @@ import {
   windowed,
   envelope,
 } from "../docs/js/dsp.js";
-import { PEDALS, echo } from "../docs/js/pedals.js"; // fixtures: real pedal DSP
+import { PEDALS, echo } from "../docs/js/pedals/index.js"; // fixtures: real pedal DSP
 
 // ---- helpers ---------------------------------------------------------------
 

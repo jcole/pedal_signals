@@ -1,4 +1,4 @@
-// Unit tests for the pedals (docs/js/pedals.js): the Pedal instances (their
+// Unit tests for the pedals (docs/js/pedals/): the Pedal instances (their
 // process/genInput/defaults) plus the delay family's pure DSP — the difference
 // equation and the tap train — and the modulation family's LFO shapes. Run with
 // `npm test` (i.e. `node --test`). Pure data / pure functions — no browser. The
@@ -20,7 +20,7 @@ import {
   MODULATIONS,
   ModulationPedal,
   triangleShape,
-} from "../docs/js/pedals.js";
+} from "../docs/js/pedals/index.js";
 
 test("overdrive is odd-symmetric at bias 0 and monotonic", () => {
   const { fn } = PEDALS.overdrive;

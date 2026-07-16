@@ -1,12 +1,12 @@
 // Delay-family VIEW (echo / slapback / ambient): only the UI. What a delay pedal
 // IS — the feedback difference equation y[n] = x[n] + fb·y[n−D], its transient
 // pluck input, its longer analysis buffer — lives on the DelayPedal instances in
-// pedals.js. This module renders them: the tap-train center panel, the wet-vs-dry
+// pedals/. This module renders them: the tap-train center panel, the wet-vs-dry
 // envelope panel, the time/feedback controls, and the live DelayNode feedback
 // loop. The peak-follower envelope comes from dsp.js; the tap train + the live
-// source's pluck come from pedals.js (they're the delay's own DSP).
+// source's pluck come from pedals/ (they're the delay's own DSP).
 import { envelope, SR } from "../dsp.js";
-import { DELAYS, impulseResponse, pluck, SPANMS } from "../pedals.js";
+import { DELAYS, impulseResponse, pluck, SPANMS } from "../pedals/index.js";
 
 export default {
   id: "delay",

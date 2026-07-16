@@ -1,13 +1,13 @@
 // Modulation-family VIEW (tremolo / chop / warble): only the UI. What a
 // modulation pedal IS — the LFO multiplier m(t) = 1 − d/2 + d/2·shape(2π·rate·t),
 // and how it processes a buffer — lives on the ModulationPedal instances in
-// pedals.js. This module renders them: the LFO-curve center panel, the
+// pedals/. This module renders them: the LFO-curve center panel, the
 // wet-vs-dry envelope panel, the rate/depth controls, and the live
 // gain-modulation audio graph. The peak-follower envelope comes from dsp.js;
 // the LFO curve comes from the pedal's own curve(params) (they're the
 // modulation family's own DSP).
 import { envelope } from "../dsp.js";
-import { MODULATIONS, SPANMS_MOD } from "../pedals.js";
+import { MODULATIONS, SPANMS_MOD } from "../pedals/index.js";
 
 // The center panel plots the LFO curve directly (analytic, like the clipping
 // family's transfer curve) rather than the full analysis buffer — a fixed

@@ -2,7 +2,7 @@
 // tests. Nothing in here touches the DOM, canvas, or Web Audio — every function
 // is a plain data-in / data-out transform, so it runs identically in a browser
 // and under `node --test`. The per-pedal DSP each effect is built from lives in
-// pedals.js; the UI/audio/canvas glue lives in the harness (harness.js) and the
+// pedals/; the UI/audio/canvas glue lives in the harness (harness.js) and the
 // effect modules (clipping.js, delay.js, …).
 
 // ---- constants -------------------------------------------------------------
@@ -83,7 +83,7 @@ export function normalize(sig, target = 0.98) {
 // condition the output as the demo does: remove the DC offset a bias introduces
 // (a coupling cap), then compute the gain that peak-matches the wet output to the
 // input, so at equal volumes only timbre changes, not level. Generic — `fn` is
-// any curve, so this runs any waveshaping pedal; the curves live in pedals.js.
+// any curve, so this runs any waveshaping pedal; the curves live in pedals/.
 // Returns the centered output plus the two scalars the demo/audio graph need.
 export function shapeSignal(inp, fn) {
   const len = inp.length,
