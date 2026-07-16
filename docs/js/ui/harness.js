@@ -46,10 +46,12 @@
 // shared palette, passed into the view's draw/audio hooks. The DSP core (specDb,
 // windowed) and constants (SR, N, KBIN, …) live in dsp.js.
 import { SR, F0, CYCLES, SPAN, MSMAX, parseWav, normalize } from "../dsp.js";
-// The lede's two rows are the catalog page's rows, same module and same columns:
-// the bench renders the one band and the one row for what's mounted, that page
-// renders every family's. Neither owns the geometry.
-import { famRow, headRow, pedalRow } from "./rows.js";
+// The bench row's column names, from the same module the catalog page takes
+// theirs from — the two pages name their columns once, together. The row under
+// them is authored in index.html rather than built here, because the PEDAL cell
+// is the picker: standing DOM that a re-render would destroy. Neither page owns
+// the geometry; that's one rule in the stylesheet.
+import { headRow } from "./rows.js";
 
 // ---- colors (shared palette; effects read ACCENT for their center curve) ----
 // styles.css owns these: the page paints the "in"/"out" legend words in a panel
@@ -286,13 +288,21 @@ function setParam(id, v) {
 // the time this runs the decision is made and everyone else already knows.
 function setPedal(id) {
   pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
-  // The lede's second row: this pedal, in the same columns as the band above it,
-  // so the operation column reads general → instance. No href — the row names
-  // the pedal that's already on the bench, and a link to here is a link that
-  // lies about being a way out.
-  const ped = document.getElementById("ledeped");
-  ped.innerHTML = "";
-  ped.appendChild(pedalRow(pedal));
+  // The bench row's other two columns. The PEDAL cell isn't written here — it's
+  // the picker, which is standing DOM and already says the pedal's name; this
+  // fills the two cells that describe whatever it's currently saying. Both are
+  // the pedal's own, not the family's, which is the difference between this row
+  // and the band that used to sit above it.
+  document.getElementById("benchop").textContent = pedal.tech ?? "";
+  document.getElementById("benchwhat").textContent = pedal.whatChanges ?? "";
+  // The FAMILY cell. Just the name and an arrow — the column header says what
+  // kind of noun it is, which is the one thing the bench never used to say
+  // anywhere. Set here rather than in mount() for the same reason the tab title
+  // is: it names the family, but it has to survive a pick, and a pick within a
+  // family never remounts.
+  const fam = document.getElementById("famlink");
+  fam.textContent = `${view.navLabel} →`;
+  fam.href = `./pedals.html#${encodeURIComponent(view.id)}`;
   if (pedal.tech) document.getElementById("centertech").textContent = pedal.tech;
   if (pedal.outnar)
     document.getElementById("outnar").textContent = pedal.outnar;
@@ -453,6 +463,13 @@ function wireTransport() {
     playBtn.innerHTML = playing ? ICON_STOP : ICON_PLAY;
     playBtn.classList.toggle("playing", playing);
     playBtn.title = playBtn.ariaLabel = playing ? "stop audio" : "start audio";
+    // One way only. .inviting is the big lifted state this button wears on a
+    // page nobody has pressed yet; the first yes settles it into its header for
+    // good. Not toggled back off on stop — by then it has been found, and a slab
+    // that reappears over the chart every time you pause is asking a question
+    // that's already been answered. Set from here rather than from the click
+    // handler so that ↻ pluck, which also starts the audio, retires it too.
+    if (playing) playBtn.classList.remove("inviting");
   };
   playBtn.onclick = async () => {
     ensureAudio();
@@ -476,28 +493,19 @@ function wireTransport() {
 }
 
 // ---- lesson section ---------------------------------------------------------
-// The two things the mounted family says about itself in words: the band up in
-// the lede (its name, its general form, what it does — the catalog's row for it,
-// see rows.js) and the prose block below the rig, with an optional second column
-// for a deeper aside. Both come from view.lesson, and a view that omits it gets
-// neither.
+// What the mounted family says about itself in words: the prose block below the
+// rig, with an optional second column for a deeper aside. It used to also own a
+// band up in the lede — the family's own row, in the catalog's three columns —
+// which is now a link in the bench row instead (see index.html for why, and
+// pedals.html for where the band still stands).
 function renderLesson() {
   const lesson = view.lesson;
   const section = document.getElementById("lesson");
-  const lede = document.getElementById("lede");
   if (!lesson) {
     section.style.display = "none";
-    lede.style.display = "none";
     return;
   }
   section.style.display = "";
-  lede.style.display = "";
-  // The column names and the family's band — everything in the lede that a pick
-  // within this family can't change. The row under them is setPedal()'s, and
-  // mount() calls it right after this.
-  const fam = document.getElementById("ledefam");
-  fam.innerHTML = "";
-  fam.append(headRow(), famRow(view));
   document.getElementById("lbody").innerHTML = lesson.body;
 
   const asideWrap = document.getElementById("lasidewrap");
@@ -558,6 +566,11 @@ export function mount(v, opts = {}) {
 
   if (!wired) {
     wired = true;
+    // The bench row's column names. Not the view's — they're the same words
+    // whatever is mounted, and they come from rows.js so that this page and the
+    // catalog name their shared columns once, together. "family" is the fourth,
+    // which only this page has.
+    document.getElementById("ledehead").appendChild(headRow("family"));
     wireSourceToggle();
     wireTransport();
     addEventListener("resize", render);

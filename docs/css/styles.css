@@ -29,12 +29,26 @@
 	   job; darken it and the page stops reading as lit. */
 	--tray: #e9ece2;
 
-	/* the dark instrument (panels, charts, controls) */
+	/* The dark instrument, and it's a ladder of three materials, not one dark.
+	   --inst is the glass: the charts, and only the charts. --inst-head is the
+	   caption bar sitting on that glass. --inst-grp is chassis — the label bar over
+	   each column and the knob deck under it, so a column reads chassis / screen /
+	   chassis. The decks were --inst once, which made each column one tall panel
+	   with traces at the top and sliders at the bottom.
+
+	   --inst-head has almost no room to lighten and the reason isn't taste: --wet
+	   is 4.65:1 on it, and --wet is the "out" legend word in every panel header.
+	   Past about #242a1e that word fails AA — and it can't be lightened to
+	   compensate, because it's the trace color too (harness.js reads it off :root),
+	   so the word and the line it names would stop being the same orange. If you
+	   want these bars lighter than this, that's the thing you have to solve first. */
 	--inst: #191c15;
-	--inst-head: #1f231a;
-	--inst-grp: #2f3626;
+	--inst-head: #232820;
+	--inst-grp: #3a4230;
 	--inst-ink: #dfe5d6;
-	--inst-ink-lo: #a2aa94;
+	/* the .ctl labels, and lightened with the deck under them: at #a2aa94 they were
+	   4.35:1 on the chassis and under AA */
+	--inst-ink-lo: #adb59e;
 	--inst-edge: #0f110c;
 
 	/* Signal colors. These are the source of truth for the charts too — harness.js
@@ -135,9 +149,13 @@ b {
    (further down) is a lookup: a catalog too long to lay out flat, so it hides
    until asked. When you add a control, that's the question — can the reader see
    every option at once? Segment. Otherwise it belongs in the picker. */
+/* The border and the buttons inside it are darker than the deck they sit on, not
+   lighter: the deck is chassis now (--inst-grp), and this used to outline itself
+   in #2c3125 — a hair off the chassis's own #2f3626, so on the new fill it drew
+   nothing at all. A switch cut INTO the chassis is the honest reading anyway. */
 .seg {
 	display: inline-flex;
-	border: 1px solid #2c3125;
+	border: 1px solid var(--inst-edge);
 	border-radius: 4px;
 	overflow: hidden;
 }
@@ -201,7 +219,9 @@ b {
 	margin-top: 3px;
 	font-family: var(--mono);
 	font-size: 10px;
-	color: #858d78;
+	/* lightened with the header bar under it — at #858d78 it was 4.35:1 on the new
+	   --inst-head and under AA, which a 10px caption can least afford */
+	color: #8d9580;
 	font-weight: 400;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
@@ -236,10 +256,16 @@ b {
 	margin: 0 auto;
 	padding: 8px;
 }
+/* The knob deck, and it is NOT the screen. Both were --inst, which made a column
+   read as one tall dark panel with charts at the top and sliders at the bottom —
+   but a trace and a knob are different kinds of thing and a scope doesn't build
+   them out of the same material. The deck takes --inst-grp, which is what the
+   label bar over each column is already made of: chassis on top, screen in the
+   middle, chassis under it. The dark is the glass, and only the glass. */
 .ctlcol {
 	display: flex;
 	flex-direction: column;
-	background: var(--inst);
+	background: var(--inst-grp);
 }
 /* Knobs are instrument chrome: mono keeps the labels and their readouts on a
    fixed grid, so a value doesn't shuffle its own row while you drag. */
@@ -269,21 +295,21 @@ b {
 	display: inline-block;
 	min-width: 3em;
 }
+/* The whole header under the masthead: one row of the catalog's three columns,
+   under their names. It was three bands — a picker row, the family's, the
+   pedal's — and the fold could not pay for all of them. No top padding:
+   #masthead's own bottom gap is the separation, and paying for it twice is what
+   pushed the lesson through the fold. */
 #bar {
 	max-width: 1360px;
 	margin: 0 auto;
-	padding: 8px;
-	display: flex;
-	gap: 18px;
-	align-items: center;
-	flex-wrap: wrap;
-}
-/* the play button rides at the right end of the picker's row, opposite the
-   picker */
-#transport {
-	display: flex;
-	align-items: center;
-	margin-left: auto;
+	/* The top padding is the gap under the masthead, and it's the one place in
+	   this header worth spending height on. The column names are 10px mono caps
+	   and the lede above them is prose: set them close and PEDAL / OPERATION /
+	   WHAT CHANGES / FAMILY reads as a subtitle of the sentence. They label the
+	   row, so they have to be nearer to it than to the title — which is bought
+	   back below, where the gap under them is nearly closed. */
+	padding: 22px 8px 8px;
 }
 .hint {
 	font-size: 12px;
@@ -314,11 +340,15 @@ b {
    front of it rather than as a heading with a paragraph filed under it — and so
    the whole introduction costs the page one row instead of two.
 
-   One row is the budget, not a preference. The lesson under the charts clears
-   the fold at 1440x900 by about 30px, and that sliver is the only thing telling
-   a first-time reader there's anything below the rig at all — a header that
-   stacks, or a lede that wraps to two lines on a desktop, spends the whole
-   margin and the page below the charts stops existing.
+   One row is the budget, not a preference. Everything above the rig is spending
+   the lesson's fold: at 1440x900 the masthead is 40px and the pedal row under it
+   is 84, so the lesson starts at y=776 and about 125px of it — its headings and
+   the first lines of both columns — is what tells a first-time reader there's
+   anything below the rig at all. A header that stacks, or a lede that wraps to
+   two lines on a desktop, eats straight into that. (It has happened: this comment
+   claimed a 30px clearance while the real number was −2, because the family band
+   landed between the two and nobody re-measured. If you change anything above
+   #rig, re-measure and put the number back.)
 
    Hence no max-width, where every other block of prose on this site has one. A
    measure is for reading DOWN a column, and there's no column here — the whole
@@ -364,36 +394,37 @@ b {
 	line-height: 1.5;
 	color: var(--ink-lo);
 }
-/* two stacked rows: the picker's row, then the family's explanation on its own
-   full-width line underneath. The explanation gets the whole page to lay out on,
-   so it stays a single line instead of wrapping in a narrow column — which also
-   keeps the header short enough that the lesson below the charts breaks the
-   fold. */
-#bar {
-	flex-direction: column;
-	align-items: stretch;
-	gap: 10px;
-	/* No top padding: this row used to be the top of the page and had to hold its
-	   own air off the edge. #masthead is that now, and its own bottom gap is the
-	   separation — paying for it twice is what pushes the lesson through the
-	   fold. */
-	padding-top: 10px;
-}
-.pickhead {
+/* The centre panel's header bar: what the chart is, on the left, and the
+   transport on the right. Every other .panel h3 stacks its lines, so this is
+   scoped rather than set on h3 — it's the one header with a control in it. */
+#centerhead {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	justify-content: space-between;
+	gap: 8px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	/* Holds the docked button's height whether or not the button is in flow. While
+	   #play is .inviting it's lifted out over the chart and this bar would collapse
+	   to its text — then snap 20px taller on the first press, resizing the canvas
+	   under a chart that's mid-render. The bar is the same height in both states,
+	   so the press changes nothing but the button. */
+	min-height: 28px;
 }
-.barlabel {
-	font-family: var(--mono);
-	font-size: 10px;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--ink-lo);
+/* .tech carries 3px of top margin to sit under a .nar sentence. There's no
+   sentence here and nothing to sit under — in a flex row it just pushes the
+   label off centre. */
+#centerhead .tech {
+	margin-top: 0;
 }
+/* Sized to the header bar it sits in, not to the page: this is instrument chrome
+   now, and a 44px disc in a 10px-caption bar reads as a thing that fell in from
+   another layout. Discovery is #bigplay's job (below); this is the transport you
+   use once you know where it is — which, having just watched the slab retire
+   into this corner, you do. */
 #play {
-	width: 44px;
-	height: 44px;
+	width: 28px;
+	height: 28px;
 	border: 0;
 	border-radius: 50%;
 	padding: 0;
@@ -402,18 +433,51 @@ b {
 	justify-content: center;
 	background: var(--accent);
 	cursor: pointer;
-	transition: background 0.15s;
+	transition:
+		background 0.15s,
+		transform 0.15s;
 }
 #play svg {
-	width: 26px;
-	height: 26px;
+	width: 15px;
+	height: 15px;
 	fill: #fff;
 	display: block;
 }
-/* page-side, so it takes the darker orange: the white ▶ needs to hold against it,
-   and --wet is built to glow on a dark panel, not to be a button on white */
+/* Instrument-side, so it takes the glow orange rather than the ink one. This was
+   --wet-ink back when the button lived up in the white header, and that darker
+   orange goes muddy against #191c15 — which is the seam doing exactly what the
+   note at the top of this file says it does: move a thing across it and its
+   colors come from the other side. */
 #play.playing {
-	background: var(--wet-ink);
+	background: var(--wet);
+}
+/* The same button before anyone has pressed it: lifted out of the header bar and
+   laid over the chart at video-player size. Absolute, so the bar it belongs to
+   keeps its place (and its height — see #centerhead) and the button can sit in
+   the middle of the canvas without being in the middle of the markup.
+
+   The scrim is not decoration: the transfer curve runs directly under this disc,
+   and green-on-dark-green with a trace through it has nothing holding the edge.
+   It can afford to be this loud because it's the shortest-lived thing on the
+   page — one press and it's furniture again. */
+#play.inviting {
+	position: absolute;
+	inset: 0;
+	margin: auto;
+	width: 88px;
+	height: 88px;
+	box-shadow: 0 0 0 10px rgb(25 28 21 / 45%);
+}
+#play.inviting:hover {
+	background: var(--accent-lo);
+	transform: scale(1.06);
+}
+#play.inviting svg {
+	width: 44px;
+	height: 44px;
+	/* the triangle's own mass sits left of its bounding box's centre; nudged so it
+	   looks centred in the disc rather than measuring as it */
+	margin-left: 4px;
 }
 /* ---- the pedal picker -----------------------------------------------------
    The one picker living on the page instead of on the rig — the source switcher
@@ -441,15 +505,11 @@ b {
 	background: var(--sunk);
 	border-color: var(--accent);
 }
-/* The pedal is what you picked; the family is what it IS. Same line, two weights:
-   the answer reads first, the taxonomy sits under it as a quiet gloss — which is
-   the same order the picker's list teaches them in. */
+/* The pedal you picked, and the whole of what the button says. The family used to
+   ride beside it as a gloss; it's a link under the row now (see #famlink), which
+   says the same word and goes somewhere with it. */
 .pickped {
 	font-weight: 700;
-}
-.pickfam {
-	color: var(--ink-lo);
-	font-size: 12px;
 }
 .pickcar {
 	margin-left: auto;
@@ -539,9 +599,11 @@ b {
 	opacity: 0.5;
 	cursor: default;
 }
+/* Recessed into the deck, for the same reason .seg is: at #2c3125 this button was
+   within a hair of the chassis it sits on and disappeared into it. */
 #replay {
 	font: 14px var(--mono);
-	background: #2c3125;
+	background: var(--inst);
 	color: #d8dbd2;
 	border: 0;
 	border-radius: 4px;
@@ -553,24 +615,40 @@ b {
 	opacity: 0.4;
 	cursor: default;
 }
-/* The family's band and the picked pedal's row, on their own rows under the
-   picker. Everything that sets them is the catalog page's — .cathead, .famhead,
-   .catrow and the cells inside them, all shared — so this rule owns only what's
-   different about standing on the bench instead of on that page.
+/* The picked pedal's row, under the catalog page's column names. Everything that
+   sets it is that page's — .cathead, .catrow and the cells inside them, all
+   shared — so these rules own only what's different about standing on the bench.
 
-   Which is the width. #bar is 1360px, sized for the rig below it, and the
+   The width, first. #bar is 1360px, sized for the rig below it, and the
    catalog's tracks are fractions: let them have the whole bar and the three
-   columns drift so far apart that the general → instance reading down the
-   operation column — the entire reason this is a grid — needs a head turn to
-   follow. 1000px is that page's own measure, so the columns land at the
-   proportions they were spaced for. Left-aligned rather than centred: the rows
-   hang off the picker above them, which starts at the page edge. */
+   columns drift so far apart that reading across one row needs a head turn.
+   1000px is that page's own measure, so the columns land at the proportions they
+   were spaced for. Left-aligned rather than centred: the row hangs off the
+   masthead above it, which starts at the page edge.
+
+   The bench is wider than the catalog on purpose — 1240, not 1000 — because it
+   has a fourth column that page has no use for: the way out to the family. The
+   0.8fr track below is sized so that the extra 240px lands entirely in it and
+   the first three keep the exact widths they have at 1000px (1fr ≈ 272 either
+   way). So the columns still read at the proportions they were spaced for, and
+   the link rides in slack the bar was wasting rather than on a line of its own —
+   it used to stack under the picker and put 24px on a row that's one line tall. */
 #lede {
-	max-width: 1000px;
+	max-width: 1240px;
 }
-/* The one thing the bench overrides on the shared rows — #lede .cathead — isn't
-   here: it has to sit after the .cathead rules it overrides, so it lives at the
-   foot of the catalog section. */
+/* The picker fills its cell rather than its content, which is why it looks roomy
+   around a word like "fuzz". Sizing it to the name would be worse than roomy:
+   the labels run from "fuzz" to "tube screamer", so the button would resize on
+   every pick — and this is a control you use repeatedly, one pick after another,
+   comparing. It has to be in the same place each time you come back to it. */
+#lede .pickbtn {
+	width: 100%;
+	min-width: 0;
+	overflow: hidden;
+}
+/* Everything else the bench overrides on the shared rows isn't here: those rules
+   have to sit after the .cathead/.catrow/.catlink rules they override, so they
+   live together at the foot of the catalog section. */
 /* no rule of its own: the tray's bottom edge is the line this sits under */
 #lesson {
 	max-width: 1360px;
@@ -855,6 +933,34 @@ a.catrow:hover .catlabel {
    from anywhere); a person reading .cathead top-to-bottom does. */
 #lede .cathead {
 	margin-top: 0;
+	/* and the 7px below them goes too — over there the names head a table and can
+	   stand off it; here they head one row and are the only thing that says what
+	   its cells are, so they sit right on it */
+	padding-bottom: 2px;
+}
+/* Both, and identically, or the names stop sitting over the things they name:
+   .cathead is the same grid rule as .catrow, so a fourth track on one is a
+   fourth track on both. headRow("family") is what fills the fourth name. */
+#lede .cathead,
+#lede .catrow {
+	grid-template-columns:
+		minmax(9rem, 1fr) minmax(11rem, 1.15fr) minmax(11rem, 1.3fr)
+		minmax(0, 0.8fr);
+}
+#lede .catrow {
+	/* Baseline is right for a row of text, and this row is one — except for the
+	   picker, a bordered control whose text sits 6px below its own top edge. On a
+	   baseline the row hangs the flat text off the picker's and opens a gap. */
+	align-items: center;
+	/* Closed up under the column names. The catalog's 11px is the air between one
+	   pedal and the next in a long list; there's no list here, and the only thing
+	   above this row is the names of its own cells. They should touch. */
+	padding-top: 2px;
+	/* No rule above it. On the catalog that border is what separates one pedal
+	   from the next in a long list; here there is no next — one row, already sat
+	   under its own column names. A divider between a thing and nothing is just a
+	   line. */
+	border-top: 0;
 }
 /* the way back to the bench, and the way out to the catalog: one small mono
    link, on the page side both times */
@@ -874,4 +980,10 @@ a.catrow:hover .catlabel {
 .cathdr .catlink {
 	display: inline-block;
 	margin-bottom: 14px;
+}
+/* .catlink is underlined with a border, so a stretched grid cell draws that rule
+   across the whole track and out past the words. Hug the text. Down here with
+   the other bench overrides, after the .catlink rules it overrides. */
+#lede .catlink {
+	justify-self: start;
 }

@@ -16,9 +16,19 @@
 // Named once, above the rows, rather than over every family: the three names are
 // the same three names each time, and the bands below are themselves worked
 // examples of the columns.
-export function headRow() {
+//
+// `extra` is the bench's fourth column, which this page doesn't have — the way
+// out to the mounted pedal's family. It's a parameter rather than a fourth name
+// in the list because the two pages genuinely differ here: over there the family
+// is the band every row hangs off, so a column pointing at it would be pointing
+// at itself. Naming that column "family" is what lets the cell under it be a
+// bare "clipping →" — the label carries the noun, so the link doesn't have to
+// say it twice. Which is the whole reason the column exists: MODULATION under a
+// header reading PEDAL is what made a reader ask what modulation was.
+export function headRow(extra) {
   const r = mk("div", "cathead");
-  for (const t of ["pedal", "operation", "what changes"]) {
+  const names = ["pedal", "operation", "what changes"];
+  for (const t of extra ? [...names, extra] : names) {
     const c = mk("span");
     c.textContent = t;
     r.appendChild(c);

@@ -30,12 +30,17 @@ export function mountPicker(host, { families, onPick }) {
   btn.type = "button";
   btn.setAttribute("aria-haspopup", "listbox");
   btn.setAttribute("aria-expanded", "false");
+  // The pedal's name and nothing else. The button used to gloss it with the
+  // family too ("overdrive clipping"), from back when this row was the only
+  // place either fact appeared. The row it now sits in has a FAMILY column
+  // saying "clipping →" a few inches to the right, so the gloss was the same
+  // word twice — and the column is the better half of the pair, because it's
+  // named, and because it goes to what the word means.
   const btnPed = mk("span", "pickped");
-  const btnFam = mk("span", "pickfam");
   const caret = mk("span", "pickcar");
   caret.textContent = "▾";
   caret.setAttribute("aria-hidden", "true");
-  btn.append(btnPed, btnFam, caret);
+  btn.append(btnPed, caret);
 
   const pop = mk("div", "pickpop");
   pop.hidden = true;
@@ -139,7 +144,6 @@ export function mountPicker(host, { families, onPick }) {
 
   function label() {
     btnPed.textContent = current.p.label;
-    btnFam.textContent = current.f.navLabel;
   }
 
   // `refocus` is for closes the user drove from the keyboard — Escape, or landing

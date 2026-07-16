@@ -30,6 +30,10 @@ export function mountCatalog(host, families) {
 // One family = its own row, then its pedals under it.
 function section(f) {
   const sec = mk("section", "fam");
+  // The id is what the bench's "modulation family →" link aims at. The family's
+  // own id, so the link can be built from the view alone (see setPedal) without
+  // this page publishing a separate list of anchor names to keep in sync.
+  sec.id = f.id;
   sec.appendChild(famRow(f));
   const tbl = mk("div", "cat");
   for (const p of f.pedals)

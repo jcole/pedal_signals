@@ -25,38 +25,46 @@
   play, and watch it work — in the middle panel, and in the note on the right.</p>
 </header>
 
-<!-- One picker for the whole catalog, and the family's explanation on one line.
-     Both switchers used to live here in some form — a family nav on this row, a
-     pedal segment down in the PEDAL column's label. That split asked people to
-     know the family before they could find the pedal, which is backwards: the
-     pedal is the thing they came for, the family is what we're teaching them.
-     Now the family is a heading inside the picker's list, so it's learned on the
-     way past rather than demanded up front. -->
+<!-- The picked pedal's row, in the catalog page's three columns and under the
+     same column names — but the PEDAL cell is the picker itself rather than a
+     printed name. The bench used to say "warble" twice: once in a picker on its
+     own row, and again in the row below describing what you'd picked. They were
+     one fact and one question, so they're one thing now — the row you're reading
+     is the row you change. The catalog page spends that same cell on a link INTO
+     here; this page spends it on the control that makes the choice. Same column,
+     same question, the instrument each page can answer it with.
+
+     What went with it: the family's band, which sat above this row so the
+     operation column could be read general → instance (y[n] = x[n]·m(t), then
+     this pedal's own). That reading is worth 59px on the catalog page, where
+     every family has one and the whole point is the comparison. Here it was a
+     preview of prose the lesson already writes out ("Like clipping, this pedal
+     has no memory…") — and it cost the lesson the fold to say it early. So the
+     family is a link now, one line, pointing at the page where its band still
+     stands. Which also, finally, says the word: MODULATION under a column headed
+     PEDAL never once told you it was a family. -->
 <div id="bar">
-  <div class="pickhead">
-    <span class="barlabel">pedal</span>
-    <div id="pedalpick"></div>
-    <!-- The picker's list is nine names and no more: enough to find a pedal you
-         can already name, not enough to choose one. This is the way out to the
-         page that lays them all out — so it sits with the picker, as the other
-         half of the same question. -->
-    <a class="catlink" href="./pedals.html">see all pedals →</a>
-    <div id="transport">
-      <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
+  <div id="lede">
+    <div id="ledehead"></div>
+    <div class="catrow">
+      <!-- The PEDAL cell: the picker, and nothing else. This row is now one line
+           of text tall, which is the whole reason the play button isn't in it —
+           a 44px control sets the height of everything beside it, and the lesson
+           below the rig was paying for that. -->
+      <div id="pedalpick"></div>
+      <code class="catop" id="benchop"></code>
+      <span class="catwhat" id="benchwhat"></span>
+      <!-- A fourth column the catalog page doesn't have, riding in slack the bar
+           was wasting rather than on a line of its own under the picker.
+
+           It's the way out to the page that lays every pedal out — the picker's
+           list is nine names, enough to find a pedal you can already name, not
+           enough to choose one — and it does that job by naming the family,
+           which is the fact the bench never used to state. Under a column headed
+           FAMILY the cell needs only the name: "clipping →". Filled by
+           setPedal(); the href needs the family, which only the harness knows. -->
+      <a class="catlink" id="famlink" href="./pedals.html">see all pedals →</a>
     </div>
-  </div>
-  <!-- The family's band and the picked pedal's row, in the catalog page's three
-       columns and rendered by the same code. This used to be three labelled
-       phrases run together on one line — The math: … Class: … What it does: …
-       — all of them the FAMILY's, which left the bench the one place on the site
-       that never showed you the operation of the pedal you'd actually picked.
-       Read down the operation column now and you get y[n] = f(x[n]) over
-       tanh(drive·x + bias): the general form, then this pedal as an instance of
-       it, which is the thing the site is here to teach. The head row is filled
-       by the harness on mount; only #ledeped is rewritten as you pick. -->
-  <div id="lede" style="display:none">
-    <div id="ledefam"></div>
-    <div id="ledeped"></div>
   </div>
 </div>
 
@@ -85,8 +93,38 @@
     <h3><span class="tech" id="inh3"></span></h3>
     <canvas data-c="input"></canvas>
   </div>
+  <!-- The invitation, sitting on the one panel the lede points at ("watch it
+       work — in the middle panel"). A 44px circle in the header was findable
+       only if you already knew to look for it; this is the video-player idiom,
+       and nobody has ever failed to find the play button on a video. It's the
+       same click as the transport up in the header — it just admits that before
+       the first press, the thing you're about to watch is a better place to ask
+       than a corner of the page. Gone for good after that press: once you've
+       started it, you've seen where the transport lives, and a slab over the
+       transfer curve is then covering the lesson it was advertising. -->
   <div class="panel">
-    <h3><span class="tech" id="centertech"></span></h3>
+    <!-- One play button, in two sizes. It belongs in this header — small, beside
+         the label, the way a transport is furniture once you know where it is —
+         but nothing tells a cold reader where that is, and a 28px disc in a
+         caption bar is exactly what they were failing to find when it was up in
+         the page header. So on a page nobody has pressed yet it wears .inviting:
+         the same button, lifted out over the chart at 88px, which is the
+         video-player idiom and the one control nobody has ever failed to locate.
+         The first press drops the class and it settles into the header it was
+         always in. Not two buttons — the earlier draft had a slab AND a
+         transport, which is two things to explain and, on a cold load, two play
+         buttons on screen at once.
+
+         Here rather than in the INPUT column with ↻ pluck and the source
+         switcher, where the taxonomy says it goes (those three are all "what's
+         going in, and is it running"): it sat there, and the slab retiring to
+         another surface two columns away meant the button hadn't been found, it
+         had been lost. The lede points at this panel — "watch it work, in the
+         middle panel" — so this is where the eye already is. -->
+    <h3 id="centerhead">
+      <span class="tech" id="centertech"></span>
+      <button id="play" class="inviting" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
+    </h3>
     <canvas data-c="center"></canvas>
   </div>
   <div class="stack">
@@ -101,6 +139,11 @@
 
 <div id="controls">
   <div class="ctlcol">
+    <!-- Everything about the signal going in: which source it is, and ↻ pluck to
+         restart the note. Play/stop is arguably the third of those — it's the
+         same question, "is it running?" — and it sat here for a while. It's on
+         the centre panel's header instead, and the reason is discovery, not
+         taxonomy: see the note there. -->
     <div class="ctl">
       <span class="seg">
         <button class="srcbtn active" data-src="sine">sine</button>

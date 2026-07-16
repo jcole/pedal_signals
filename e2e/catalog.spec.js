@@ -12,7 +12,9 @@ import { expect, test } from "@playwright/test";
 
 const rows = (page) => page.locator(".catrow");
 const pedalName = (page) => page.locator(".pickbtn .pickped");
-const familyName = (page) => page.locator(".pickbtn .pickfam");
+// see routing.spec.js — the family moved out of the picker button and into the
+// row's FAMILY column
+const familyName = (page) => page.locator("#famlink");
 
 // Every pedal the picker lists, in the picker's own order.
 async function catalogViaPicker(page) {
@@ -103,7 +105,7 @@ test("a row opens the demo standing on that pedal", async ({ page }) => {
   await rows(page).filter({ hasText: "ambient" }).first().click();
   await expect(page).toHaveURL(/\?pedal=ambient$/);
   await expect(pedalName(page)).toHaveText("ambient");
-  await expect(familyName(page)).toHaveText("delay");
+  await expect(familyName(page)).toHaveText("delay →");
 });
 
 test("every row's link opens a pedal the demo recognizes", async ({ page }) => {
@@ -120,9 +122,19 @@ test("every row's link opens a pedal the demo recognizes", async ({ page }) => {
   }
 });
 
-test("the bench links out to the catalog", async ({ page }) => {
-  await page.goto("/");
-  await page.locator(".pickhead .catlink").click();
-  await expect(page).toHaveURL(/\/pedals\.html$/);
-  await expect(rows(page).first()).toBeVisible();
+// The bench's one way out, and — under a column headed FAMILY — the one place
+// the site says what a family is. It aims at the mounted family's own band, not
+// at the top of the page: the link is answering "what IS modulation", so it has
+// to land on the row that says.
+test("the bench links out to its family's band in the catalog", async ({
+  page,
+}) => {
+  await page.goto("/?pedal=warble");
+  await expect(page.locator("#lede .cathead")).toContainText("family");
+  await expect(page.locator("#famlink")).toHaveText("modulation →");
+  await page.locator("#famlink").click();
+  await expect(page).toHaveURL(/\/pedals\.html#modulation$/);
+  // the anchor has to exist, or the hash is a link to the top of the page
+  // wearing a family's name
+  await expect(page.locator("section.fam#modulation .famhead")).toBeVisible();
 });
