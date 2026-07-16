@@ -32,6 +32,7 @@ export class ClippingPedal extends Pedal {
 export const CLIPPING = [
   new ClippingPedal({
     id: "overdrive",
+    search: ["od", "tube screamer", "boost", "crunch"],
     outnar: "the peaks get clipped",
     tech: "tanh(drive·x + bias)",
     whatChanges: "soft knee; harmonics roll off gently",
@@ -40,6 +41,7 @@ export const CLIPPING = [
   }),
   new ClippingPedal({
     id: "distortion",
+    search: ["dist", "gain", "metal"],
     outnar: "the peaks get squared off",
     tech: "clip(drive·x + bias)",
     whatChanges: "hard corners; strong high harmonics",
@@ -51,6 +53,7 @@ export const CLIPPING = [
   // default drive slams it near-square. bias still slides it for even more.
   new ClippingPedal({
     id: "fuzz",
+    search: ["fuzz face", "big muff", "octavia"],
     outnar: "the wave collapses to a square",
     tech: "clip(drive·x + bias) · asym",
     whatChanges: "near-square wave; lopsided rails add even harmonics",

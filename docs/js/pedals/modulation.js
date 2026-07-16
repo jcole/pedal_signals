@@ -80,6 +80,7 @@ export const triangleShape = (phase) =>
 export const MODULATIONS = [
   new ModulationPedal({
     id: "tremolo",
+    search: ["trem", "amplitude modulation", "am"],
     outnar: "the volume rises and falls in a steady pulse",
     tech: "x[n]·(1 − d/2 + d/2·sin(2π·rate·t))",
     whatChanges: "amplitude; sidebands at f ± rate",
@@ -90,6 +91,7 @@ export const MODULATIONS = [
   }),
   new ModulationPedal({
     id: "chop",
+    search: ["gate", "stutter", "square trem", "hard trem"],
     outnar: "the signal gates on and off",
     tech: "x[n]·(1 − d/2 + d/2·square(2π·rate·t))",
     whatChanges: "amplitude gated on/off; square LFO spreads many sidebands",
@@ -100,6 +102,7 @@ export const MODULATIONS = [
   }),
   new ModulationPedal({
     id: "warble",
+    search: ["vibrato", "wobble", "wow"],
     outnar: "a slow, shallow wobble",
     tech: "x[n]·(1 − d/2 + d/2·tri(2π·rate·t))",
     whatChanges: "amplitude, slow and shallow; sidebands stay close in",

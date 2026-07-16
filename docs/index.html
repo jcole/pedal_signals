@@ -4,13 +4,17 @@
 <title>pedal demo</title>
 <link rel="stylesheet" href="./css/styles.css">
 
-<!-- The family switcher and the family's explanation on one line. The pedal
-     switcher isn't here: it lives in the PEDAL column's label, on the charts it
-     drives, and that column's headline says what the chosen pedal does. -->
+<!-- One picker for the whole catalog, and the family's explanation on one line.
+     Both switchers used to live here in some form — a family nav on this row, a
+     pedal segment down in the PEDAL column's label. That split asked people to
+     know the family before they could find the pedal, which is backwards: the
+     pedal is the thing they came for, the family is what we're teaching them.
+     Now the family is a heading inside the picker's list, so it's learned on the
+     way past rather than demanded up front. -->
 <div id="bar">
   <div class="pickhead">
-    <span class="barlabel">pedal family</span>
-    <nav id="effnav" class="seg"></nav>
+    <span class="barlabel">pedal</span>
+    <div id="pedalpick"></div>
     <div id="transport">
       <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
     </div>
@@ -32,7 +36,7 @@
        columns line up. Pinned to a chart they'd have to guess a height, and the
        output column stacks two of them — there's no one right answer there. -->
   <div class="grp">Input</div>
-  <div class="grp grp-pedal flowarr">Pedal<span id="pedpicker" class="seg"></span></div>
+  <div class="grp flowarr">Pedal</div>
   <div class="grp flowarr">Output</div>
   <div class="panel" id="inpanel">
     <h3><span class="nar">your signal</span><span class="tech" id="inh3"></span></h3>
@@ -92,68 +96,58 @@
 
 <script type="module">
   import { mount, selectPedal } from "./js/ui/harness.js";
+  import { mountPicker } from "./js/ui/picker.js";
   import clipping from "./js/ui/clipping.js";
   import delay from "./js/ui/delay.js";
   import modulation from "./js/ui/modulation.js";
 
   // Every pedal family's view, keyed by its `id` — also its ?effect= value and
-  // its nav link's label. Add a new family here and it shows up in the nav and
-  // becomes linkable, no other page changes needed.
+  // the heading it gets in the picker. Add a new family here and it shows up in
+  // the picker and becomes linkable, no other page changes needed.
   const EFFECTS = [clipping, delay, modulation];
 
-  // The URL is the address of what you're looking at, so it carries both
-  // switchers: ?effect= names the family, ?pedal= the pedal within it. Either may
-  // be absent (a bare / opens the first family's first pedal) or wrong — an id
-  // nobody recognizes falls back rather than failing.
-  const viewFor = (id) => EFFECTS.find((v) => v.id === id) ?? EFFECTS[0];
+  // The URL still says both, because both are true and a link that reads
+  // ?effect=delay&pedal=echo says where you are without being decoded. But only
+  // one of them is load-bearing: pedal ids are unique across the whole catalog
+  // (that's what PEDALS in pedals/index.js keys on), so a pedal names its own
+  // family and ?pedal=echo alone is enough. ?effect= alone still means "open this
+  // family", which is what a link to a lesson wants. Either may be absent or
+  // wrong — an id nobody recognizes falls back rather than failing.
   const asked = () => new URLSearchParams(location.search);
   const urlFor = (effect, pedal) =>
     `?effect=${effect}` + (pedal ? `&pedal=${pedal}` : "");
+  const viewFor = (effect, pedal) =>
+    EFFECTS.find((v) => v.pedals.some((p) => p.id === pedal)) ??
+    EFFECTS.find((v) => v.id === effect) ??
+    EFFECTS[0];
 
-  // The nav entries stay real links — right-click, ⌘-click and copy-link all keep
-  // working, and ?effect= URLs still load cold, since the query is only ever read
-  // by this script (a static host serves index.html either way). A plain left
-  // click is handled here instead: pushState swaps the URL, mount() swaps the
-  // family, and neither costs a reload.
-  const nav = document.getElementById("effnav");
-  const links = EFFECTS.map((v) => {
-    const a = document.createElement("a");
-    a.href = urlFor(v.id); // the family, at whichever pedal it opens on
-    a.textContent = v.navLabel;
-    a.className = "navbtn";
-    a.onclick = (e) => {
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      e.preventDefault();
-      if (v.id === current) return;
-      history.pushState(null, "", a.href);
-      show(v);
-    };
-    nav.appendChild(a);
-    return a;
-  });
-
-  // Both switchers push: they look alike and they mean alike, so back undoes
-  // either one. Landing on a family that's already up (back across a pedal pick)
-  // moves the picker only — remounting would rebuild the family's audio chain
-  // under a note that's still playing, to arrive at the same place.
+  // A pick pushes, so back undoes it. Landing on a family that's already up (back
+  // across a pedal pick, or a pick within the family) moves the labels and knobs
+  // only — remounting would rebuild the family's audio chain under a note that's
+  // still playing, to arrive at the same place.
   let current = null;
-  function show(v, pedal) {
-    links.forEach((a, i) => {
-      a.classList.toggle("active", EFFECTS[i].id === v.id);
-    });
+  function show(v, pedalId) {
+    const p = v.pedals.find((x) => x.id === pedalId) ?? v.pedals[0];
+    picker.select(v.id, p.id);
     if (v.id === current) {
-      selectPedal(pedal);
+      selectPedal(p.id);
       return;
     }
     current = v.id;
-    mount(v, {
-      pedal,
-      onPedal: (id) => history.pushState(null, "", urlFor(v.id, id)),
-    });
+    mount(v, { pedal: p.id });
   }
 
-  addEventListener("popstate", () => {
-    show(viewFor(asked().get("effect")), asked().get("pedal")); // back/forward
+  const picker = mountPicker(document.getElementById("pedalpick"), {
+    families: EFFECTS,
+    onPick: (effect, pedal) => {
+      history.pushState(null, "", urlFor(effect, pedal));
+      show(viewFor(effect, pedal), pedal);
+    },
   });
-  show(viewFor(asked().get("effect")), asked().get("pedal"));
+
+  addEventListener("popstate", () => {
+    const q = asked(); // back/forward
+    show(viewFor(q.get("effect"), q.get("pedal")), q.get("pedal"));
+  });
+  show(viewFor(asked().get("effect"), asked().get("pedal")), asked().get("pedal"));
 </script>

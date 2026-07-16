@@ -93,6 +93,7 @@ const DELAY_TECH = "y[n] = x[n] + fb·y[n−D]";
 export const DELAYS = [
   new DelayPedal({
     id: "echo",
+    search: ["delay", "repeat", "tape echo"],
     tech: DELAY_TECH,
     outnar: "a fading train of repeats",
     whatChanges: "envelope, seconds-wide; no new frequencies",
@@ -101,6 +102,7 @@ export const DELAYS = [
   }),
   new DelayPedal({
     id: "slapback",
+    search: ["delay", "doubling", "rockabilly"],
     tech: DELAY_TECH,
     outnar: "one quick slap",
     whatChanges: "one short repeat; reads as thickening, not echo",
@@ -109,6 +111,7 @@ export const DELAYS = [
   }),
   new DelayPedal({
     id: "ambient",
+    search: ["reverb", "hall", "verb", "wash", "shimmer"],
     tech: DELAY_TECH,
     outnar: "a long, smeared tail",
     whatChanges: "long tail near self-oscillation; repeats blur together",

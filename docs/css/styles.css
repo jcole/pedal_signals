@@ -6,7 +6,7 @@
 /* Two surfaces, on purpose — the same split as the two faces above. The rig is a
    device: its panels, its charts and the knobs under them stay dark, because a
    scope screen is dark and the traces have to glow. The page around it is a page
-   about the device, and it's lit: prose, headings, the family switcher and the
+   about the device, and it's lit: prose, headings, the pedal picker and the
    hints are ink on white. The seam between them is the panel edge. When you add
    a surface, decide which side of that seam it's on and take the vars from there;
    don't stretch one across both. */
@@ -129,23 +129,19 @@ b {
 	color: var(--inst-ink);
 }
 /* ---- switchers ------------------------------------------------------------
-   Every picker on the page is one of these: the family switcher in the header,
-   the pedal switcher in the PEDAL label, the sine/guitar switcher in the input
-   controls. The base look lives here and the three placements override it below.
-
-   Base first, overrides after — the order matters and it isn't only tidiness.
-   A weaker rule sitting below a stronger one still loses, so reading the file
-   top-to-bottom stops predicting what wins, which is how the #bar .navbtn rule
-   below quietly beat .navbtn.active and dropped the active pill's green. */
+   Two things pick on this page now, and they're different in kind. The segment
+   (below) is a toggle: two or three options, all of them visible, no state to
+   discover — the sine/guitar switcher is the last of them. The pedal picker
+   (further down) is a lookup: a catalog too long to lay out flat, so it hides
+   until asked. When you add a control, that's the question — can the reader see
+   every option at once? Segment. Otherwise it belongs in the picker. */
 .seg {
 	display: inline-flex;
 	border: 1px solid #2c3125;
 	border-radius: 4px;
 	overflow: hidden;
 }
-.srcbtn,
-.pedbtn,
-.navbtn {
+.srcbtn {
 	font: 14px var(--mono);
 	background: #12140f;
 	color: #8a927e;
@@ -155,33 +151,9 @@ b {
 	text-decoration: none;
 	display: inline-block;
 }
-.srcbtn.active,
-.pedbtn.active,
-.navbtn.active {
+.srcbtn.active {
 	background: var(--accent);
 	color: #fff;
-}
-/* The PEDAL column's label carries the pedal switcher: it sits on the charts it
-   drives. The buttons keep the label bar's height, so all three group labels
-   stay the same height. */
-.grp-pedal {
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	padding-top: 0;
-	padding-bottom: 0;
-	min-height: 36px;
-}
-.grp-pedal .seg {
-	border-color: #454f39;
-}
-.grp-pedal .pedbtn {
-	background: #232a1c;
-	letter-spacing: 0.08em;
-	padding: 3px 10px;
-}
-.grp-pedal .pedbtn.active {
-	background: #5c7f3e;
 }
 .panel {
 	background: var(--inst);
@@ -303,8 +275,8 @@ b {
 	align-items: center;
 	flex-wrap: wrap;
 }
-/* the play button rides at the top right of the header row, opposite the family
-   switcher */
+/* the play button rides at the right end of the picker's row, opposite the
+   picker */
 #transport {
 	display: flex;
 	align-items: center;
@@ -333,12 +305,11 @@ b {
 .ctlhint a:hover {
 	text-decoration: underline;
 }
-/* one row per switcher: [label + switcher] [its explanation]. The grid's shared
-   first column keeps both explanations on one left edge, and keeps the header
-   short enough that the lesson below the charts breaks the fold. */
-/* the family switcher, with the family's explanation on its own full-width line
-   underneath — the explanation gets the whole page to lay out on, so it stays a
-   single line instead of wrapping in a narrow column */
+/* two stacked rows: the picker's row, then the family's explanation on its own
+   full-width line underneath. The explanation gets the whole page to lay out on,
+   so it stays a single line instead of wrapping in a narrow column — which also
+   keeps the header short enough that the lesson below the charts breaks the
+   fold. */
 #bar {
 	flex-direction: column;
 	align-items: stretch;
@@ -381,21 +352,124 @@ b {
 #play.playing {
 	background: var(--wet-ink);
 }
-/* The family switcher is the only picker living on the page instead of on the
-   rig — the source and pedal pickers sit inside a control column and a panel
-   label, which are both dark. So it alone takes page colors; left dark it read
-   as a black slab floating above a white header. Its active pill stays the
-   shared green, which is what ties it back to the two pickers below. */
-#bar .seg {
-	border-color: var(--rule);
+/* ---- the pedal picker -----------------------------------------------------
+   The one picker living on the page instead of on the rig — the source switcher
+   sits in a control column, which is dark. So this alone takes page colors; left
+   dark it read as a black slab floating above a white header. Green still marks
+   what's chosen, which is what ties it back to the switcher below. */
+.pick {
+	position: relative;
 }
-#bar .navbtn:not(.active) {
+.pickbtn {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 8px;
+	font: 14px var(--mono);
 	background: var(--page);
-	color: var(--ink-lo);
+	color: var(--ink-hi);
+	border: 1px solid var(--rule);
+	border-radius: 4px;
+	padding: 5px 10px;
+	cursor: pointer;
+	min-width: 210px;
 }
-#bar .navbtn:hover:not(.active) {
+.pickbtn:hover,
+.openpick .pickbtn {
+	background: var(--sunk);
+	border-color: var(--accent);
+}
+/* The pedal is what you picked; the family is what it IS. Same line, two weights:
+   the answer reads first, the taxonomy sits under it as a quiet gloss — which is
+   the same order the picker's list teaches them in. */
+.pickped {
+	font-weight: 700;
+}
+.pickfam {
+	color: var(--ink-lo);
+	font-size: 12px;
+}
+.pickcar {
+	margin-left: auto;
+	color: var(--ink-lo);
+	font-size: 10px;
+}
+.pickpop {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 20;
+	width: 260px;
+	background: var(--page);
+	border: 1px solid var(--rule);
+	border-radius: 4px;
+	box-shadow: 0 6px 24px rgb(25 28 21 / 14%);
+	padding: 6px;
+}
+.picksearch {
+	width: 100%;
+	box-sizing: border-box;
+	font: 14px var(--mono);
+	color: var(--ink-hi);
+	background: var(--sunk);
+	border: 1px solid var(--rule);
+	border-radius: 3px;
+	padding: 5px 8px;
+}
+.picksearch:focus {
+	outline: 2px solid var(--accent);
+	outline-offset: -1px;
+}
+/* Capped at roughly eight rows: enough that the list reads as a list and you can
+   see a family boundary without scrolling, short enough that it can't run off a
+   laptop screen once the catalog gets past three families. */
+.picklist {
+	list-style: none;
+	margin: 6px 0 0;
+	padding: 0;
+	max-height: 264px;
+	overflow-y: auto;
+}
+/* The family headings are the reason this is a grouped list and not a flat one:
+   find "reverb", learn it's a delay. Styled like the rig's own .grp labels —
+   same mono caps — because they name the same thing those labels do.
+
+   Each family is a .pickgroup wrapping its own options, so the heading's spacing
+   hangs off the group and not off its position in one flat list — which is why
+   the rule below reaches for the group's first-child and not the heading's. */
+.pickgrp {
+	font-family: var(--mono);
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--ink-lo);
+	padding: 10px 8px 4px;
+}
+.pickgroup:first-child .pickgrp {
+	padding-top: 4px;
+}
+.pickopt {
+	font: 14px var(--mono);
+	color: var(--ink);
+	padding: 5px 8px 5px 16px;
+	border-radius: 3px;
+	cursor: pointer;
+}
+/* Cursor (hover/arrow keys) and chosen are different states and have to look it:
+   one is where you're pointing, the other is where you are. */
+.pickopt.cursor {
 	background: var(--sunk);
 	color: var(--ink-hi);
+}
+.pickopt.on {
+	background: var(--accent);
+	color: #fff;
+	font-weight: 700;
+}
+.pickempty {
+	font-size: 13px;
+	color: var(--ink-lo);
+	margin: 10px 8px;
 }
 .srcbtn:disabled {
 	opacity: 0.5;
@@ -415,7 +489,8 @@ b {
 	opacity: 0.4;
 	cursor: default;
 }
-/* the family's explanation, inline beside the family switcher */
+/* the family's explanation, on its own row under the picker: its three lines run
+   inline with each other and wrap as a group when the page gets narrow */
 #lede {
 	display: flex;
 	flex-wrap: wrap;

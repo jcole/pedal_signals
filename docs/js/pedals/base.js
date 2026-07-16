@@ -27,8 +27,21 @@ export class Pedal {
   // next to tech for whichever pedal is live. The family's signal class (NL, LTI,
   // LTV) is deliberately NOT here: it's constant across a family, so it belongs
   // to the view's lesson, not to each pedal.
-  constructor({ id, label = id, tech = "", outnar = "", whatChanges = "" }) {
-    Object.assign(this, { id, label, tech, outnar, whatChanges });
+  //
+  // `search` is the names this pedal answers to that aren't its label. The labels
+  // are deliberately generic — a real pedal's name is usually a brand's — so the
+  // word a player actually types is often not the one on the button: "reverb"
+  // means ambient here, "vibrato" means warble. Without these the picker's search
+  // misses exactly the queries it exists to serve.
+  constructor({
+    id,
+    label = id,
+    tech = "",
+    outnar = "",
+    whatChanges = "",
+    search = [],
+  }) {
+    Object.assign(this, { id, label, tech, outnar, whatChanges, search });
   }
 
   // The default input: an exact integer number of sine periods (so the spectrum

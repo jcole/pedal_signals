@@ -10,11 +10,14 @@
 // list of pedals, and hands it to mount(). The contract:
 //
 //   const view = {
-//     id, navLabel,           // URL ?effect= value + the nav link's label
+//     id, navLabel,           // URL ?effect= value + the family's name, which the
+//                             // picker uses twice: the heading over this family's
+//                             // pedals, and the gloss under the chosen one
 //     pageTitle,               // <title> for this family's demo
 //     dual,                    // the "⇅ ..." caption between the output panels
 //     vinDefault, voutDefault, // starting volumes for the input/output sliders
-//     pedals: [ Pedal, … ],   // the buttons; the selected one drives input+process
+//     pedals: [ Pedal, … ],   // what the picker lists for this family; the
+//                             // selected one drives input+process
 //     centerTitle,            // center-panel headline ("the pedal bends every sample")
 //     spectrumTitle,          // output spectrum-panel headline
 //     controls:[ {id, label, min, max, step, def, fmt?(v)->string}, … ],
@@ -24,13 +27,15 @@
 //     buildSource?(actx) -> AudioNode,   // live synthetic source; default: a steady oscillator
 //   };
 //
-// mount(view, {pedal, onPedal}) can be called again with another view to swap
-// families in place. The harness disconnects the old wet chain and calls its
-// dispose() — a view whose buildAudio start()s anything (an LFO, a
-// ConstantSource) must stop it there, or it keeps running, unheard, for the life
-// of the page. `pedal` is the id to open on (an unknown one falls back to the
-// family's first); `onPedal(id)` fires on a user pick, not on that seeding, and
-// is how the page keeps the URL in step with the picker.
+// mount(view, {pedal}) can be called again with another view to swap families in
+// place. The harness disconnects the old wet chain and calls its dispose() — a
+// view whose buildAudio start()s anything (an LFO, a ConstantSource) must stop it
+// there, or it keeps running, unheard, for the life of the page. `pedal` is the
+// id to open on (an unknown one falls back to the family's first).
+//
+// Nothing here chooses a pedal: the picker (ui/picker.js) owns that, and the
+// page turns its choice into a mount() or a selectPedal(). So the harness only
+// ever gets told, and never has to tell anyone back.
 //
 // Each Pedal instance carries what makes it that pedal, and what the harness reads
 // off the *selected* one: sampleCount / spanSamples (analysis sizing), analytic
@@ -60,7 +65,6 @@ const DRY = css("--dry", "#9aa0a6"),
 // ---- module-level state ----------------------------------------------------
 let view = null; // the mounted page: pedals + UI hooks
 let pedal = null; // the currently selected Pedal instance
-let onPedal = null; // mount() opt: told the pedal id whenever the user picks one
 const level = 1.0;
 const params = {}; // live control values, keyed by control id
 let srcMode = "sine", // "sine" | "guitar"
@@ -228,21 +232,7 @@ const ctlEls = {}; // id -> {input, output, ctl}
 function buildControls() {
   const host = document.getElementById("centerctls");
   host.innerHTML = "";
-  // pedal-select segment (one button per pedal; skipped if there's only one),
-  // rendered into the top pedal-picker bar rather than the Pedal panel itself.
-  pedal = view.pedals[0];
-  const pedpicker = document.getElementById("pedpicker");
-  pedpicker.innerHTML = "";
-  pedpicker.style.display = view.pedals.length > 1 ? "" : "none";
-  if (view.pedals.length > 1) {
-    for (const p of view.pedals) {
-      const b = el("button", `pedbtn${p === pedal ? " active" : ""}`);
-      b.textContent = p.label;
-      b.dataset.pedal = p.id;
-      b.onclick = () => setPedal(p.id);
-      pedpicker.appendChild(b);
-    }
-  }
+  pedal = view.pedals[0]; // until setPedal() seeds the asked-for one
   // sliders
   for (const c of view.controls) {
     const ctl = el("div", "ctl");
@@ -287,16 +277,10 @@ function setParam(id, v) {
 // Select a pedal: swap its labels (formula, output narrative) and snap any knobs
 // it declares defaults for. A pedal with no defaults (the clipping family) leaves
 // the knobs where the user left them — switching there changes only the knee.
-// `notify` is false when the page seeds the pedal (on mount, or on a back/forward
-// that already carries the id), so that only a real choice by the user reaches
-// onPedal and writes the URL.
-function setPedal(id, notify = true) {
-  const next = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
-  if (notify && next === pedal) return; // re-picking the open pedal isn't a move
-  pedal = next;
-  document.querySelectorAll(".pedbtn").forEach((b) => {
-    b.classList.toggle("active", b.dataset.pedal === pedal.id);
-  });
+// Always silent: the picker owns the choosing and the page owns the URL, so by
+// the time this runs the decision is made and everyone else already knows.
+function setPedal(id) {
+  pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
   if (pedal.tech) document.getElementById("centertech").textContent = pedal.tech;
   if (pedal.outnar)
     document.getElementById("outnar").textContent = pedal.outnar;
@@ -313,7 +297,6 @@ function setPedal(id, notify = true) {
     if (c) ctlEls[k].input.value = params[k];
   }
   refreshControlOutputs();
-  if (notify) onPedal?.(pedal.id);
   schedule();
 }
 
@@ -515,19 +498,17 @@ function unmount() {
   lastMatch = 1;
 }
 
-// Move the picker to a pedal the page already knows about — a back/forward inside
-// one family. Deliberately not a mount(): the family hasn't changed, so its audio
-// chain and knobs are left standing rather than torn down and rebuilt under a
-// note that's still sounding. Silent, since the URL already says this.
+// Move to another pedal in the family that's already up. Deliberately not a
+// mount(): the family hasn't changed, so its audio chain and knobs are left
+// standing rather than torn down and rebuilt under a note that's still sounding.
 export function selectPedal(id) {
-  setPedal(id, false);
+  setPedal(id);
 }
 
 let wired = false;
 export function mount(v, opts = {}) {
   if (view) unmount();
   view = v;
-  onPedal = opts.onPedal ?? null;
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
@@ -545,7 +526,7 @@ export function mount(v, opts = {}) {
   buildControls();
   // seed labels + defaults from the asked-for pedal, falling back to the
   // family's first for an id the URL made up
-  setPedal(opts.pedal, false);
+  setPedal(opts.pedal);
   if (actx) connectView(); // playing already? swap the chain under the audio
   else setVol(); // otherwise just show the new family's starting volumes
 
