@@ -13,6 +13,7 @@ export {
   NLONG,
   pluck,
   SPANMS,
+  TAP_FLOOR,
 } from "./delay.js";
 export {
   ModulationPedal,

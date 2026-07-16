@@ -6,7 +6,23 @@
 // loop. The peak-follower envelope comes from dsp.js; the tap train + the live
 // source's pluck come from pedals/ (they're the delay's own DSP).
 import { envelope, SR } from "../dsp.js";
-import { DELAYS, impulseResponse, pluck, SPANMS } from "../pedals/index.js";
+import {
+  DELAYS,
+  impulseResponse,
+  pluck,
+  SPANMS,
+  TAP_FLOOR,
+} from "../pedals/index.js";
+
+// The knobs' limits, named once here: the controls below declare them, and the
+// pluck loop sizes itself from them. Two copies of a limit is how the loop and
+// the sliders drift apart.
+const TIME_MAX = 400, // ms
+  FB_MAX = 0.85;
+// Repeats fade by fb each pass, so they fall under the tap panel's "too quiet to
+// matter" floor after log(floor)/log(fb) of them — each TIME_MAX apart at worst.
+const TAIL_MS =
+  Math.ceil(Math.log(TAP_FLOOR) / Math.log(FB_MAX)) * TIME_MAX;
 
 export default {
   id: "delay",
@@ -39,7 +55,7 @@ export default {
       equation: time is D, feedback is fb.</p>
     `,
     aside: {
-      title: "Why feedback stops at 0.85",
+      title: `Why feedback stops at ${FB_MAX}`,
       body: `
         <p>Each trip round the loop multiplies the signal by <code>fb</code>.
         Below 1 that's a shrinking geometric series — the tail dies, and the
@@ -49,7 +65,7 @@ export default {
         clips.</p>
         <p>Real delays run this close to the edge on purpose: a tape echo with
         the repeats cranked is a self-oscillating feedback loop, howling on its
-        own with nothing played into it. The slider stops at 0.85 so the
+        own with nothing played into it. The slider stops at ${FB_MAX} so the
         ambient setting can get near that runaway without the demo screaming at
         you.</p>
       `,
@@ -57,8 +73,8 @@ export default {
   },
 
   controls: [
-    { id: "time", label: "time", min: 20, max: 400, step: 5, def: 160, fmt: (v) => `${v.toFixed(0)} ms` },
-    { id: "feedback", label: "feedback", min: 0, max: 0.85, step: 0.01, def: 0.45, fmt: (v) => v.toFixed(2) },
+    { id: "time", label: "time", min: 20, max: TIME_MAX, step: 5, def: 160, fmt: (v) => `${v.toFixed(0)} ms` },
+    { id: "feedback", label: "feedback", min: 0, max: FB_MAX, step: 0.01, def: 0.45, fmt: (v) => v.toFixed(2) },
   ],
 
   // center panel: the tap train — stems at 0, D, 2D, … with the fb^k decay law
@@ -125,8 +141,14 @@ export default {
   // useless here: a delayed copy of a continuous tone just overlaps the original,
   // so you'd see a pluck but hear no repeat. Loop one pluck followed by silence
   // instead, so each hit's echoes ring out in the gap before the next.
+  //
+  // The gap is sized for the worst case the knobs allow, because the buffer is
+  // built once at mount and the knobs move afterwards: anything shorter and the
+  // loop restarts on top of a still-loud echo at high feedback. The cost is real
+  // — at gentler settings the tail dies long before the next pluck, so you wait
+  // through the remaining silence.
   buildSource(actx) {
-    const len = Math.round(1.6 * SR); // longer than any echo tail at max feedback
+    const len = Math.round((TAIL_MS / 1000) * SR);
     const buf = actx.createBuffer(1, len, SR);
     buf.copyToChannel(Float32Array.from(pluck(len)), 0);
     const src = actx.createBufferSource();

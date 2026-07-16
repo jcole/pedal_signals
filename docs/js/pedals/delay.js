@@ -61,10 +61,14 @@ export function echo(inp, delaySamples, feedback) {
   return out;
 }
 
+// The level below which a repeat is too quiet to be worth drawing — or waiting
+// for. The tap train stops here, and the live source sizes its silent gap by it.
+export const TAP_FLOOR = 0.02;
+
 // The idealized impulse response of that same equation: a single unit hit in ->
 // stems at 0, D, 2D, … with heights 1, fb, fb², …  Returned as {ms, level} pairs
 // (level above `floor`, and inside `spanMs`) so a panel can draw the tap train.
-export function impulseResponse(delayMs, feedback, spanMs, floor = 0.02) {
+export function impulseResponse(delayMs, feedback, spanMs, floor = TAP_FLOOR) {
   const taps = [];
   for (let k = 0, level = 1; k * delayMs <= spanMs; k++, level *= feedback) {
     if (level < floor) break;
