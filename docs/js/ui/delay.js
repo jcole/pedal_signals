@@ -3,9 +3,10 @@
 // pluck input, its longer analysis buffer — lives on the DelayPedal instances in
 // pedals/. This module renders them: the tap-train center panel, the wet-vs-dry
 // envelope panel, the time/feedback controls, and the live DelayNode feedback
-// loop. The peak-follower envelope comes from dsp.js; the tap train + the live
-// source's pluck come from pedals/ (they're the delay's own DSP).
-import { envelope, SR } from "../dsp.js";
+// loop. Both envelope followers come from dsp.js — this is the one family that
+// needs both, see drawSpec; the tap train + the live source's pluck come from
+// pedals/ (they're the delay's own DSP).
+import { envelope, envelopeHeld, SR } from "../dsp.js";
 import {
   DELAYS,
   impulseResponse,
@@ -138,14 +139,24 @@ export default {
 
   // bottom panel: the wet envelope (orange) over the dry envelope (grey) — the
   // decaying row of humps, one per repeat, that the ear hears as the echo.
-  drawSpec(F, inp, out, _pedal, _src, H) {
+  //
+  // The follower answers to the SOURCE, not to this family. dsp.js says to pick
+  // by the signal, and this is the one page where the same panel gets two: the
+  // synthetic source is a 70 ms pluck, a transient, which wants envelope()'s
+  // coast — hold it and 4.5 ms of stale peak sits on a 12 ms decay, which is most
+  // of the hump. The guitar is the real note from its pick attack, which rings
+  // for the whole 683 ms and is therefore SUSTAINED, exactly what a coasting
+  // follower can't draw: it ripples 18% between the carrier's peaks and smears a
+  // band up to 43% of level across the panel. Same page, opposite answers.
+  drawSpec(F, inp, out, _pedal, src, H) {
     const { g, L, R, T, B } = F;
     const { DRY, WET } = H.colors;
     const span = out.length;
     const sx = (i) => L + (i / span) * (R - L),
       sy = (v) => B - Math.min(1, v) * (B - T - 4);
-    const de = envelope(inp),
-      we = envelope(out);
+    const env = src === "guitar" ? envelopeHeld : envelope;
+    const de = env(inp),
+      we = env(out);
     const xs = new Array(span);
     for (let i = 0; i < span; i++) xs[i] = i;
     H.line(g, xs, de, sx, sy, DRY, 1.5);
