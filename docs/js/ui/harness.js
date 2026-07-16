@@ -13,7 +13,6 @@
 //     id, navLabel,           // this family's key + its name, which the picker
 //                             // uses twice: the heading over this family's
 //                             // pedals, and the gloss under the chosen one
-//     pageTitle,               // <title> for this family's demo
 //     dual,                    // the "⇅ ..." caption between the output panels
 //     vinDefault, voutDefault, // starting volumes for the input/output sliders
 //     pedals: [ Pedal, … ],   // what the picker lists for this family; the
@@ -308,6 +307,15 @@ function setPedal(id) {
   // lede, where the pedal's row states it once against the family it's an
   // instance of.
   document.getElementById("pedalgrp").textContent = pedal.label;
+  // The tab names the pedal for the same reason the bar does, and it's the same
+  // fact: the URL is ?pedal=overdrive, so a tab that said "clipping" would be
+  // answering a question nobody asked of it. This has to live here rather than
+  // in mount() — a pick inside a family never remounts, so a title set up there
+  // would stick on the pedal you arrived with and go quietly wrong from the
+  // second pick on. Site name first: these are tabs, and a row of them truncates
+  // from the right, so the half that survives should be the half that says where
+  // you are.
+  document.title = `Pedal signals — ${pedal.label}`;
   document.getElementById("inh3").textContent = srcTitle(srcMode);
   for (const [k, v] of Object.entries(pedal.defaults)) {
     const c = ctlEls[k]?.def;
@@ -533,7 +541,6 @@ export function mount(v, opts = {}) {
     C[cv.dataset.c] = cv;
   });
   // page furniture the view owns
-  document.title = view.pageTitle;
   document.getElementById("dualtxt").textContent = view.dual;
   document.getElementById("vin").value = view.vinDefault;
   document.getElementById("vout").value = view.voutDefault;

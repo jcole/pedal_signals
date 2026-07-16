@@ -1,9 +1,29 @@
 <!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>pedal demo</title>
+<!-- The tab says this only until a pedal is set — setPedal() in harness.js then
+     names the picked pedal here, since that's what the URL names too. This is
+     what's left when that never happens: a crawler that doesn't run the script,
+     or the moment before it does. So it says the one thing true of every pedal
+     the bench can show, in the same "site — what you're looking at" shape the
+     script writes and pedals.html uses. -->
+<title>Pedal signals — see what a guitar pedal does to a signal</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./css/styles.css">
+
+<!-- The one thing on the page that says what the page IS. Everything below it
+     answers a question you only have once you know that — which pedal, which
+     knob, what the trace is doing — and none of it introduces itself, because
+     the rig is a rig: it shows, it doesn't explain. So this row explains, once,
+     and then gets out of the way. It stays ONE row (the lede sits beside the
+     title, not under it) for the same reason the family's line below does: the
+     header's height is what decides whether the lesson under the charts breaks
+     the fold, and a masthead that stacks costs the lesson its first line. -->
+<header id="masthead">
+  <h1 class="sitetitle">Pedal signals</h1>
+  <p class="sitelede">A guitar pedal is a piece of math on a signal. Pick one, press
+  play, and watch it work — in the middle panel, and in the note on the right.</p>
+</header>
 
 <!-- One picker for the whole catalog, and the family's explanation on one line.
      Both switchers used to live here in some form — a family nav on this row, a

@@ -11,7 +11,6 @@ import { CLIPPING } from "../pedals/index.js";
 export default {
   id: "clipping",
   navLabel: "clipping",
-  pageTitle: "pedal demo",
   dual: "⇅ same signal — time above, spectrum below",
   vinDefault: 0,
   voutDefault: 0.8,

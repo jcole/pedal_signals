@@ -17,7 +17,6 @@ const CURVE_SPAN_MS = 600;
 export default {
   id: "modulation",
   navLabel: "modulation",
-  pageTitle: "modulation — pedal demo",
   dual: "⇅ same signal — LFO curve above, envelope below",
   vinDefault: 0.6,
   voutDefault: 0.6,

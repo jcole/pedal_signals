@@ -309,6 +309,61 @@ b {
 .ctlhint a:hover {
 	text-decoration: underline;
 }
+/* The site's own line, above everything the site does. Title and lede share one
+   row and align on their baselines, so the two read as a sentence with a name in
+   front of it rather than as a heading with a paragraph filed under it — and so
+   the whole introduction costs the page one row instead of two.
+
+   One row is the budget, not a preference. The lesson under the charts clears
+   the fold at 1440x900 by about 30px, and that sliver is the only thing telling
+   a first-time reader there's anything below the rig at all — a header that
+   stacks, or a lede that wraps to two lines on a desktop, spends the whole
+   margin and the page below the charts stops existing.
+
+   Hence no max-width, where every other block of prose on this site has one. A
+   measure is for reading DOWN a column, and there's no column here — the whole
+   lede is one line, and its job is to fit on one. It needs about 101ch of the
+   1233 the title leaves it, so the room is there; capping it at any ch value
+   would only manufacture the second line this rule exists to prevent. Any cap
+   would be a guess anyway: --sans is system-ui, so the same string is a
+   different width on every OS, and the number that fits here would wrap on
+   someone else's machine. If you add a word, put the page back at 1440x900 and
+   check that #lesson still starts above 900. Below ~700px the lede's min-width can't
+   be paid and it drops under the title — that's a phone, where the rig has
+   given up the fold anyway and nothing is riding on this.
+
+   The title is sized deliberately under the catalog page's h1: that page's title
+   is the name of the page, and this one is the name of the site sitting above a
+   control the eye needs to reach first. Making it big enough to win that contest
+   would be making the wrong thing the first thing you look at. */
+#masthead {
+	max-width: 1360px;
+	margin: 0 auto;
+	padding: 14px 8px 0;
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 4px 18px;
+}
+/* Classed rather than reached for as "#masthead h1", so it's named the way
+   .sitelede beside it is — and so the two h1 rules on this site don't sort
+   themselves by specificity across the file. */
+.sitetitle {
+	font-size: 21px;
+	font-weight: 650;
+	letter-spacing: -0.01em;
+	color: var(--ink-hi);
+	margin: 0;
+	white-space: nowrap;
+}
+.sitelede {
+	flex: 1;
+	min-width: 22em;
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--ink-lo);
+}
 /* two stacked rows: the picker's row, then the family's explanation on its own
    full-width line underneath. The explanation gets the whole page to lay out on,
    so it stays a single line instead of wrapping in a narrow column — which also
@@ -318,7 +373,11 @@ b {
 	flex-direction: column;
 	align-items: stretch;
 	gap: 10px;
-	padding-top: 14px;
+	/* No top padding: this row used to be the top of the page and had to hold its
+	   own air off the edge. #masthead is that now, and its own bottom gap is the
+	   separation — paying for it twice is what pushes the lesson through the
+	   fold. */
+	padding-top: 10px;
 }
 .pickhead {
 	display: flex;
@@ -509,11 +568,9 @@ b {
 #lede {
 	max-width: 1000px;
 }
-/* The head row carries the 40px of air that separates families on the catalog
-   page. Here there's one band and it's already under the picker's own gap. */
-#lede .cathead {
-	margin-top: 0;
-}
+/* The one thing the bench overrides on the shared rows — #lede .cathead — isn't
+   here: it has to sit after the .cathead rules it overrides, so it lives at the
+   foot of the catalog section. */
 /* no rule of its own: the tray's bottom edge is the line this sits under */
 #lesson {
 	max-width: 1360px;
@@ -785,6 +842,19 @@ a.catrow:hover .catlabel {
 	.famcell > * {
 		display: block;
 	}
+}
+/* The bench borrows this section's rows wholesale (see #lede, up with the rest
+   of the bar) and changes exactly one thing about them: the head row carries the
+   40px of air that separates one family from the next on this page, and up there
+   there's only ever one band, already sitting under the picker's own gap.
+
+   It lives down here, away from the rest of #lede, because it can't lead the
+   rules it overrides — a plain .cathead appearing after it reads as a rule that
+   loses to an ID it never mentions, which is exactly what the linter's
+   descending-specificity warning is for. The cascade doesn't care (the ID wins
+   from anywhere); a person reading .cathead top-to-bottom does. */
+#lede .cathead {
+	margin-top: 0;
 }
 /* the way back to the bench, and the way out to the catalog: one small mono
    link, on the page side both times */

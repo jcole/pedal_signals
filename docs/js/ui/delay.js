@@ -27,7 +27,6 @@ const TAIL_MS =
 export default {
   id: "delay",
   navLabel: "delay",
-  pageTitle: "delay — pedal demo",
   dual: "⇅ same signal — waveform above, envelope below",
   vinDefault: 0.6,
   voutDefault: 0.6,
