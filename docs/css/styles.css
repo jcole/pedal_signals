@@ -309,7 +309,15 @@ b {
 	   WHAT CHANGES / FAMILY reads as a subtitle of the sentence. They label the
 	   row, so they have to be nearer to it than to the title — which is bought
 	   back below, where the gap under them is nearly closed. */
-	padding: 22px 8px 8px;
+	padding: 18px 8px 8px;
+	/* And the rule is what stops that going too far. Gap alone left two blocks of
+	   left-aligned text on the same white with nothing between them, so the lede
+	   ("A guitar pedal is a piece of math on a signal") and the row under it read
+	   as one run of prose — when the row is not prose at all, it's one line of the
+	   catalog's table standing on the bench. The hairline says table: it's the
+	   same rule the catalog draws under its own .cathead, at the same 1360 the
+	   masthead is bounded by, so the two edges line up. */
+	border-top: 1px solid var(--rule);
 }
 .hint {
 	font-size: 12px;
@@ -377,7 +385,12 @@ b {
 #masthead {
 	max-width: 1360px;
 	margin: 0 auto;
-	padding: 14px 8px 0;
+	/* The bottom is the masthead's own air under the lede, and it exists because
+	   the rule on #bar does: with 0 there the hairline sat in the lede's
+	   descenders and read as an underline on the sentence rather than the top
+	   edge of the table below it. A rule needs room on BOTH sides to be a seam —
+	   #bar pays for the underside, this pays for the top. */
+	padding: 14px 8px 13px;
 	display: flex;
 	align-items: baseline;
 	flex-wrap: wrap;
@@ -422,6 +435,13 @@ b {
 	display: flex;
 	align-self: center;
 	color: var(--ink-lo);
+	/* On top of the row's 18px gap, because the neighbour is "compare pedals" and
+	   the row's gap was sized for words sitting beside words. Two links landing
+	   that close read as one control with a label — and the two go to opposite
+	   ends of the internet. The extra air is the only thing saying they're
+	   separate, since a bare mark can't say it with a border the way the pill
+	   beside it does. */
+	margin-left: 10px;
 }
 .sitesrc:hover {
 	color: var(--accent);
@@ -800,7 +820,13 @@ b {
    mono face, which does the same job it does everywhere else: it's on the
    formulas and the machine's own lettering, never on the English. */
 #cat {
-	max-width: 1000px;
+	/* 1360, which is the width of every other page on this site (the masthead,
+	   the bar, the rig, the lesson). It was 1000, from back when this page was
+	   three columns of text; the SHAPE column made it a table, and a table wants
+	   the room. The row's tracks are all fr, so they take the extra themselves —
+	   the four cells go 235/270/106/306 at 1000 and 327/377/147/426 here, which
+	   is what stops WHAT CHANGES breaking mid-phrase on the longer entries. */
+	max-width: 1360px;
 	margin: 0 auto;
 	padding: 28px 16px 60px;
 }
@@ -811,9 +837,15 @@ b {
 	color: var(--ink-hi);
 	margin: 0 0 8px;
 }
+/* The measure is still a measure — this is prose and it wraps, so it can't just
+   run the table's full 1360. But 62ch was tuned against a 1000px page and read
+   as a narrow ribbon hanging off the left of a wide one: three lines, the last
+   of them an orphan, over a table nearly twice its width. 88ch is two lines that
+   reach far enough across the table to look like its header rather than a column
+   that lost an argument with it. */
 .catlede {
 	margin: 0;
-	max-width: 62ch;
+	max-width: 88ch;
 	font-size: 15px;
 	line-height: 1.6;
 	color: var(--ink-lo);
@@ -1150,13 +1182,64 @@ a.catrow:hover .catlabel {
 	color: var(--accent);
 	border-bottom-color: var(--accent);
 }
+/* Upper right, level with the h1, because that's the corner the bench keeps
+   "compare pedals" in: one nav corner across both pages, so it's a place you
+   learn once rather than a thing you re-find. It sat above the h1 on the left,
+   which is the standard back-link spot and was fine when this page was 1000px
+   wide and had no opposite number to agree with.
+
+   Still a bare word where the bench's is a pill, and that's not an oversight:
+   that link has to interrupt someone who never asked about a catalog, this one
+   is read by someone who came FROM the bench and is looking for the way back.
+   Same corner, different volume, because the audiences aren't the same.
+
+   Grid rather than a float or an absolute: the link is first in the DOM (it's
+   the way out — a keyboard lands on it before the page, which is where a back
+   link belongs) but it belongs beside the h1, and a grid can place it there
+   without the source order lying about it. The lede spans both tracks and keeps
+   its own measure. */
+.cathdr {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: baseline;
+}
 .cathdr .catlink {
-	display: inline-block;
-	margin-bottom: 14px;
+	grid-area: 1 / 2;
+	justify-self: end;
+}
+.cathdr h1 {
+	grid-area: 1 / 1;
+}
+.catlede {
+	grid-column: 1 / -1;
 }
 /* .catlink is underlined with a border, so a stretched grid cell draws that rule
    across the whole track and out past the words. Hug the text. Down here with
    the other bench overrides, after the .catlink rules it overrides. */
 #lede .catlink {
 	justify-self: start;
+}
+/* The one .catlink that has to advertise. The other two are read by someone who
+   already went looking: "← back to the bench" has a captive audience (you came
+   from the bench), and the FAMILY cell is answering a question the column header
+   asked. This one is unsolicited — it's the only thing on the bench that says
+   the catalog exists at all — so a 12px rule-under-a-word in ink-lo loses to
+   every chart on the page and gets read by nobody.
+
+   A box, not a bigger word: the masthead's height is the lede's, and this sits
+   inside it either way. Accent ink and a border are what make it read as a
+   destination — the same move .seg makes for the source switcher, which is the
+   page's other "this is a thing you press". Centred rather than baselined for
+   .sitesrc's reason: a padded box has no baseline worth sharing. */
+#masthead .catlink {
+	align-self: center;
+	color: var(--accent);
+	border: 1px solid var(--rule);
+	border-radius: 999px;
+	padding: 5px 11px;
+	line-height: 1;
+}
+#masthead .catlink:hover {
+	border-color: var(--accent-lo);
+	background: var(--sunk);
 }

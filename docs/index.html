@@ -23,11 +23,30 @@
   <h1 class="sitetitle">Pedal signals</h1>
   <p class="sitelede">A guitar pedal is a piece of math on a signal. Pick one, press
   play, and watch it work — in the middle panel, and in the note on the right.</p>
+  <!-- The way out to the catalog, opposite pedals.html's "← back to the bench":
+       same .catlink, same corner of the same header, so the two pages point at
+       each other from the same place. The bar below has a link to that page too,
+       but it's the FAMILY cell — it says "modulation →", which is the family's
+       name and not an offer to see the rest. Nothing on the bench said the rest
+       existed.
+
+       "compare", not "every pedal", because of who reads it: someone who just
+       opened the picker, saw nine names, and closed it. To them a list of ALL
+       the names is the dropdown again, only longer. It isn't — it's every
+       family's rows in the same columns, which is the thing the picker can't do.
+       The picker finds you a pedal you can already name; comparing is how you
+       find one you can't.
+
+       No arrow, where the other two .catlinks have one. Theirs point across a
+       page at nothing in particular; this one had the GitHub mark 18px off its
+       right edge and pointed straight at it, which made the whole thing read as
+       a caption for the mark — "compare pedals →⃝". The arrow was there to say
+       "this goes somewhere" back when the link was a bare word, and the box says
+       that now. -->
+  <a class="catlink" href="./pedals.html">compare pedals</a>
   <!-- Rides the slack at the end of the masthead's row, the way famlink rides
        the bar's: the lede is flex:1 and asks for ~101ch of the 1233 the title
-       leaves it, so this is spent out of room that was already going empty and
-       the row stays one row. That's the whole constraint up here — see the
-       #masthead rule and the fold note in the CSS.
+       leaves it, so this is spent out of room that was already going empty.
 
        New tab. Every other link on this site is somewhere else on this site;
        this is the one that leaves, and leaving is not free here — the bench may
