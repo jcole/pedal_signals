@@ -282,6 +282,64 @@ b {
 .ctlcol .ctl:first-child {
 	border-top: 0;
 }
+/* The rail's head is empty unless the play button has moved into it, and an
+   empty .ctl is still 8px of padding and a rule. */
+.ctl:empty {
+	display: none;
+}
+
+/* ---- PROTOTYPE: the all-output-charts layout -------------------------------
+   Opt-in, per view (harness.js writes data-layout off view.layout), so the two
+   families still drawing the chain are untouched while this is looked at.
+
+   The premise: every chart the rig draws is the output against the input, and
+   the two things that aren't — the input alone, and the pedal's own internals
+   (an LFO curve, a tap train) — are respectively a trace the output panels
+   already carry in grey, and a curve the output panels already measure. So
+   there's no INPUT → PEDAL → OUTPUT chain here. There's a rail of controls and
+   there are the charts, full width, because a 1365 ms envelope and a 120 Hz
+   spectrum both want width far more than they want height. */
+#rig[data-layout="outputs"] {
+	display: grid;
+	grid-template-columns: 240px 1fr;
+	gap: 8px 24px;
+	max-width: 1360px;
+	margin: 10px auto 0;
+	padding: 10px 8px 14px;
+	align-items: start;
+}
+#rig[data-layout="outputs"] #controls,
+#rig[data-layout="outputs"] #grid {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+}
+/* Placed, not flowed: #grid comes first in the markup because the chain layout
+   wants the charts above the knobs, and left to source order it would take the
+   rail's track and hand the charts 240px. */
+/* One column, so the three knob decks stack down the rail in signal order:
+   what's going in, what the pedal is doing to it, how loud each is. */
+#rig[data-layout="outputs"] #controls {
+	grid-column: 1;
+	grid-row: 1;
+	grid-template-columns: 1fr;
+	gap: 10px;
+}
+#rig[data-layout="outputs"] #grid {
+	grid-column: 2;
+	grid-row: 1;
+	grid-template-columns: 1fr;
+	grid-template-rows: minmax(420px, 62vh);
+	gap: 0;
+}
+/* The input panel is the grey trace on both charts to its right; the centre is
+   the curve the envelope panel measures. Neither is the output against the
+   input, which is the only thing this layout draws. */
+#rig[data-layout="outputs"] #inpanel,
+#rig[data-layout="outputs"] #centerpanel,
+#rig[data-layout="outputs"] .grp {
+	display: none;
+}
 .ctl input[type="range"] {
 	flex: 1;
 	accent-color: var(--accent-lo);

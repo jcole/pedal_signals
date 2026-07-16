@@ -164,7 +164,7 @@
        than a corner of the page. Gone for good after that press: once you've
        started it, you've seen where the transport lives, and a slab over the
        transfer curve is then covering the lesson it was advertising. -->
-  <div class="panel">
+  <div class="panel" id="centerpanel">
     <!-- One play button, in two sizes. It belongs in this header — small, beside
          the label, the way a transport is furniture once you know where it is —
          but nothing tells a cold reader where that is, and a 28px disc in a
@@ -210,6 +210,11 @@
 
 <div id="controls">
   <div class="ctlcol">
+    <!-- PROTOTYPE (outputs layout): the rail's head, and where the play button
+         moves to when there's no centre panel to hang it on. Empty in the chain
+         layout, where it collapses (.ctl:empty) and play stays on the centre
+         header. -->
+    <div class="ctl" id="railtop"></div>
     <!-- Everything about the signal going in: which source it is, and ↻ pluck to
          restart the note. Play/stop is arguably the third of those — it's the
          same question, "is it running?" — and it sat here for a while. It's on

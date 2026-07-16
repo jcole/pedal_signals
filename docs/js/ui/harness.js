@@ -517,6 +517,22 @@ export function mount(v, opts = {}) {
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
+  // PROTOTYPE: which shape the rig is in. "chain" (the default) is INPUT →
+  // PEDAL → OUTPUT, three columns. "outputs" is a control rail and nothing but
+  // output charts — see the styles. Per view, so a family opts in alone.
+  document.getElementById("rig").dataset.layout = view.layout ?? "chain";
+  // Play lives on the centre panel's header, which the outputs layout doesn't
+  // have, so it moves to the head of the rail. .inviting goes with it: that
+  // class is an 88px slab lifted over the centre chart, and there's no centre
+  // chart to lift it over — in the rail it's already the first thing in the
+  // first column, which is what the slab was buying.
+  const play = document.getElementById("play");
+  if (view.layout === "outputs") {
+    document.getElementById("railtop").appendChild(play);
+    play.classList.remove("inviting");
+  } else {
+    document.getElementById("centerhead").appendChild(play);
+  }
   // page furniture the view owns
   document.getElementById("dualtxt").textContent = view.dual;
   document.getElementById("vin").value = view.vinDefault;
