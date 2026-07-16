@@ -18,7 +18,6 @@
 //     vinDefault, voutDefault, // starting volumes for the input/output sliders
 //     pedals: [ Pedal, … ],   // what the picker lists for this family; the
 //                             // selected one drives input+process
-//     centerTitle,            // center-panel headline ("the pedal bends every sample")
 //     spectrumTitle,          // output spectrum-panel headline
 //     lesson?,                // {formula, formulaNote, klass?, oneLiner, body,
 //                             // aside?:{title, body}} — the prose above and below
@@ -48,6 +47,10 @@
 // shared palette, passed into the view's draw/audio hooks. The DSP core (specDb,
 // windowed) and constants (SR, N, KBIN, …) live in dsp.js.
 import { SR, F0, CYCLES, SPAN, MSMAX, parseWav, normalize } from "../dsp.js";
+// The lede's two rows are the catalog page's rows, same module and same columns:
+// the bench renders the one band and the one row for what's mounted, that page
+// renders every family's. Neither owns the geometry.
+import { famRow, headRow, pedalRow } from "./rows.js";
 
 // ---- colors (shared palette; effects read ACCENT for their center curve) ----
 // styles.css owns these: the page paints the "in"/"out" legend words in a panel
@@ -284,15 +287,27 @@ function setParam(id, v) {
 // the time this runs the decision is made and everyone else already knows.
 function setPedal(id) {
   pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
+  // The lede's second row: this pedal, in the same columns as the band above it,
+  // so the operation column reads general → instance. No href — the row names
+  // the pedal that's already on the bench, and a link to here is a link that
+  // lies about being a way out.
+  const ped = document.getElementById("ledeped");
+  ped.innerHTML = "";
+  ped.appendChild(pedalRow(pedal));
   if (pedal.tech) document.getElementById("centertech").textContent = pedal.tech;
   if (pedal.outnar)
     document.getElementById("outnar").textContent = pedal.outnar;
-  // The centre column belongs to the chosen pedal: its headline says what THIS
-  // pedal changes, falling back to the family's headline for a pedal that
-  // doesn't say. The formula on the line below is already pedal-specific.
-  if (pedal.whatChanges || view.centerTitle)
-    document.getElementById("centernar").textContent =
-      pedal.whatChanges || view.centerTitle;
+  // The pedal names its own bar in the chain: INPUT → OVERDRIVE → OUTPUT. It's
+  // the one label on the rig that isn't furniture, because it's the one the
+  // reader chose.
+  //
+  // The panel under it used to carry the pedal's whatChanges ("near-square wave;
+  // lopsided rails add even harmonics"), which was a caption for the wrong panel:
+  // this one plots the transfer curve, and the wave that line describes is the
+  // OUTPUT panel's chart, which was already saying so itself. It now sits in the
+  // lede, where the pedal's row states it once against the family it's an
+  // instance of.
+  document.getElementById("pedalgrp").textContent = pedal.label;
   document.getElementById("inh3").textContent = srcTitle(srcMode);
   for (const [k, v] of Object.entries(pedal.defaults)) {
     const c = ctlEls[k]?.def;
@@ -453,11 +468,13 @@ function wireTransport() {
 }
 
 // ---- lesson section ---------------------------------------------------------
-// Optional prose block a view can supply (view.lesson) explaining what the
-// family actually does to the signal — the governing equation and a
-// plain-language explanation, with an optional second column for a deeper
-// aside. Hidden entirely for views that omit it.
-function renderLesson(lesson) {
+// The two things the mounted family says about itself in words: the band up in
+// the lede (its name, its general form, what it does — the catalog's row for it,
+// see rows.js) and the prose block below the rig, with an optional second column
+// for a deeper aside. Both come from view.lesson, and a view that omits it gets
+// neither.
+function renderLesson() {
+  const lesson = view.lesson;
   const section = document.getElementById("lesson");
   const lede = document.getElementById("lede");
   if (!lesson) {
@@ -467,12 +484,12 @@ function renderLesson(lesson) {
   }
   section.style.display = "";
   lede.style.display = "";
-  document.getElementById("lformula").textContent = lesson.formula;
-  document.getElementById("lformulanote").textContent = lesson.formulaNote;
-  document.getElementById("loneliner").textContent = lesson.oneLiner;
-  const klassline = document.querySelector("#lede .klassline");
-  klassline.style.display = lesson.klass ? "" : "none";
-  if (lesson.klass) document.getElementById("lklass").textContent = lesson.klass;
+  // The column names and the family's band — everything in the lede that a pick
+  // within this family can't change. The row under them is setPedal()'s, and
+  // mount() calls it right after this.
+  const fam = document.getElementById("ledefam");
+  fam.innerHTML = "";
+  fam.append(headRow(), famRow(view));
   document.getElementById("lbody").innerHTML = lesson.body;
 
   const asideWrap = document.getElementById("lasidewrap");
@@ -520,12 +537,11 @@ export function mount(v, opts = {}) {
   document.getElementById("dualtxt").textContent = view.dual;
   document.getElementById("vin").value = view.vinDefault;
   document.getElementById("vout").value = view.voutDefault;
-  // headlines the view owns
-  if (view.centerTitle)
-    document.getElementById("centernar").textContent = view.centerTitle;
+  // headlines the view owns. The centre bar's isn't one of them: it names the
+  // pedal, not the family, so setPedal() writes it at the end of this function.
   if (view.spectrumTitle)
     document.getElementById("specnar").textContent = view.spectrumTitle;
-  renderLesson(view.lesson);
+  renderLesson();
   buildControls();
   // seed labels + defaults from the asked-for pedal, falling back to the
   // family's first for an id the URL made up

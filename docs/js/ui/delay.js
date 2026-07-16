@@ -32,7 +32,6 @@ export default {
   vinDefault: 0.6,
   voutDefault: 0.6,
   pedals: DELAYS,
-  centerTitle: "one hit → a train of repeats",
   spectrumTitle: "each repeat is quieter — feedback sets the decay",
 
   lesson: {

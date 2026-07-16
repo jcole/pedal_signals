@@ -16,7 +16,6 @@ export default {
   vinDefault: 0,
   voutDefault: 0.8,
   pedals: CLIPPING,
-  centerTitle: "the pedal bends every sample",
   spectrumTitle: "new harmonics — the tone you hear",
 
   lesson: {

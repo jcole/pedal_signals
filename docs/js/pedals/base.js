@@ -24,10 +24,14 @@ export class Pedal {
   // experimenting with (bias) alone.
   defaults = {};
 
-  // whatChanges is the one-line "and so the signal does THIS" the header shows
-  // next to tech for whichever pedal is live. The family's signal class (NL, LTI,
-  // LTV) is deliberately NOT here: it's constant across a family, so it belongs
-  // to the view's lesson, not to each pedal.
+  // whatChanges is the one-line "and so the signal does THIS", and `tech` the
+  // operation that does it. They're the two columns a pedal fills in under its
+  // family's — on the catalog page for every pedal, in the bench's lede for the
+  // one that's up (see ui/rows.js, which renders both). Not on the rig: the
+  // panels there caption their own charts, and whatChanges describes the output
+  // wave, which is one panel's chart and not the other two's. The family's signal
+  // class (NL, LTI, LTV) is deliberately NOT here: it's constant across a family,
+  // so it belongs to the view's lesson, not to each pedal.
   //
   // `search` is the names this pedal answers to that aren't its label. The labels
   // are deliberately generic — a real pedal's name is usually a brand's — so the

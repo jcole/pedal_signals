@@ -192,7 +192,10 @@ b {
 	color: var(--inst-ink);
 	line-height: 1.3;
 }
-/* The machine's caption under it: what's plotted, in the instrument's lettering. */
+/* What's plotted, in the instrument's lettering. On the output panels it's the
+   caption under the .nar sentence; on the input and the pedal it's the whole
+   header, because the bar above those two already names them and the only thing
+   left to say is what the chart is. */
 .panel h3 .tech {
 	display: block;
 	margin-top: 3px;
@@ -491,31 +494,25 @@ b {
 	opacity: 0.4;
 	cursor: default;
 }
-/* the family's explanation, on its own row under the picker: its three lines run
-   inline with each other and wrap as a group when the page gets narrow */
+/* The family's band and the picked pedal's row, on their own rows under the
+   picker. Everything that sets them is the catalog page's — .cathead, .famhead,
+   .catrow and the cells inside them, all shared — so this rule owns only what's
+   different about standing on the bench instead of on that page.
+
+   Which is the width. #bar is 1360px, sized for the rig below it, and the
+   catalog's tracks are fractions: let them have the whole bar and the three
+   columns drift so far apart that the general → instance reading down the
+   operation column — the entire reason this is a grid — needs a head turn to
+   follow. 1000px is that page's own measure, so the columns land at the
+   proportions they were spaced for. Left-aligned rather than centred: the rows
+   hang off the picker above them, which starts at the page edge. */
 #lede {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 2px 18px;
-	align-items: baseline;
-	font-size: 14px;
-	line-height: 1.5;
-	color: var(--ink-lo);
+	max-width: 1000px;
 }
-#lede p {
-	margin: 0;
-}
-#lede strong {
-	color: var(--ink-hi);
-	font-weight: 600;
-}
-/* the formula is the machine talking, mid-sentence — the one mono island here */
-#lede #lformula {
-	font-family: var(--mono);
-	color: var(--wet-ink);
-}
-#lede .oneliner strong {
-	color: var(--ink-hi);
+/* The head row carries the 40px of air that separates families on the catalog
+   page. Here there's one band and it's already under the picker's own gap. */
+#lede .cathead {
+	margin-top: 0;
 }
 /* no rule of its own: the tray's bottom edge is the line this sits under */
 #lesson {
@@ -712,10 +709,15 @@ b {
 	border-top: 1px solid var(--rule);
 	border-radius: 3px;
 }
-.catrow:hover {
+/* Hover and focus are answers to "you can click this", so they're scoped to the
+   rows that can be: on the catalog page every row is an <a> into the demo, on
+   the bench the single row is a <div> describing the pedal already mounted.
+   Unscoped, that row lit up under the cursor and promised a click that has
+   nowhere to go. */
+a.catrow:hover {
 	background: var(--sunk);
 }
-.catrow:focus-visible {
+a.catrow:focus-visible {
 	outline: 2px solid var(--accent);
 	outline-offset: -2px;
 }
@@ -739,7 +741,7 @@ b {
 	font-weight: 600;
 	color: var(--ink-hi);
 }
-.catrow:hover .catlabel {
+a.catrow:hover .catlabel {
 	color: var(--accent);
 }
 .catalias {

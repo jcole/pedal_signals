@@ -25,10 +25,18 @@
       <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
     </div>
   </div>
+  <!-- The family's band and the picked pedal's row, in the catalog page's three
+       columns and rendered by the same code. This used to be three labelled
+       phrases run together on one line — The math: … Class: … What it does: …
+       — all of them the FAMILY's, which left the bench the one place on the site
+       that never showed you the operation of the pedal you'd actually picked.
+       Read down the operation column now and you get y[n] = f(x[n]) over
+       tanh(drive·x + bias): the general form, then this pedal as an instance of
+       it, which is the thing the site is here to teach. The head row is filled
+       by the harness on mount; only #ledeped is rewritten as you pick. -->
   <div id="lede" style="display:none">
-    <p class="op"><strong>The math:</strong> <b id="lformula"></b> — <span id="lformulanote"></span></p>
-    <p class="klassline"><strong>Class:</strong> <span id="lklass"></span></p>
-    <p class="oneliner"><strong>What it does:</strong> <span id="loneliner"></span></p>
+    <div id="ledefam"></div>
+    <div id="ledeped"></div>
   </div>
 </div>
 
@@ -37,19 +45,28 @@
      against the white page; it also draws the line the lesson prose sits below. -->
 <div id="rig">
 <div id="grid">
-  <!-- The arrows hang off the label bars, not the charts: INPUT → PEDAL → OUTPUT
-       is the signal chain, and the label row is the only row where all three
-       columns line up. Pinned to a chart they'd have to guess a height, and the
-       output column stacks two of them — there's no one right answer there. -->
+  <!-- The arrows hang off the label bars, not the charts: INPUT → OVERDRIVE →
+       OUTPUT is the signal chain, and the label row is the only row where all
+       three columns line up. Pinned to a chart they'd have to guess a height,
+       and the output column stacks two of them — there's no one right answer
+       there.
+       The middle bar names the pedal rather than saying "PEDAL": the two ends
+       are the generic thing that's always true, and the box between them is
+       whatever you picked, so it's the only one of the three with a name to
+       give. The harness fills it — see setPedal(). -->
   <div class="grp">Input</div>
-  <div class="grp flowarr">Pedal</div>
+  <div class="grp flowarr" id="pedalgrp"></div>
   <div class="grp flowarr">Output</div>
+  <!-- Both of these headers are one line now: the bar above each already names
+       it ("INPUT", the pedal), so the panel only has to say what's plotted. What
+       went was two restatements — "your signal" under INPUT, and the pedal's
+       name under its own bar. -->
   <div class="panel" id="inpanel">
-    <h3><span class="nar">your signal</span><span class="tech" id="inh3"></span></h3>
+    <h3><span class="tech" id="inh3"></span></h3>
     <canvas data-c="input"></canvas>
   </div>
   <div class="panel">
-    <h3><span class="nar" id="centernar"></span><span class="tech" id="centertech"></span></h3>
+    <h3><span class="tech" id="centertech"></span></h3>
     <canvas data-c="center"></canvas>
   </div>
   <div class="stack">

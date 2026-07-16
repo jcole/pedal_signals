@@ -22,7 +22,6 @@ export default {
   vinDefault: 0.6,
   voutDefault: 0.6,
   pedals: MODULATIONS,
-  centerTitle: "the pedal rides the volume up and down",
   spectrumTitle: "the envelope traces the LFO — the ear hears it as pulsing",
 
   lesson: {
