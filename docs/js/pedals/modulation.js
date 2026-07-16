@@ -92,6 +92,8 @@ export const MODULATIONS = [
     depth: 0.6,
     fn: sineShape,
     waveType: "sine",
+    // The Boss TR-2: mint, three knobs (rate, wave, depth).
+    art: { shape: "box", hue: "#7fbf6a", knobs: 3 },
   }),
   new ModulationPedal({
     id: "chop",
@@ -104,6 +106,9 @@ export const MODULATIONS = [
     depth: 0.95,
     fn: squareShape,
     waveType: "square",
+    // No real box to suggest — chop is a square-wave tremolo, which is a setting,
+    // not a product. Same chassis, its own colour.
+    art: { shape: "box", hue: "#54507e", knobs: 3 },
   }),
   new ModulationPedal({
     id: "warble",
@@ -116,5 +121,8 @@ export const MODULATIONS = [
     depth: 0.35,
     fn: triangleShape,
     waveType: "triangle",
+    // The Boss VB-2 vibrato, which is the pedal a player looking for "warble"
+    // would actually pick up: pale blue, three knobs.
+    art: { shape: "box", hue: "#6f9ec9", knobs: 3 },
   }),
 ];

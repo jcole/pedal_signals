@@ -93,6 +93,13 @@ export function pluck(n) {
 // Same math throughout (y[n] = x[n] + fb·y[n−D]); these just start the two knobs
 // somewhere different. Echo leads because it shows the whole lesson at once;
 // slapback = one quick doubling; ambient = a long tail near self-oscillation.
+//
+// Their icons are the family's honest problem, the same one the tech column has:
+// echo suggests a real box (the Boss DM-2), and the other two suggest nothing,
+// because slapback and ambient are SETTINGS a player dials into a delay, not
+// pedals a shop sells. So they're the same chassis in a different colour — which
+// is what they are, and is the same answer this file already gives when all three
+// rows print one identical formula.
 const DELAY_TECH = "y[n] = x[n] + fb·y[n−D]";
 export const DELAYS = [
   new DelayPedal({
@@ -103,6 +110,8 @@ export const DELAYS = [
     whatChanges: "envelope, seconds-wide; no new frequencies",
     time: 160,
     feedback: 0.45,
+    // The Boss DM-2: dark green, three knobs.
+    art: { shape: "box", hue: "#2f6b4a", knobs: 3 },
   }),
   new DelayPedal({
     id: "slapback",
@@ -112,6 +121,7 @@ export const DELAYS = [
     whatChanges: "one short repeat; reads as thickening, not echo",
     time: 90,
     feedback: 0.15,
+    art: { shape: "box", hue: "#8d9aa8", knobs: 3 },
   }),
   new DelayPedal({
     id: "ambient",
@@ -121,5 +131,6 @@ export const DELAYS = [
     whatChanges: "long tail near self-oscillation; repeats blur together",
     time: 240,
     feedback: 0.7,
+    art: { shape: "box", hue: "#b9c2c8", knobs: 3 },
   }),
 ];

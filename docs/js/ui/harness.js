@@ -46,11 +46,14 @@
 // shared palette, passed into the view's draw/audio hooks. The DSP core (specDb,
 // windowed) and constants (SR, N, KBIN, …) live in dsp.js.
 import { SR, F0, CYCLES, SPAN, MSMAX, parseWav, normalize } from "../dsp.js";
+// The toy pedal in the bench row's PEDAL cell — what the row says to someone who
+// hasn't read it yet. That file is where the reasoning lives.
+import { pedalArt } from "./art.js";
 // The bench row's column names, from the same module the catalog page takes
 // theirs from — the two pages name their columns once, together. The row under
 // them is authored in index.html rather than built here, because the PEDAL cell
-// is the picker: standing DOM that a re-render would destroy. Neither page owns
-// the geometry; that's one rule in the stylesheet.
+// is standing DOM that a re-render would destroy. Neither page owns the geometry;
+// that's one rule in the stylesheet.
 import { headRow } from "./rows.js";
 
 // ---- colors (shared palette; effects read ACCENT for their center curve) ----
@@ -296,6 +299,12 @@ function setPedal(id) {
   document.getElementById("benchop").textContent = pedal.tech ?? "";
   document.getElementById("benchnote").textContent = pedal.techNote ?? "";
   document.getElementById("benchwhat").textContent = pedal.whatChanges ?? "";
+  // The toy pedal beside the picker — the only thing in this row that answers
+  // "what am I looking at" without being read. Here rather than in mount() with
+  // the rest of the furniture for the reason every line in this function is here:
+  // it's the PEDAL's, and a pick inside a family never remounts, so art set up
+  // there would stick on whatever you arrived with.
+  document.getElementById("pedalart").innerHTML = pedalArt(pedal.art);
   // The FAMILY cell. Just the name and an arrow — the column header says what
   // kind of noun it is, which is the one thing the bench never used to say
   // anywhere. Set here rather than in mount() for the same reason the tab title

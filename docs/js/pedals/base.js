@@ -62,6 +62,21 @@ export class Pedal {
   // word a player actually types is often not the one on the button: "reverb"
   // means ambient here, "vibrato" means warble. Without these the picker's search
   // misses exactly the queries it exists to serve.
+  //
+  // `art` is how this pedal is drawn as a toy in the bench row — {shape, hue,
+  // knobs}, and nothing else, because the chassis is one drawing shared by all of
+  // them (ui/art.js owns the geometry; that file is where the reasoning lives).
+  // A spec and not a picture: the drawing is 40px of SVG and belongs to the view,
+  // but WHICH pedal it looks like is this pedal's own fact, so it's declared here
+  // where adding a pedal is still one entry.
+  //
+  // `hue` is the real box's colour, and it's the only thing carrying recognition
+  // — at 40px the silhouette says "a pedal" and the colour says "which". `knobs`
+  // is the real box's count, deliberately NOT this page's slider count: every
+  // family here has exactly two sliders and most real pedals have three, so the
+  // two numbers can't be reconciled and shouldn't be. They don't have to be,
+  // because a knob at this size is unreadable, and the picture is never asked to
+  // agree with the rig.
   constructor({
     id,
     label = id,
@@ -70,6 +85,7 @@ export class Pedal {
     outnar = "",
     whatChanges = "",
     search = [],
+    art = null,
   }) {
     Object.assign(this, {
       id,
@@ -79,6 +95,7 @@ export class Pedal {
       outnar,
       whatChanges,
       search,
+      art,
     });
   }
 

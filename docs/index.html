@@ -70,13 +70,25 @@
   <div id="lede">
     <div id="ledehead"></div>
     <div class="catrow">
-      <!-- The PEDAL cell: the picker, and nothing else. This row is two lines of
+      <!-- The PEDAL cell: a toy pedal, and the picker. This row is two lines of
            small text tall, which is the whole reason the play button isn't in it
            — a 44px control sets the height of everything beside it, and the
            lesson below the rig was paying for that. The second line arrived with
            the note under the formula and cost about 12px; a button costs 44 and
-           buys the row nothing it doesn't already say. -->
-      <div id="pedalpick"></div>
+           buys the row nothing it doesn't already say.
+
+           The picture gets in on that rule rather than breaking it: it's 40px in
+           a row that's already 42, and it's absolutely positioned, so it sets the
+           height of nothing and the row costs exactly what it cost before. See
+           .pedalcell in the stylesheet for why out-of-flow isn't optional here,
+           and js/ui/art.js for why the thing is a toy and its knobs are dead.
+
+           Two elements, because mountPicker() owns #pedalpick and clears it —
+           the picture can't live inside the thing that wipes its own host. -->
+      <div class="pedalcell">
+        <span id="pedalart" class="pedalart"></span>
+        <div id="pedalpick"></div>
+      </div>
       <!-- The formula over its plain-English reading, the same stack the catalog
            page's rows build (see pedalRow). The second line is what stops this
            cell being addressed to people who already read tanh. -->

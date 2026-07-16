@@ -71,6 +71,34 @@ test("every pedal carries the metadata the UI reads", () => {
   }
 });
 
+// The bench reserves the picture's slot in CSS whether or not a pedal fills it
+// (see .pedalcell), so a missing `art` is a hole in the row rather than a crash —
+// which is exactly the kind of thing that ships. The row's job is to say what
+// you're looking at without being read; a pedal with no picture can't do it.
+test("every pedal declares art the bench row can draw", () => {
+  const SHAPES = ["box", "round"];
+  for (const [id, p] of Object.entries(PEDALS)) {
+    assert.ok(p.art, `${id} must declare art`);
+    assert.ok(SHAPES.includes(p.art.shape), `${id}.art.shape is a chassis art.js draws`);
+    assert.match(p.art.hue, /^#[0-9a-f]{6}$/, `${id}.art.hue is a 6-digit hex (art.js does math on it)`);
+    assert.ok(
+      Number.isInteger(p.art.knobs) && p.art.knobs >= 1 && p.art.knobs <= 3,
+      `${id}.art.knobs is the real box's count, 1-3`,
+    );
+  }
+});
+
+// Colour is the whole of what tells one icon from the next at 40px — the
+// silhouette says "a pedal" and only the hue says "which one". Two pedals sharing
+// a hue would be two pedals with the same picture.
+test("no two pedals share a hue", () => {
+  const seen = new Map();
+  for (const [id, p] of Object.entries(PEDALS)) {
+    assert.ok(!seen.has(p.art.hue), `${id} reuses ${seen.get(p.art.hue)}'s hue ${p.art.hue}`);
+    seen.set(p.art.hue, id);
+  }
+});
+
 test("clipping pedals carry a curve; delay pedals carry starting knobs", () => {
   for (const p of CLIPPING) {
     assert.ok(p instanceof ClippingPedal);

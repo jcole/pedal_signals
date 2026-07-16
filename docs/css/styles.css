@@ -669,6 +669,60 @@ b {
 #lede {
 	max-width: 1240px;
 }
+/* The PEDAL cell: the toy pedal, then the picker. The picture is out of flow, and
+   that is not a layout preference — it's what lets it exist at all.
+
+   This row aligns its four columns on a shared baseline, deliberately and at
+   length (see #lede .catrow below). A flex box takes its baseline from its first
+   item, and an <svg> hasn't got one, so a picture in flow would hand this cell a
+   synthesized baseline at the bottom of the image — about 20px under the picker's
+   text — and every other column in the row would drop to meet it. The row is the
+   fold's biggest tenant; 20px there is 20px off the lesson.
+
+   Absolute, none of that happens: the cell's baseline is the picker's, exactly as
+   it was when the cell held nothing else. It's the same trick #play.inviting uses
+   a few rules up, for the same reason — a picture that must not set a height.
+
+   The padding is the picture's own slot, so the picker starts clear of it: 40px
+   of art plus the 9px gap. Reserved by the cell rather than by the image, which
+   is what keeps the picker in ONE place across every pick — the whole point of
+   the rule under this one. Every pedal declares art today, but a pedal that
+   didn't would leave a hole here rather than sliding the picker left. */
+.pedalcell {
+	position: relative;
+	padding-left: 49px;
+}
+.pedalart {
+	position: absolute;
+	left: 0;
+	/* Top-aligned with the picker, and NOT centred on it. Centring is the obvious
+	   move and it's wrong here: the picker is 28px, the picture is 40, so centring
+	   hangs 6px of pedal above the cell and straight through the PEDAL column name
+	   sitting right there (measured — it clipped the word by 4px). Pinned to the
+	   top it runs 40px down into a row whose content box is 42, which is the space
+	   the two-line OPERATION cell already opened. So it hangs below the picker
+	   rather than above it, and below is where the room is. */
+	top: 0;
+	display: flex;
+	pointer-events: none;
+}
+/* 40px is the measurement, not a taste: the row's content box is 42px (the
+   OPERATION cell's two lines), so this is the tallest a picture can be here and
+   still be free. Bigger and it stops riding in the row's slack and starts buying
+   its own, out of the lesson's fold. Re-measure if you change it — the note above
+   #masthead explains what breaks and has the numbers.
+
+   Scoped to #lede only to clear the linter: #play svg sits a few rules above and
+   these two never meet — one is the transport's icon on the rig, this is a
+   picture on the page — but a bare `.pedalart svg` after it is a lower
+   specificity on the same element, which is the shape of a real bug often enough
+   that the rule is worth keeping. The ID is true (this cell only exists in the
+   bench row), so it costs nothing to say it. */
+#lede .pedalart svg {
+	height: 40px;
+	width: auto;
+	display: block;
+}
 /* The picker fills its cell rather than its content, which is why it looks roomy
    around a word like "fuzz". Sizing it to the name would be worse than roomy:
    the labels run from "fuzz" to "tube screamer", so the button would resize on

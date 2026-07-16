@@ -44,6 +44,10 @@ export const CLIPPING = [
     whatChanges: "harmonics roll off gently",
     drive: 6,
     fn: (x, drive, bias) => Math.tanh(drive * x + bias),
+    // The Boss OD-1: mustard, and the rare famous pedal with only two knobs
+    // (level and overdrive, no tone). Two here is the real box's count, not a nod
+    // to drive/bias — see the `art` note in base.js.
+    art: { shape: "box", hue: "#d8a83c", knobs: 2 },
   }),
   new ClippingPedal({
     id: "distortion",
@@ -54,6 +58,8 @@ export const CLIPPING = [
     whatChanges: "strong high harmonics",
     drive: 4,
     fn: (x, drive, bias) => Math.max(-1, Math.min(1, drive * x + bias)),
+    // The Boss DS-1: orange, three knobs (tone, level, dist).
+    art: { shape: "box", hue: "#e2622a", knobs: 3 },
   }),
   // Rails clip at different levels (+1 vs -0.6): asymmetry like a real transistor
   // fuzz -> strong even AND odd harmonics, and a visibly lopsided curve. Its
@@ -68,5 +74,9 @@ export const CLIPPING = [
     whatChanges: "strong even harmonics as well as odd",
     drive: 10,
     fn: (x, drive, bias) => Math.max(-0.6, Math.min(1, drive * x + bias)),
+    // The Fuzz Face, and the one pedal here that breaks the chassis: its
+    // enclosure is round, which makes it the only icon in the catalog you could
+    // name with the colour taken away.
+    art: { shape: "round", hue: "#1f6ea8", knobs: 2 },
   }),
 ];
