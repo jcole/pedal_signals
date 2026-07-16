@@ -342,13 +342,21 @@ b {
 
    One row is the budget, not a preference. Everything above the rig is spending
    the lesson's fold: at 1440x900 the masthead is 40px and the pedal row under it
-   is 84, so the lesson starts at y=776 and about 125px of it — its headings and
+   is 98, so the lesson starts at y=789 and about 111px of it — its headings and
    the first lines of both columns — is what tells a first-time reader there's
    anything below the rig at all. A header that stacks, or a lede that wraps to
-   two lines on a desktop, eats straight into that. (It has happened: this comment
-   claimed a 30px clearance while the real number was −2, because the family band
-   landed between the two and nobody re-measured. If you change anything above
+   two lines on a desktop, eats straight into that. (It has happened twice: this
+   comment claimed a 30px clearance while the real number was −2, because the
+   family band landed between the two and nobody re-measured — and it then said
+   84/776/125px until a measurement caught it at 98/789/111, the pedal row having
+   grown a line while this paragraph went on quoting the old one. Both times the
+   prose was fine and the arithmetic was fiction. If you change anything above
    #rig, re-measure and put the number back.)
+
+   The masthead's own height is the title's: 21px of text plus the 14px above it.
+   .sitesrc is 18px and centred, so it rides inside that and the row is 40px with
+   or without it — measured both ways, identical. Anything taller than the title
+   put up here is not free, whatever the flex box makes it look like.
 
    Hence no max-width, where every other block of prose on this site has one. A
    measure is for reading DOWN a column, and there's no column here — the whole
@@ -393,6 +401,30 @@ b {
 	font-size: 13px;
 	line-height: 1.5;
 	color: var(--ink-lo);
+}
+/* The way out to the source. A mark rather than a word, and not a .catlink: that
+   class is a word with a border under it, and a rule drawn under a picture is a
+   rule under nothing. The mark can be wordless because it's GitHub's own — the
+   same glyph sits on every repo page — and the masthead is one row that the
+   lesson's fold is paying for, so a label would spend that height saying what
+   the picture already says.
+
+   flex, so the anchor is exactly the icon: an inline <svg> sits on the text
+   baseline and carries a descender's worth of line-height under it, which would
+   push this box taller than the mark and hand the row height nobody asked for.
+   Centred rather than baselined for the same reason — a picture has no baseline
+   worth aligning to, and the eye wants it level with the title beside it.
+
+   Colour rides currentColor in the <path>, so the hover is one property here and
+   the mark tracks the same ink-lo → accent move every other link on the page
+   makes. */
+.sitesrc {
+	display: flex;
+	align-self: center;
+	color: var(--ink-lo);
+}
+.sitesrc:hover {
+	color: var(--accent);
 }
 /* The centre panel's header bar: what the chart is, on the left, and the
    transport on the right. Every other .panel h3 stacks its lines, so this is
