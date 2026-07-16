@@ -4,6 +4,10 @@ import { defineConfig, devices } from "@playwright/test";
 // a test/ directory, and these are Playwright's to run, not node's.
 export default defineConfig({
   testDir: "./e2e",
+  // Both of Playwright's output dirs default to the top level; tmp/ is where
+  // this repo already keeps things it doesn't mind losing.
+  outputDir: "./tmp/test-results",
+  reporter: [["html", { outputFolder: "./tmp/playwright-report" }]],
   use: { baseURL: "http://localhost:8000" },
   // All three engines, because they disagree about something the picker leans on:
   // clicking a <button> focuses it in Chrome and Firefox, but not in Safari. A
