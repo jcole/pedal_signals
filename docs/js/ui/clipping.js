@@ -16,6 +16,14 @@ export default {
   voutDefault: 0.8,
   pedals: CLIPPING,
   spectrumTitle: "new harmonics — the tone you hear",
+  // The centre panel plots output against input — the same unit on both axes —
+  // so its curve only means what it looks like at 1:1, and it's read against a
+  // y = x that has to actually be at 45°. The catalog's thumbnail is the drawing
+  // with the axis labels taken away, which makes the box itself the only thing
+  // saying what the scale is; squashed, this family's whole distinction (a knee
+  // that bends vs one that corners) flattens out. delay and modulation plot
+  // against time and have no such diagonal, so they don't ask. See thumb.js.
+  thumbSquare: true,
 
   lesson: {
     formula: "y[n] = f(x[n])",

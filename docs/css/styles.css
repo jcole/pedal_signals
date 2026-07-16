@@ -1019,6 +1019,44 @@ a.catrow:hover .catlabel {
 	font-size: 13px;
 	line-height: 1.5;
 }
+/* The SHAPE column: a fourth track on the catalog page's rows, holding each
+   pedal's own curve. The same move #lede makes further down for its own fourth
+   column, and it has to be made in the same two places for the same reason —
+   .cathead is .catrow's grid rule, so a track added to one is a track added to
+   both or the names stop sitting over what they name. .famhead takes the track
+   too (it's the same rule) and leaves it empty, which is honest: the band is the
+   general case, and the general case of a curve is not a curve.
+
+   Scoped to #cat rather than left loose on .catrow, because .catrow is also the
+   bench's row and its fourth column is already spoken for. */
+#cat .cathead,
+#cat .famhead,
+#cat .catrow {
+	grid-template-columns:
+		minmax(9rem, 1fr) minmax(11rem, 1.15fr) minmax(84px, 0.45fr)
+		minmax(11rem, 1.3fr);
+}
+/* Sized to the row rather than the row to it: two lines of small text already
+   stand ~42px, so the curve very nearly rides in height the row was spending
+   anyway — the same bargain the bench's toy pedal strikes in .pedalcell, and the
+   reason the whole page didn't get half again as tall for this. The 56 over the
+   42 is the clipping family's fault and worth it: those thumbnails are square (a
+   transfer curve's axes are the same unit — see thumb.js), so height is the only
+   thing that makes them bigger, and at 44 the knee everything else on the row is
+   describing was 40px across.
+
+   No border and no fill. It's a drawing on the lit page, not a panel: the rig's
+   dark slabs are where the instrument is, and nine little instrument panels in a
+   catalog would read as nine things to operate. What's left is the ink. */
+.catthumb {
+	width: 100%;
+	height: 56px;
+	/* Centred, not on the shared baseline the rest of the row sits on: a drawing
+	   has no baseline to share — the bottom of this box is an axis, not a line of
+	   text, and hanging it off the row's would sink it under everything it's
+	   drawn beside. */
+	align-self: center;
+}
 /* Under ~640px the three columns stop being columns — the formulas are the
    widest thing on the page and they'd wrap to nothing. So the row stacks and
    the header, which only names columns that no longer exist, goes away. */

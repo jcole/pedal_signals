@@ -56,21 +56,13 @@ import { pedalArt } from "./art.js";
 // that's one rule in the stylesheet.
 import { headRow } from "./rows.js";
 
-// ---- colors (shared palette; effects read ACCENT for their center curve) ----
-// styles.css owns these: the page paints the "in"/"out" legend words in a panel
-// header with the same --dry/--wet the canvas strokes its traces with, and two
-// copies of a color that must match is how they drift. So read them off :root
-// rather than restating them. The literals below are fallbacks for a missing or
-// unparsed stylesheet only — keep them equal to the CSS, and change the CSS when
-// you want a different color.
-const css = (name, fallback) =>
-  getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
-  fallback;
-const DRY = css("--dry", "#9aa0a6"),
-  WET = css("--wet", "#dd7048"),
-  ACCENT = css("--accent-lo", "#7fa650"),
-  GRID = css("--grid", "#2c3125"),
-  ZERO = css("--zero", "#3a4030");
+// The drawing primitives and the palette, which this file used to own. They moved
+// out when the catalog page started drawing the same curves at row size and had
+// to draw them in the same ink — see draw.js. `H` is the bundle handed to a
+// view's hooks; the three colours below are the ones this file's own panels
+// stroke with.
+import { frame as fit, H, line, titles, txt } from "./draw.js";
+const { DRY, WET, ZERO } = H.colors;
 
 // ---- module-level state ----------------------------------------------------
 let view = null; // the mounted page: pedals + UI hooks
@@ -84,63 +76,11 @@ let lastState = null,
 
 // ---- canvas plumbing -------------------------------------------------------
 const C = {};
-const ML = 40,
-  MR = 12,
-  MT = 10,
-  MB = 26; // plot margins reserved for axis labels
-const AXIS = "#6b7361",
-  AXTITLE = "#525a4a";
-function frame(cv) {
-  const dpr = devicePixelRatio || 1,
-    w = cv.clientWidth,
-    h = cv.clientHeight;
-  cv.width = w * dpr;
-  cv.height = h * dpr;
-  const g = cv.getContext("2d");
-  g.setTransform(dpr, 0, 0, dpr, 0, 0);
-  g.clearRect(0, 0, w, h);
-  return { g, w, h, L: ML, R: w - MR, T: MT, B: h - MB };
-}
-function line(g, xs, ys, sx, sy, color, width) {
-  g.strokeStyle = color;
-  g.lineWidth = width || 1.5;
-  g.beginPath();
-  for (let i = 0; i < xs.length; i++) {
-    const px = sx(xs[i]),
-      py = sy(ys[i]);
-    i ? g.lineTo(px, py) : g.moveTo(px, py);
-  }
-  g.stroke();
-}
-function txt(g, s, x, y, align, base, color) {
-  g.fillStyle = color || AXIS;
-  g.font = "10px ui-monospace,Menlo,monospace";
-  g.textAlign = align || "start";
-  g.textBaseline = base || "alphabetic";
-  g.fillText(s, x, y);
-}
-function vtxt(g, s, x, y, color) {
-  g.save();
-  g.translate(x, y);
-  g.rotate(-Math.PI / 2);
-  txt(g, s, 0, 0, "center", "middle", color);
-  g.restore();
-}
-// y-axis title (rotated) + x-axis title, shared by the signal panels
-function titles(g, F, ytitle, xtitle) {
-  vtxt(g, ytitle, 11, (F.T + F.B) / 2, AXTITLE);
-  txt(g, xtitle, (F.L + F.R) / 2, F.B + 13, "center", "top", AXTITLE);
-}
-
-// The helper bundle handed to an effect's draw/audio hooks: harness-owned
-// drawing primitives and the shared palette. (DSP + constants come from dsp.js.)
-const H = {
-  line,
-  txt,
-  vtxt,
-  titles,
-  colors: { DRY, WET, ACCENT, GRID, ZERO },
-};
+// Plot margins, reserved for axis labels. The rig's own, and the reason draw.js
+// takes them as an argument rather than knowing them: a thumbnail on the catalog
+// page draws the same curve with no labels to reserve for, so it passes zeroes.
+const MARGINS = { L: 40, R: 12, T: 10, B: 26 };
+const frame = (cv) => fit(cv, MARGINS);
 
 // ---- pedal-declared sizing --------------------------------------------------
 // A per-sample pedal analyses N samples and shows ~13.5 ms of them; a time-based

@@ -28,10 +28,28 @@
 // bare "clipping →" — the label carries the noun, so the link doesn't have to
 // say it twice. Which is the whole reason the column exists: MODULATION under a
 // header reading PEDAL is what made a reader ask what modulation was.
-export function headRow(extra) {
+// `extra` is the fourth column, and both pages have one — but not the same one,
+// which is why it's a parameter and not a fourth name in the list. The bench
+// spends it on the way out to the family; the catalog spends it on the pedal's
+// own curve (see thumb.js). Each page's fourth column is the thing the OTHER
+// page is, which is about as good as a pair of pages gets.
+//
+// `at` is where it goes, and the two pages disagree because their columns mean
+// different things. The bench's FAMILY is a way out, and a way out belongs at the
+// end of what it's a way out of. The catalog's SHAPE is the picture of the
+// OPERATION — the same pairing the bench itself makes, where the centre panel's
+// title is the pedal's formula and the curve under it is what that formula draws
+// (see setPedal). So it sits against the formula, and the row reads
+// operation → its picture → what it does to you: the cause, the shape of the
+// cause, the consequence. Put it on the end instead and WHAT CHANGES wedges
+// between the formula and the drawing OF that formula — which reads worst in the
+// delay family, where all three operations are the same string and the shapes
+// beside them are the only thing telling echo from slapback.
+export function headRow(extra, at = 3) {
   const r = mk("div", "cathead");
   const names = ["pedal", "operation", "what changes"];
-  for (const t of extra ? [...names, extra] : names) {
+  if (extra) names.splice(at, 0, extra);
+  for (const t of names) {
     const c = mk("span");
     c.textContent = t;
     r.appendChild(c);
@@ -98,7 +116,17 @@ export function famRow(f) {
   const what = mk("span", "famwhat");
   what.textContent = f.lesson?.oneLiner ?? "";
 
-  head.append(who, op, what);
+  // Nothing in the SHAPE column, but the band still has to hold its place in it:
+  // these cells are auto-placed, so a band that skipped the track would slide its
+  // one-liner into it and print the family's prose under a column headed SHAPE.
+  //
+  // Empty on purpose, and not for want of something to draw. Every other cell in
+  // this row is the general case its pedals are instances of — that's what the
+  // band is — and there is no general case of a curve. Clipping's three pedals
+  // ARE three shapes; the thing they have in common is the formula two cells
+  // left, which is exactly why that cell has y[n] = f(x[n]) in it and this one
+  // has nothing.
+  head.append(who, op, mk("span"), what);
   return head;
 }
 
@@ -108,7 +136,11 @@ export function famRow(f) {
 // Withheld, it's a plain div, which is the bench's case: the row there describes
 // the pedal already on the bench, and a link to where you are is a link that
 // lies about being a way out.
-export function pedalRow(p, href) {
+// `thumb` is the catalog's fourth cell: the pedal's curve, drawn from its own
+// `fn` (thumb.js builds it; this file only makes a hole for it). Withheld on the
+// bench, which has no fourth column to put it in and a 420px live one of the same
+// drawing twelve inches below.
+export function pedalRow(p, href, thumb) {
   const a = mk(href ? "a" : "div", "catrow");
   if (href) {
     a.href = href;
@@ -151,7 +183,10 @@ export function pedalRow(p, href) {
   const what = mk("span", "catwhat");
   what.textContent = p.whatChanges;
 
-  a.append(ped, op, what);
+  // The thumbnail goes between them, against the formula it draws — see headRow
+  // for why. DOM order is column order here (the cells are auto-placed into the
+  // grid), so this append IS the layout.
+  a.append(ped, op, ...(thumb ? [thumb] : []), what);
   return a;
 }
 

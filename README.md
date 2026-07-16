@@ -38,7 +38,8 @@ family, and `?pedal=` is the entire address.
 
 ```
 docs/                   ← the published site (GitHub Pages source)
-  index.html            ← page markup; wires the picker to the views
+  index.html            ← the bench: page markup; wires the picker to the views
+  pedals.html           ← the catalog: every pedal on one page, no rig
   css/styles.css        ← all styling, and the source of truth for chart colors
   js/
     dsp.js              ← pure, generic core: WAV parse, FFT/spectrum, envelope,
@@ -51,7 +52,12 @@ docs/                   ← the published site (GitHub Pages source)
       index.js          ← aggregates the catalog (PEDALS, keyed by id)
     ui/                 ← the VIEW: DOM / canvas / Web Audio glue
       harness.js        ← effect-neutral harness; renders a view over pedals
+      draw.js           ← canvas primitives + the palette, read off the CSS
       picker.js         ← the one pedal picker for the whole catalog
+      rows.js           ← the three-column row, shared by both pages
+      catalog.js        ← stacks every family's rows — pedals.html's only view
+      thumb.js          ← a pedal's curve at row size, for the catalog's SHAPE
+      art.js            ← the toy pedal beside the bench's picker
       clipping.js       ← per-family views: panels, controls, audio graph
       delay.js
       modulation.js
@@ -62,6 +68,7 @@ test/                   ← unit tests for the pure core (node --test)
 e2e/                    ← browser tests (Playwright)
   picker.spec.js
   routing.spec.js
+  catalog.spec.js
 ```
 
 Nothing under `js/dsp.js` or `js/pedals/` touches the DOM, canvas, or Web
