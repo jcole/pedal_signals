@@ -26,7 +26,14 @@ export function mountCatalog(host, families) {
   host.innerHTML = "";
   // The fourth column: every row's own curve. See thumb.js for why the page
   // draws one at all, and rows.js for why the fourth column is a parameter.
-  host.appendChild(headRow("shape", 2));
+  //
+  // "operation shape", not "shape": the row already has another shape in it — the
+  // pedal drawing in the PEDAL cell, which is literally an `art.shape` (see
+  // art.js) and sits closer to the header than the curve does. Naming the
+  // operation here points the word at the right cell, and says in the header what
+  // rows.js has only ever explained in a comment: this column is the picture OF
+  // the column beside it.
+  host.appendChild(headRow("operation shape", 2));
   // Built and drawn in two passes, and it isn't a style choice: a canvas takes
   // its size from its CSS box and has to ASK for it, so nothing can be drawn
   // into one until the grid it sits in exists and has been laid out. Pass one

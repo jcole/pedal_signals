@@ -36,10 +36,12 @@
 //
 // `at` is where it goes, and the two pages disagree because their columns mean
 // different things. The bench's FAMILY is a way out, and a way out belongs at the
-// end of what it's a way out of. The catalog's SHAPE is the picture of the
-// OPERATION — the same pairing the bench itself makes, where the centre panel's
-// title is the pedal's formula and the curve under it is what that formula draws
-// (see setPedal). So it sits against the formula, and the row reads
+// end of what it's a way out of. The catalog's OPERATION SHAPE is the picture of
+// the OPERATION — its header names the column beside it because the row holds a
+// second shape (the pedal drawing) that a bare SHAPE would grab first. It's the
+// same pairing the bench itself makes, where the centre panel's title is the
+// pedal's formula and the curve under it is what that formula draws (see
+// setPedal). So it sits against the formula, and the row reads
 // operation → its picture → what it does to you: the cause, the shape of the
 // cause, the consequence. Put it on the end instead and WHAT CHANGES wedges
 // between the formula and the drawing OF that formula — which reads worst in the
