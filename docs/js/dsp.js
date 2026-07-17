@@ -148,6 +148,25 @@ export function envelopeHeld(sig, holdMs = 1000 / F0) {
   return e;
 }
 
+// Centered box smooth, width one carrier period by default. The held follower
+// steps once per cycle; averaged over that same period the staircase becomes a
+// smooth ramp, and the LFO (period ≫ a cycle) rides through untouched. Pure, O(n)
+// via a running sum; centered so it adds no lag.
+export function smooth(sig, winMs = 1000 / F0) {
+  const n = sig.length,
+    W = Math.max(1, Math.round((winMs / 1000) * SR)),
+    h = W >> 1,
+    e = new Float64Array(n),
+    ps = new Float64Array(n + 1); // ps[k] = sum of sig[0..k-1]
+  for (let i = 0; i < n; i++) ps[i + 1] = ps[i] + sig[i];
+  for (let i = 0; i < n; i++) {
+    const lo = Math.max(0, i - h),
+      hi = Math.min(n - 1, i + h);
+    e[i] = (ps[hi + 1] - ps[lo]) / (hi - lo + 1);
+  }
+  return e;
+}
+
 // ---- FFT / spectrum --------------------------------------------------------
 // tiny iterative radix-2 FFT (real in) — mutates `re`, returns magnitude spectrum
 export function fftMag(re) {

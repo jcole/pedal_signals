@@ -4,7 +4,7 @@
 // wet-vs-dry envelope panel, the sideband spectrum, the rate/depth controls, and
 // the live gain-modulation graph. Held-peak envelope + FFT from dsp.js; LFO curve
 // from the pedal's own curve(params).
-import { envelopeHeld, F0, SR, specDb, windowed } from "../dsp.js";
+import { envelopeHeld, F0, smooth, SR, specDb, windowed } from "../dsp.js";
 import { MODULATIONS, NMOD, SPANMS_MOD } from "../pedals/index.js";
 
 // drawCenter plots the LFO from its formula, not the analysis buffer — a fixed
@@ -126,8 +126,10 @@ export default {
     // Held, not released: the carrier is a sustained tone, and a follower that
     // coasts between its peaks draws its own 18% ripple over every LFO curve here.
     // See dsp.js — the delay page wants the other one.
-    const de = envelopeHeld(inp),
-      we = envelopeHeld(out);
+    // Held follower steps once per carrier cycle; smooth over that same period so
+    // the staircase reads as the pulse it is, not fuzz. LFO period ≫ a cycle.
+    const de = smooth(envelopeHeld(inp)),
+      we = smooth(envelopeHeld(out));
     const xs = new Array(span);
     for (let i = 0; i < span; i++) xs[i] = i;
     H.line(g, xs, de, sx, sy, DRY, 1.5);

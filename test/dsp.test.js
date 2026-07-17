@@ -18,6 +18,7 @@ import {
   windowed,
   envelope,
   envelopeHeld,
+  smooth,
 } from "../docs/js/dsp.js";
 import { PEDALS, echo } from "../docs/js/pedals/index.js"; // fixtures: real pedal DSP
 
@@ -283,5 +284,45 @@ test("envelopeHeld never dips below the signal it traces", () => {
   const e = envelopeHeld(sig);
   for (let i = 0; i < sig.length; i++) {
     assert.ok(e[i] >= Math.abs(sig[i]) - 1e-12, `covers |sig| at ${i}`);
+  }
+});
+
+test("smooth leaves a constant alone, ends included", () => {
+  // A box average of a constant is that constant everywhere — the clipped
+  // half-windows at the ends divide their shorter sum by their shorter count.
+  const e = smooth(Float64Array.from({ length: 2000 }, () => 0.7));
+  for (let i = 0; i < e.length; i++) {
+    assert.ok(Math.abs(e[i] - 0.7) < 1e-12, `flat at ${i}: ${e[i]}`);
+  }
+});
+
+test("smooth turns the held follower's staircase into a monotone ramp", () => {
+  // A rising staircase — flats one carrier period wide, the shape envelopeHeld
+  // carves on a rising amplitude. The step edges are the choppiness.
+  const W = Math.round(SR / F0);
+  const n = 40 * W;
+  const stair = Float64Array.from({ length: n }, (_, i) =>
+    Math.floor(i / W) / 40,
+  );
+  let rawJump = 0;
+  for (let i = 1; i < n; i++) rawJump = Math.max(rawJump, stair[i] - stair[i - 1]);
+
+  const e = smooth(stair);
+  let smJump = 0;
+  for (let i = 1; i < n; i++) {
+    assert.ok(e[i] >= e[i - 1] - 1e-12, `non-decreasing at ${i}`);
+    smJump = Math.max(smJump, e[i] - e[i - 1]);
+  }
+  // the step edge is spread across the whole window, so the largest jump shrinks
+  // by roughly W×
+  assert.ok(smJump < rawJump / 10, `edge softened: ${smJump} vs ${rawJump}`);
+});
+
+test("smooth stays within the signal's range and preserves length", () => {
+  const sig = Float64Array.from({ length: 500 }, (_, i) => Math.sin(i / 5));
+  const e = smooth(sig, 0.3);
+  assert.equal(e.length, sig.length);
+  for (let i = 0; i < e.length; i++) {
+    assert.ok(e[i] >= -1 - 1e-12 && e[i] <= 1 + 1e-12, `bounded at ${i}: ${e[i]}`);
   }
 });
