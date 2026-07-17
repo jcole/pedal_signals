@@ -293,6 +293,22 @@ b {
 	color: var(--inst-ink);
 	overflow-wrap: anywhere;
 }
+/* the formula over its gloss, tight — the .ctl wrapper spaces the pair off the
+   curve below. Quiet (--inst-ink-lo), like the catalog's catnote under its formula */
+.deckopwrap {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+}
+.decknote {
+	font-size: 11.5px;
+	line-height: 1.4;
+	color: var(--inst-ink-lo);
+}
+/* delay declares no techNote; hide the blank line so the curve doesn't sit low */
+.decknote:empty {
+	display: none;
+}
 /* the pedal deck's knobs; display:contents so its children ARE the deck (the bar,
    canvas and knobs). Exists because buildControls() wipes it — see index.html. */
 #pedalcol > #centerctls {
@@ -555,45 +571,6 @@ b {
 	font-size: 13px;
 	color: var(--ink-lo);
 	margin: 10px 8px;
-}
-/* The picker in the OPERATION deck — dark overrides on the lit base above, so
-   they sit here, after the rules they override (the linter's descending-specificity
-   warning). The .pickrow (toy pedal, then picker) is a plain .ctl; it just centres
-   and gaps them. */
-#pedalcol .pickrow {
-	gap: 9px;
-}
-/* the toy pedal, in flow now (the old top row pinned it absolute to keep an
-   svg's baseline from dropping the row; a .ctl centres, so no pin) */
-#pedalcol .pedalart {
-	display: flex;
-	flex: none;
-	pointer-events: none;
-}
-#pedalcol .pedalart svg {
-	height: 36px;
-	width: auto;
-	display: block;
-}
-/* the picker itself: a control cut into the chassis like the source .seg —
-   darker than the deck, --inst-ink text — not the lit header button it was up
-   top. Fills the row (min-width dropped: the base 210px would overflow a 240px
-   rail). Green still marks open, as it marks chosen elsewhere. */
-#pedalcol .pickbtn {
-	flex: 1;
-	min-width: 0;
-	overflow: hidden;
-	background: var(--inst);
-	color: var(--inst-ink);
-	border-color: var(--inst-edge);
-}
-#pedalcol .pickbtn:hover,
-#pedalcol .openpick .pickbtn {
-	background: var(--inst-head);
-	border-color: var(--accent);
-}
-#pedalcol .pickcar {
-	color: var(--inst-ink-lo);
 }
 .srcbtn:disabled {
 	opacity: 0.5;
@@ -924,82 +901,82 @@ a.catrow:hover .catlabel {
    losing to an ID — the linter's descending-specificity warning). */
 #lede .cathead,
 #lede .benchrow {
-	grid-template-columns:
-		minmax(6rem, 0.7fr) minmax(8rem, 0.95fr)
-		minmax(9rem, 1.15fr) minmax(8rem, 1.1fr);
+	/* four columns reading the signal path: pedal | changes | you hear | family.
+	   The pedal track is a FIXED width, not auto: the head and the row are separate
+	   grids, and an auto track sizes to each one's own content (the word "pedal" vs
+	   the picker), so the heads would drift off their columns. The two middle claims
+	   get the room (1fr each). Wider column gap than the base — the claims want air. */
+	grid-template-columns: 13.5rem minmax(9rem, 1fr) minmax(9rem, 1fr) minmax(8rem, 0.8fr);
+	gap: 8px 30px;
 }
 #lede .cathead {
 	margin-top: 0;
 	/* and no gap below — here the names head one row and sit right on it */
 	padding-bottom: 2px;
 }
-/* the bench's one row: quiet context (the active choice lives in the rig's deck
-   now), so no tray fill, no green edge. */
+/* the bench's one row: quiet context, so no tray fill, no green edge */
 #lede .benchrow {
 	margin: 0;
 	padding-top: 4px;
 }
-/* the picked pedal, first and the loudest thing read — a proper sans headline,
-   not the family's mono caps (the family is secondary here, one column right) */
-#benchped {
-	font-size: 15px;
-	font-weight: 700;
-	color: var(--ink-hi);
+/* the four columns want the row's width; cap only so the family doesn't drift to
+   the far edge on a wide viewport */
+#ledetable {
+	flex: 1;
+	max-width: 1120px;
 }
-/* the pedal's own effect, under its name — a quiet sub-line like the family's
-   class or note, the specific case the WHAT CHANGES column generalises */
-#benchwhat {
-	font-size: 11.5px;
-	line-height: 1.45;
-	color: var(--ink-lo);
+/* PEDAL cell: the toy pedal and the picker as one unit. align-items:baseline so the
+   picker's text — not the taller icon — sets the unit's baseline, which is what the
+   row aligns the claims to (so "the peaks get clipped" sits on "overdrive"). */
+.pickunit {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 9px;
 }
-/* the family's word about its two charts, beside the table (see index.html for
-   why beside, not in). The one bit of prose on the page — so no mono, no caps.
-   13px (the lede's prose size) and top-aligned; --ink-lo because it's the page's
-   aside about its own layout, quieter than the rows' claims about the pedal. */
-.why {
-	margin: 0;
-	padding: 12px 16px;
-	border: 1px solid var(--rule);
-	border-radius: 4px;
-	flex: 1 1 0;
-	min-width: 280px;
-	max-width: 72ch;
-	align-self: stretch;
+/* scoped to #lede (the art's only home now) so it clears #play svg above — the
+   linter's descending-specificity warning */
+#lede .pedalart {
+	display: flex;
+	flex: none;
+	/* centred on the picker, and out of the baseline the claims align to */
+	align-self: center;
+	pointer-events: none;
+}
+#lede .pedalart svg {
+	height: 34px;
+	width: auto;
+	display: block;
+}
+/* the picker on the lit page keeps the base .pickbtn look; only rein in the width
+   (the base 210 is sized for the dark rail) */
+#lede .pickbtn {
+	min-width: 150px;
+}
+/* a chart claim: the punchline (what the pedal does), set loud, over the quiet
+   chip that names the chart proving it (echoing the panel's own .ctype chip) */
+.factcell {
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
-	gap: 7px;
+	gap: 6px;
 }
-/* the box's own label, in the rig's caption voice (mono caps, --ink-lo) — the
-   panels below title themselves the same way, so the aside reads as one of them */
-.whylabel {
-	font-family: var(--mono);
-	font-size: 10px;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--ink-lo);
-}
-/* scoped to #lede so its specificity clears #lesson p above (the linter's
-   descending-specificity warning) — they never meet, different sections */
-#lede .why p {
-	margin: 0;
-	font-size: 13px;
-	line-height: 1.5;
-	color: var(--ink-lo);
-}
-/* the chart names in the prose, echoing the panels' .ctype chips (mono caps) so a
-   word in the sentence points at the panel it names. Lighter than the dark chip —
-   two per sentence in light prose — but the same mono-caps signal. */
-.chartref {
-	font-family: var(--mono);
-	font-size: 0.82em;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
+.factcell .claim {
+	font-size: 15.5px;
+	font-weight: 600;
+	line-height: 1.3;
 	color: var(--ink-hi);
-	background: var(--sunk);
+	text-wrap: balance;
+}
+.factcell .chip {
+	align-self: flex-start;
+	font-family: var(--mono);
+	font-size: 9.5px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--ink-lo);
+	background: var(--tray);
 	border-radius: 3px;
-	padding: 1px 5px;
+	padding: 2px 7px;
 	white-space: nowrap;
 }
 /* on this page the band's name is the way out (see famRow), the one .famname

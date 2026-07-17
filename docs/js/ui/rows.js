@@ -128,66 +128,6 @@ export function pedalRow(p, href, thumb) {
   return a;
 }
 
-// The bench's top band. Unlike famRow (catalog), where the family sits IN the
-// PEDAL column as a "fourth pedal", here the pedal is real: it leads its own PEDAL
-// column and the family gets the second. OPERATION and WHAT CHANGES are the
-// family's — the general form (abstract f; the pedal's concrete formula lives in
-// the rig's deck) and the shared effect. The pedal name is a standing #benchped,
-// filled by setPedal, because a pick changes it without a remount.
-export function benchRow(f, { href } = {}) {
-  const r = mk("div", "benchrow");
-
-  // PEDAL: the picked instance — its name, then its own effect under it (both
-  // filled by setPedal). Everything pedal-specific lives in this one column, so the
-  // three that follow are all the family's, at one altitude.
-  const pedCell = mk("span", "famcell");
-  const pedName = mk("span", "benchped");
-  pedName.id = "benchped";
-  pedCell.appendChild(pedName);
-  const pedWhat = mk("span", "benchwhat");
-  pedWhat.id = "benchwhat";
-  pedCell.appendChild(pedWhat);
-
-  // FAMILY: the name (the way out to the catalog) over its signal class
-  const famCell = mk("span", "famcell");
-  const name = mk(href ? "a" : "span", "famname");
-  if (href) name.href = href;
-  name.textContent = f.navLabel;
-  // no "family" — the FAMILY column head already says it. Just the arrow, the
-  // way out to compare (kept in the text, not CSS: a margin would leave the name
-  // reading "clipping→" to a screen reader or a copied selection).
-  const noun = mk("span", "famnoun");
-  noun.textContent = " →";
-  name.appendChild(noun);
-  famCell.appendChild(name);
-  if (f.lesson?.klass) {
-    const klass = mk("span", "famklass");
-    klass.textContent = f.lesson.klass;
-    famCell.appendChild(klass);
-  }
-
-  // OPERATION: the family's general form over its plain-English note
-  const opCell = mk("span", "famcell");
-  if (f.lesson?.formula) {
-    const b = mk("b", "famop");
-    b.textContent = f.lesson.formula;
-    opCell.appendChild(b);
-    if (f.lesson.formulaNote) {
-      const note = mk("span", "famnote");
-      note.textContent = f.lesson.formulaNote;
-      opCell.appendChild(note);
-    }
-  }
-
-  // WHAT CHANGES: the family's shared effect — the general case of the pedal's own
-  // effect shown under its name. No full stop (an answer to a heading).
-  const whatCell = mk("span", "famwhat");
-  whatCell.textContent = f.lesson?.oneLiner ?? "";
-
-  r.append(pedCell, famCell, opCell, whatCell);
-  return r;
-}
-
 export function mk(tag, cls) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;

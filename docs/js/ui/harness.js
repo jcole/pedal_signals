@@ -13,13 +13,8 @@
 // hands it to mount(). The contract:
 //
 //   const view = {
-//     id, navLabel,           // family key + name; the picker uses it as the
-//                             // heading and as the gloss under the chosen pedal
-//     why,                    // HTML: why this family gets THESE two charts — the
-//                             // sentence beside the charts, addressed to a reader
-//                             // who can't read them yet. Shape: what the pedal
-//                             // leaves alone, what it changes, "So:" the two charts
-//                             // that fall out, in stacking order.
+//     id, navLabel,           // family key + name; the picker uses it as the list
+//                             // heading, the band as the FAMILY cell's name
 //     blendDefault,           // where the dry/wet crossfade starts (0 dry, 1 wet)
 //     pedals: [ Pedal, … ],   // what the picker lists; the selected one drives
 //                             // input+process
@@ -60,14 +55,11 @@
 // process(). H is the helper bundle (drawing primitives + palette) passed to the
 // view hooks. DSP core and constants (SR, N, KBIN, …) live in dsp.js.
 import { F0, MSMAX, normalize, parseWav, SPAN, SR } from "../dsp.js";
-// the toy pedal in the bench row's PEDAL cell (art.js has the reasoning)
+// the toy pedal in the band's PEDAL cell (art.js has the reasoning)
 import { pedalArt } from "./art.js";
 // drawing primitives and palette, shared with the catalog so both draw the same
 // curves in the same ink (see draw.js). `H` is the bundle handed to view hooks.
 import { frame as fit, H, line, titles, txt } from "./draw.js";
-// the bench row's column names, from the same module the catalog uses — named once,
-// together. The row itself is in index.html (standing DOM a re-render would destroy).
-import { benchRow, headRow } from "./rows.js";
 // the rail's curve glyph is the catalog's thumbnail, live. See drawRail.
 import { drawThumb } from "./thumb.js";
 
@@ -235,12 +227,12 @@ function setParam(id, v) {
 // none of it can move to mount()).
 function setPedal(id) {
   pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
-  // the top band's PEDAL cell: the picked pedal's name and, under it, its own
-  // effect (overdrive and fuzz differ — the family's shared effect is a column over)
-  document.getElementById("benchped").textContent = pedal.label;
-  document.getElementById("benchwhat").textContent = pedal.whatChanges ?? "";
-  // the toy pedal beside the picker, in the OPERATION deck
+  // the band's PEDAL cell: the toy pedal beside the picker, then the two chart
+  // claims — outnar (what the waveform shows) over whatChanges (the spectrum)
   document.getElementById("pedalart").innerHTML = pedalArt(pedal.art);
+  document.getElementById("benchchanges").textContent = pedal.outnar ?? "";
+  document.getElementById("benchhear").textContent = pedal.whatChanges ?? "";
+  // the same waveform line still titles its own panel (kept until we de-dupe)
   if (pedal.outnar)
     document.getElementById("outnar").textContent = pedal.outnar;
   // the bottom panel's headline — a string per family, or a fn(pedal) per pick
@@ -249,8 +241,10 @@ function setPedal(id) {
       typeof view.spectrumTitle === "function"
         ? view.spectrumTitle(pedal)
         : view.spectrumTitle;
-  // the deck's formula, under the OPERATION bar and over the curve that draws it
+  // the deck's formula over a gloss of the curve's character (tech over techNote);
+  // techNote is absent on delay, and :empty hides the blank line
   document.getElementById("pedalop").textContent = pedal.tech ?? "";
+  document.getElementById("pedalnote").textContent = pedal.techNote ?? "";
   // the tab names the pedal, because the URL does (?pedal=overdrive). Site name
   // first: tabs truncate from the right, so keep the half that says where you are.
   document.title = `Pedal signals — ${pedal.label}`;
@@ -468,20 +462,13 @@ export function mount(v, opts = {}) {
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
-  // The family's band — the only row in the top table now (the pedal moved to the
-  // rig's OPERATION deck). Here, not in setPedal(): it's the family's, and the
-  // family only changes on a mount; its name is the way out to the catalog, so the
-  // href is built here (the view knows its own id). Appended after #ledehead's
-  // column names, and cleared by hand since a remount has no host to wipe.
-  const table = document.getElementById("ledetable");
-  table.querySelector(".benchrow")?.remove();
-  table.appendChild(
-    benchRow(view, { href: `./pedals.html#${encodeURIComponent(view.id)}` }),
-  );
-  // the family's word about its charts (see index.html). innerHTML, not text: the
-  // copy wraps its chart names in <span class="chartref"> to echo the panel chips —
-  // authored strings, same as lesson.body below.
-  document.getElementById("whytxt").innerHTML = view.why;
+  // The band's FAMILY cell — filled here, not in setPedal(): it's the family's, and
+  // the family only changes on a mount. Its name is the way out to the catalog, so
+  // the href is built here (the view knows its own id).
+  const fam = document.getElementById("benchfam");
+  fam.href = `./pedals.html#${encodeURIComponent(view.id)}`;
+  document.getElementById("benchfamname").textContent = view.navLabel;
+  document.getElementById("benchklass").textContent = view.lesson?.klass ?? "";
   document.getElementById("blend").value = view.blendDefault;
   // What the two output panels ARE — the view's words, not hardcoded (a family may
   // draw something else). Top defaults to "waveform", the harness's own plot; the
@@ -491,6 +478,11 @@ export function mount(v, opts = {}) {
   document.getElementById("specunit").textContent = view.spectrumUnit
     ? ` (${view.spectrumUnit})`
     : "";
+  // the band's chart chips mirror the panels' own names, so a claim points at the
+  // chart that proves it (see index.html)
+  document.getElementById("benchchangeschip").textContent =
+    view.timeTech ?? "waveform";
+  document.getElementById("benchhearchip").textContent = view.spectrumTech;
   renderLesson();
   buildControls();
   // seed labels + defaults from the asked-for pedal, falling back to the
@@ -501,9 +493,6 @@ export function mount(v, opts = {}) {
 
   if (!wired) {
     wired = true;
-    // the bench's column names — the catalog's three plus FAMILY inserted second,
-    // because here the pedal and its family are separate columns (see benchRow)
-    document.getElementById("ledehead").appendChild(headRow("family", 1));
     wireSourceToggle();
     wireTransport();
     showReplay();

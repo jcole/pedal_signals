@@ -12,9 +12,6 @@ export default {
   navLabel: "clipping",
   // A family only earns a chart for what it changes. Clipping peak-matches wet to
   // dry, so there's no envelope panel — level is the one thing it doesn't touch.
-  why: `The <span class="chartref">waveform</span> shows every cycle's peaks
-    flattening; the <span class="chartref">spectrum</span>, the harmonics that
-    adds. How loud your note is, it leaves alone.`,
   // Pedal alone: clipping peak-matches wet to dry, so blending dry back in only
   // dilutes what the page is showing.
   blendDefault: 1,

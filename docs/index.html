@@ -35,27 +35,42 @@
   </a>
 </header>
 
-<!-- The family band: the catalog's three columns naming the family you're in,
-     not the pedal you picked — that lives in the rig's OPERATION deck, where the
-     picker sits by the formula, curve and knobs it drives. Just context here, and
-     the way out to compare (the family name is the link). -->
+<!-- The band: the pedal you picked and the family it belongs to. PEDAL holds the
+     picker and, beside it, what the two charts show for this pedal — each claim
+     tagged with the chart that proves it. FAMILY is context and the way out to
+     compare. Standing DOM: the picker mounts once and a rebuild would destroy it,
+     so harness.js fills the rest by id. -->
 <div id="bar">
   <div id="lede">
-    <!-- The table: three columns, the same the catalog page has; it ends here,
-         and what's beside it (.why) is not a fourth column. -->
     <div id="ledetable">
-    <div id="ledehead"></div>
-    <!-- The family's band, appended by harness.js from the mounted view — the
-         catalog's generic family row, the only row here now. -->
+      <!-- Four columns reading the signal path left to right: the pedal you picked,
+           what it does to the wave, what that does to your ear, the family it's in.
+           The two middle claims are the page's punchline; the column heads name them
+           and the chip ties each to the chart below that proves it. -->
+      <div id="ledehead" class="cathead"><span>pedal</span><span>changes</span><span>you hear</span><span>family</span></div>
+      <div class="benchrow">
+        <!-- PEDAL: toy pedal + picker (art.js draws the pedal; mountPicker owns #pedalpick) -->
+        <span class="pickunit">
+          <span id="pedalart" class="pedalart"></span>
+          <div id="pedalpick"></div>
+        </span>
+        <!-- CHANGES: what the waveform shows (outnar) -->
+        <span class="factcell">
+          <span class="claim" id="benchchanges"></span>
+          <span class="chip" id="benchchangeschip"></span>
+        </span>
+        <!-- YOU HEAR: what the spectrum shows (whatChanges) -->
+        <span class="factcell">
+          <span class="claim" id="benchhear"></span>
+          <span class="chip" id="benchhearchip"></span>
+        </span>
+        <!-- FAMILY: the name (link out to the catalog) over its signal class -->
+        <span class="famcell">
+          <a class="famname" id="benchfam"><span id="benchfamname"></span><span class="famnoun"> →</span></a>
+          <span class="famklass" id="benchklass"></span>
+        </span>
+      </div>
     </div>
-    <!-- Beside the table, not in it: the family's word about the two charts below
-         — an aside, not a cell, and it sits in slack the row was already wasting
-         (see the stylesheet). The label is the page's; the sentence is filled by
-         harness.js from the mounted family (so #whytxt owns only the text). -->
-    <aside class="why">
-      <span class="whylabel">reading the charts</span>
-      <p id="whytxt"></p>
-    </aside>
   </div>
 </div>
 
@@ -92,29 +107,23 @@
 </div>
 
 <div id="controls">
-  <!-- The rail's decks, OPERATION first: it holds the picker now, and picking the
-       pedal is where you start. INPUT (the source you feed it) follows, then the
-       transport at the foot — set the operation and the source, then press play.
-       Both bars are standing text — roles, not names, nothing selects them. No
-       arrow: stacked, reading order says "sequence" (here, priority — the chain is
-       left-to-right in the charts, not top-to-bottom in the rail). -->
-  <!-- The pedal deck: the picker, the operation it selects, the curve it draws (the
-       same drawCenter the catalog thumbnails call), and the knobs that shape it. The
-       bar is standing text — OPERATION, a role, the page's own column head. The
-       formula is a line of its own, not part of the bar, because .grp's uppercase
-       would render `tanh` as `TANH` and no 240px bar holds modulation's 35 chars.
-       #centerctls is its own element because buildControls() wipes it. -->
+  <!-- The rail's decks, OPERATION first (the pedal's math), then INPUT (the source
+       you feed it), then the transport at the foot — set the operation and the
+       source, then press play. Both bars are standing text — roles, not names. No
+       arrow: stacked, reading order says "sequence". -->
+  <!-- The pedal deck: the operation, the curve it draws (the same drawCenter the
+       catalog thumbnails call), and the knobs that shape it. The bar is standing
+       text — OPERATION, the page's own column head. #centerctls is its own element
+       because buildControls() wipes it. -->
   <div class="ctlcol" id="pedalcol">
     <div class="grp">Operation</div>
-    <!-- The picker, first in the deck: choosing the pedal is choosing the
-         operation, so it sits above the formula/curve/knobs it drives. A toy
-         pedal beside it (dead knobs; art.js says why). mountPicker() owns
-         #pedalpick and clears it, so the picture can't live inside it. -->
-    <div class="ctl pickrow">
-      <span id="pedalart" class="pedalart"></span>
-      <div id="pedalpick"></div>
+    <!-- the formula over a gloss of the curve's character (tech over techNote), a
+         line of its own — .grp's uppercase would render `tanh` as `TANH`, and no
+         240px bar holds modulation's 35 chars -->
+    <div class="ctl deckopwrap">
+      <code class="deckop" id="pedalop"></code>
+      <span class="decknote" id="pedalnote"></span>
     </div>
-    <code class="ctl deckop" id="pedalop"></code>
     <div class="ctl"><canvas class="glyph glyph--curve" data-c="curve" aria-hidden="true"></canvas></div>
     <div id="centerctls"></div>
   </div>
