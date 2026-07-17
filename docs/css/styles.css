@@ -137,44 +137,16 @@ b {
    120 Hz spectrum both want width far more than they want height. #rig places it;
    this only has to say how tall the stack is.
 
-   Two rows: the .why paragraph takes what it needs, the charts take the rest.
-   `auto` and not a fixed height because the three families' sentences are two
-   and three lines at this measure, and a row sized for the longest would leave
-   clipping's a gap it hasn't earned. The charts keep their own minmax, so the
-   paragraph costs the stack nothing — it's spent out of the tray's padding and
-   the page below. */
+   One row now. There were two: the .why paragraph took what it needed and the
+   charts took the rest. The sentence is the band's fourth cell up in the lede, so
+   what's left in here is the rig itself — which is what the tray was always for.
+   The charts keep their minmax and the two-to-three lines the paragraph was
+   spending go back to the fold. */
 #grid {
 	display: grid;
 	grid-template-columns: 1fr;
-	grid-template-rows: auto minmax(420px, 62vh);
+	grid-template-rows: minmax(420px, 62vh);
 	align-items: stretch;
-}
-/* The rig's one full sentence, and the only text on it addressed to someone who
-   can't read the charts yet. Page ink, because it's on the tray and not on the
-   glass — and set as prose, which is the thing the rig had no register for: every
-   other label here is the instrument naming or measuring itself, and this is the
-   page talking to a reader. So no mono, no uppercase, no letterspacing, and a
-   measure short enough to actually read (~86ch — the track is 1096px and a 14px
-   sentence run the full width of it is a line you lose your place in).
-
-   It also killed the caption that used to sit in the gap between the two panels,
-   which was the rig's previous answer to "why two?" and answered it in the
-   instrument's voice, in the one place you'd only look after you'd already given
-   up on the charts. See `why` in harness.js's view contract. */
-.why {
-	margin: 0 0 8px;
-	max-width: 86ch;
-	font-size: 14px;
-	line-height: 1.45;
-	color: var(--ink);
-}
-/* The two charts, named inside the sentence that says why they're there — in
-   the stacking order, so "one cycle up close, and the harmonics…" reads down
-   into the panel it names. Not the wet orange: these point at the panels, not
-   at a trace. */
-.why b {
-	color: var(--ink-hi);
-	font-weight: 650;
 }
 .panel canvas {
 	display: block;
@@ -732,7 +704,7 @@ b {
 	border-color: var(--accent);
 }
 /* The pedal you picked, and the whole of what the button says. The family used to
-   ride beside it as a gloss; it's a link under the row now (see #famlink), which
+   ride beside it as a gloss; it's the band over the row now (see famRow), which
    says the same word and goes somewhere with it. */
 .pickped {
 	font-weight: 700;
@@ -872,21 +844,34 @@ b {
    were spaced for. Left-aligned rather than centred: the row hangs off the
    masthead above it, which starts at the page edge.
 
-   The bench is wider than the catalog on purpose — 1240, not 1000 — because it
-   has a fourth column that page has no use for: the way out to the family. The
-   0.8fr track below is sized so that the extra 240px lands entirely in it and
-   the first three keep the exact widths they have at 1000px (1fr ≈ 272 either
-   way). So the columns still read at the proportions they were spaced for, and
-   the link rides in slack the bar was wasting rather than on a line of its own —
-   it used to stack under the picker and put 24px on a row that pays for its
-   height in single lines of 12px text. */
+   So the TABLE is 1000 — and the block around it is the bar's full 1360, because
+   the extra 360 is where the family's sentence goes. Not a fourth column: the
+   table is three columns and ends, and the sentence sits beside it in room the row
+   was wasting anyway (the .catwhat track ran out of prose around x=1100 and the
+   rest was white). Two tenants have been through that space — a FAMILY link, then
+   a why-these-charts column — and both were the same mistake, which was thinking
+   the slack wanted a column in it. It wanted an aside, which is what was sitting
+   on the tray above the charts costing them two lines.
+
+   flex and not a grid: a grid track here would line the sentence up with the
+   columns, and lining it up with the columns is how it gets read as one. */
 #lede {
-	max-width: 1240px;
+	max-width: 1360px;
+	display: flex;
+	align-items: flex-start;
+	gap: 32px;
+}
+/* The table takes the catalog's own measure and no more; the sentence takes what's
+   left. Basis rather than a width so a narrow window shrinks the table before it
+   strands the prose in a 4-character column. */
+#ledetable {
+	flex: 0 1 1000px;
+	min-width: 0;
 }
 /* The PEDAL cell: the toy pedal, then the picker. The picture is out of flow, and
    that is not a layout preference — it's what lets it exist at all.
 
-   This row aligns its four columns on a shared baseline, deliberately and at
+   This row aligns its three columns on a shared baseline, deliberately and at
    length (see #lede .catrow below). A flex box takes its baseline from its first
    item, and an <svg> hasn't got one, so a picture in flow would hand this cell a
    synthesized baseline at the bottom of the image — about 20px under the picker's
@@ -1260,15 +1245,15 @@ a.catrow:hover .catlabel {
 	line-height: 1.5;
 }
 /* The SHAPE column: a fourth track on the catalog page's rows, holding each
-   pedal's own curve. The same move #lede makes further down for its own fourth
-   column, and it has to be made in the same two places for the same reason —
-   .cathead is .catrow's grid rule, so a track added to one is a track added to
-   both or the names stop sitting over what they name. .famhead takes the track
-   too (it's the same rule) and leaves it empty, which is honest: the band is the
-   general case, and the general case of a curve is not a curve.
+   pedal's own curve. It has to be added in all three places at once — .cathead is
+   .catrow's grid rule, so a track added to one is a track added to both or the
+   names stop sitting over what they name. .famhead takes the track too and leaves
+   it empty, which is honest: the band is the general case, and the general case of
+   a curve is not a curve.
 
    Scoped to #cat rather than left loose on .catrow, because .catrow is also the
-   bench's row and its fourth column is already spoken for. */
+   bench's row, and over there this column doesn't exist: the fourth track is the
+   one thing the two pages' tables don't share. */
 #cat .cathead,
 #cat .famhead,
 #cat .catrow {
@@ -1342,14 +1327,68 @@ a.catrow:hover .catlabel {
 	   its cells are, so they sit right on it */
 	padding-bottom: 2px;
 }
-/* Both, and identically, or the names stop sitting over the things they name:
-   .cathead is the same grid rule as .catrow, so a fourth track on one is a
-   fourth track on both. headRow("family") is what fills the fourth name. */
-#lede .cathead,
-#lede .catrow {
-	grid-template-columns:
-		minmax(9rem, 1fr) minmax(11rem, 1.15fr) minmax(11rem, 1.3fr)
-		minmax(0, 0.8fr);
+/* No track override, and that's the point: the bench's three columns ARE the
+   catalog's three columns, so the shared .cathead/.famhead/.catrow rule is the
+   whole table on both pages. This page kept a fourth track for a long time — first
+   the FAMILY link, briefly the family's sentence — and it has neither now. The one
+   thing the two tables don't share is the catalog's SHAPE column (see #cat). */
+/* The band on the bench. The catalog's .famhead is a heading in a long list of
+   them, spaced to hold the families apart; here there's exactly one and the row
+   it belongs to is directly under it, so the margin goes and the two read as the
+   single two-line object they are. */
+#lede .famhead {
+	margin: 0;
+	padding-bottom: 4px;
+}
+#lede .famhead + .catrow {
+	/* The 2px that used to be here was measured against the column names, which are
+	   10px of ink-lo with nothing behind them — a row can sit right on those. The
+	   band is a filled block with a rule down its edge, and the two things directly
+	   under it are the only pictures in the row (the toy pedal, and a bordered
+	   control): both have hard top edges, and 2px reads as them touching the band's
+	   underside rather than hanging below it. */
+	padding-top: 12px;
+}
+/* The family's word about its two charts, beside the table (see index.html for
+   why beside and not in). The only prose on this page that isn't a heading, a
+   label or a cell: every other thing in the lede is the instrument or the table
+   naming itself, and this is the page talking to a reader — so no mono, no
+   uppercase, no letterspacing.
+
+   It was a paragraph on the tray above the charts for a long time, at 14px/86ch.
+   Both numbers were the tray's: 14 to hold its own against the panels it sat on,
+   86ch to keep a sentence run across 1096px readable. Neither is true up here. 13
+   is the lede's prose size (.catwhat, .famwhat — the two things it's level with),
+   and the measure is the flex track at ~40 characters, which needs no max-width
+   because a column can't run long.
+
+   Top-aligned with the table's column names rather than centred on the two rows:
+   it's about what's below the whole lede, not about either row, and a sentence
+   floating at the vertical middle of a table reads as a note on the row it
+   happens to be level with.
+
+   --ink-lo, where the rows it sits beside are --ink: those are the page's claims
+   about the pedal and this is the page's aside about its own layout. Quieter is
+   what an aside is. */
+.why {
+	margin: 0;
+	padding-top: 11px;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--ink-lo);
+	max-width: 42ch;
+}
+/* The band's name is the way out on this page (see famRow), which makes it the
+   one .famname that's an <a>. It keeps the mono caps and loses everything a link
+   would otherwise bring: the underline would draw a rule under a heading, and the
+   colour is what the hover is for. The arrow rides in .famnoun, so the quiet ink
+   is already saying "this goes somewhere" — see rows.js. */
+#lede a.famname {
+	text-decoration: none;
+}
+#lede a.famname:hover .famnoun,
+#lede a.famname:focus-visible .famnoun {
+	color: var(--accent);
 }
 #lede .catrow {
 	/* No align-items here on purpose: it takes the shared baseline, same as every
@@ -1361,18 +1400,19 @@ a.catrow:hover .catlabel {
 	   taller than the picker and makes the row's height its own. That took the
 	   reason away and left the damage: centring a two-line cell against one-line
 	   ones pushes every other column's text down to meet the middle of it, so
-	   WHAT CHANGES sat lower than the formula it's the consequence of. Four
-	   columns at four sizes (14px picker, 12px formula, 13px prose, 12px link)
-	   have no shared top edge to align on — a baseline is the line all four
-	   actually share, and it's the one the eye reads across. */
-	/* Closed up under the column names. The catalog's 11px is the air between one
-	   pedal and the next in a long list; there's no list here, and the only thing
-	   above this row is the names of its own cells. They should touch. */
-	padding-top: 2px;
-	/* No rule above it. On the catalog that border is what separates one pedal
-	   from the next in a long list; here there is no next — one row, already sat
-	   under its own column names. A divider between a thing and nothing is just a
-	   line. */
+	   WHAT CHANGES sat lower than the formula it's the consequence of. Three
+	   columns at three sizes (14px picker, 12px formula, 13px prose) have no
+	   shared top edge to align on — a baseline is the line all three actually
+	   share, and it's the one the eye reads across, here and in the band above. */
+	/* No padding-top here: what's above this row is the band, not the column names,
+	   and the rule that spaces the two is `.famhead + .catrow` above — where it can
+	   say in the selector that it's about the pair. This used to be 2px, "closed up
+	   under the column names", from when the names were what it sat under.
+
+	   No rule above it either. On the catalog that border is what separates one
+	   pedal from the next in a long list; here there is no next — one row, hanging
+	   off the band the way a catalog row hangs off its own. A divider between a
+	   thing and nothing is just a line. */
 	border-top: 0;
 }
 /* the way back to the bench, and the way out to the catalog: one small mono
@@ -1421,17 +1461,11 @@ a.catrow:hover .catlabel {
 .catlede {
 	grid-column: 1 / -1;
 }
-/* .catlink is underlined with a border, so a stretched grid cell draws that rule
-   across the whole track and out past the words. Hug the text. Down here with
-   the other bench overrides, after the .catlink rules it overrides. */
-#lede .catlink {
-	justify-self: start;
-}
 /* The one .catlink that has to advertise. The other two are read by someone who
    already went looking: "← back to the bench" has a captive audience (you came
-   from the bench), and the FAMILY cell is answering a question the column header
-   asked. This one is unsolicited — it's the only thing on the bench that says
-   the catalog exists at all — so a 12px rule-under-a-word in ink-lo loses to
+   from the bench), and the band's name is answering a question the reader is
+   already inside. This one is unsolicited — it's the only thing on the bench that
+   says the catalog exists at all — so a 12px rule-under-a-word in ink-lo loses to
    every chart on the page and gets read by nobody.
 
    A box, not a bigger word: the masthead's height is the lede's, and this sits

@@ -63,10 +63,13 @@ export function mountCatalog(host, families) {
 function section(f, pending) {
   const sec = mk("section", "fam");
   // The id is what the bench's "modulation family →" link aims at. The family's
-  // own id, so the link can be built from the view alone (see setPedal) without
-  // this page publishing a separate list of anchor names to keep in sync.
+  // own id, so the link can be built from the view alone (see mount) without this
+  // page publishing a separate list of anchor names to keep in sync.
   sec.id = f.id;
-  sec.appendChild(famRow(f));
+  // No href: this band is already on the page it would link to. The empty cell is
+  // the SHAPE column's placeholder, at the same index headRow puts its name — see
+  // famRow for why the band holds that track without filling it.
+  sec.appendChild(famRow(f, { extra: mk("span"), at: 2 }));
   const tbl = mk("div", "cat");
   for (const p of f.pedals) {
     // The view draws the pedal, so the row needs both — it's the family that

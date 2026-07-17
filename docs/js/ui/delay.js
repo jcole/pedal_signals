@@ -53,32 +53,29 @@ export default {
   //
   // WRITTEN TO TODAY'S PANELS, AND IT SHOWS — this family's top slot is still
   // owed a chart, and the sentence is where the debt shows up as words. The other
-  // two families name two charts that answer different questions. This one names
-  // the same train twice, because that's what's on the page (§1c of the working
-  // notes): the top panel is the harness's default waveform over 683 ms, at
-  // 1.6 px a carrier cycle, so it can only draw its own envelope outline — the
-  // chart underneath, worse. It used to be a solid band as well, the one
-  // modulation got rid of by drawing its envelope instead; that band was the raw
-  // guitar input and it's gone (see genInput), which fixed the picture's legibility
-  // without giving the panel a second question to answer.
+  // two families' cells are one clause: the thing their pedal doesn't touch, which
+  // is why they draw what they draw. This one has a second sentence, and it isn't
+  // a why — it's a legend.
   //
-  // So the honest thing a reader gets from the bottom panel today is the DASHED
-  // dry — the one fact the top panel can't show, since only 63 of its 1096 columns
-  // carry any grey at all — and that's what the sentence sends them to. It is a
-  // caption doing a panel's job.
+  // The reason is §1c of the working notes. Both panels here draw the same train:
+  // the top is the harness's default waveform over 683 ms, at 1.6 px a carrier
+  // cycle, so it can only draw its own envelope outline — the chart underneath,
+  // worse. So the honest thing a reader gets from the bottom panel today is the
+  // DASHED dry — the one fact the top panel can't show, since only 63 of its 1096
+  // columns carry any grey at all. Nothing on the rig says what that dash is, so
+  // this does, from a cell headed WHY THESE CHARTS. It is a caption doing a
+  // panel's job, and it's in the wrong cell to boot.
   //
   // When the carrier zoom lands (the burst and one repeat side by side — the one
   // thing about a delay neither panel shows, and where "no new frequencies" stops
-  // being a sentence and becomes a picture), the sentence it wants is already
-  // written and needs no hedge, because the two panels will finally differ:
-  //   "…So: one repeat up close against the note it copies, and the whole train
-  //    fading out over two thirds of a second."
-  // That sentence is the test for 1c. If it reads true against the page, 1c is
-  // done; today it doesn't, and this is what's left when you refuse to pretend.
+  // being a sentence and becomes a picture), the second sentence goes: the panels
+  // will finally differ, the dash will be legible in a chart that has room for it,
+  // and this cell will be one clause like its siblings. That's the test for 1c —
+  // if this reads as a why and nothing else, 1c is done. Today it doesn't, and
+  // this is what's left when you refuse to pretend.
   why: `This pedal doesn't change your note at all; it hands it back to you, late
-    and quieter. So: <b>the repeats arriving over two thirds of a second</b>, and
-    <b>the same train measured as a decay</b> — where the dashed line is your
-    note, stopping while the pedal carries on.`,
+    and quieter. The dashed line is your note, stopping while the pedal carries
+    on.`,
   // Half. This family's wet chain carries ONLY the repeats — the dry tap is
   // where your note itself comes from — so a full-wet delay is echoes of a note
   // you never hear.
@@ -93,7 +90,7 @@ export default {
     formula: "y[n] = x[n] + fb·y[n−D]",
     formulaNote: "this sample, plus the output from D samples ago",
     klass: "linear, time-invariant (LTI)",
-    oneLiner: "it hands you back what you already played.",
+    oneLiner: "it hands you back what you already played",
     body: `
       <p><strong>What's actually going on:</strong> the pedal keeps a bucket of
       the recent past — a delay line, D samples long. Every sample, it plays

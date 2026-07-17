@@ -15,15 +15,29 @@ export default {
   // of the other two gets. The rule underneath all three: a family only earns a
   // chart for what it actually changes. Clipping peak-matches wet to dry, so an
   // envelope panel here would be two identical lines — the level is the one thing
-  // it doesn't touch, which is why the sentence opens by saying so.
+  // it doesn't touch, which is why the sentence says so and says nothing else.
+  //
+  // It used to name the two charts as well ("So: one cycle up close, and the
+  // harmonics that new shape builds"), from back when it was a paragraph on the
+  // rig and the panels didn't introduce themselves. They do now — each says what
+  // it is and what it shows, in letters you can't miss, four inches below this —
+  // so the clause was reading two headlines back to the reader a moment before
+  // they'd have read them anyway. What's left is the half nothing else says.
   why: `This pedal doesn't change how loud your note is; it changes the shape of
-    every cycle. So: <b>one cycle up close</b>, and <b>the harmonics that new
-    shape builds</b>.`,
+    every cycle.`,
   // The pedal alone. Clipping peak-matches wet to dry, so blending your note
   // back in only dilutes the one thing the page is showing you.
   blendDefault: 1,
   pedals: CLIPPING,
-  spectrumTitle: "new harmonics — the tone you hear",
+  // The one panel where this family's three pedals visibly disagree: they all
+  // build new harmonics, and which ones is the whole difference between them. So
+  // the headline is the pedal's, not the family's — and it's `whatChanges`
+  // rather than a second string beside it, because for clipping that line is
+  // already a sentence about this chart ("harmonics roll off gently", "strong
+  // even harmonics as well as odd"). The bench row above states it as the pedal's
+  // claim; here it's the caption on the evidence. Two copies of one string would
+  // only be two places for it to drift.
+  spectrumTitle: (pedal) => pedal.whatChanges,
   spectrumTech: "spectrum",
   spectrumUnit: "dB",
   // The centre panel plots output against input — the same unit on both axes —
@@ -42,7 +56,7 @@ export default {
     // pedal: it's the same for all three, and the formula note above is exactly
     // what the term means.
     klass: "memoryless nonlinearity (NL)",
-    oneLiner: "it flattens the peaks.",
+    oneLiner: "it flattens the peaks",
     body: `
       <p><strong>What's actually going on:</strong> the pedal applies a fixed
       input→output curve. Below some level the curve is a straight line and

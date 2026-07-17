@@ -8,12 +8,17 @@
 import { expect, test } from "@playwright/test";
 
 const pedalName = (page) => page.locator(".pickbtn .pickped");
-// The family the mounted pedal belongs to. This used to be a gloss inside the
-// picker button, beside the pedal's own name; it's the FAMILY column's link now,
-// which is the only place on the bench that names the family at all. Same
-// question these tests always asked — "which family does the page say we're
-// in?" — put to the element that answers it.
-const familyName = (page) => page.locator("#famlink");
+// The family the mounted pedal belongs to. It's been three elements now — a gloss
+// inside the picker button, then a FAMILY column's link, and now the band's own
+// name, which is the generic row the pedal's row below it fills in. The question
+// these tests ask has never moved: "which family does the page say we're in?" Only
+// the element answering it has, so only this line should have to change.
+//
+// The band says "clipping family →" and not "clipping": the noun is what stops the
+// name reading as a fourth pedal in the PEDAL column, and the arrow is the way out
+// to the catalog riding on it. Both are text, deliberately (see famRow), which is
+// why they're in this string — the caps are CSS, and textContent doesn't see them.
+const familyName = (page) => page.locator("#lede .famname");
 
 // Pick by name, the way a reader does: open the picker, click the pedal.
 async function pick(page, name) {
@@ -36,7 +41,7 @@ test("a bare URL opens the first family's first pedal, and leaves the URL bare",
 }) => {
   await page.goto("/");
   await expect(pedalName(page)).toHaveText("overdrive");
-  await expect(familyName(page)).toHaveText("clipping →");
+  await expect(familyName(page)).toHaveText("clipping family →");
   // seeding the opening pedal must not write the URL — only a real pick does
   expect(new URL(page.url()).search).toBe("");
 });
@@ -46,7 +51,7 @@ test("a deep link opens the pedal it says, and its family comes along", async ({
 }) => {
   await page.goto("/?pedal=chop");
   await expect(pedalName(page)).toHaveText("chop");
-  await expect(familyName(page)).toHaveText("modulation →");
+  await expect(familyName(page)).toHaveText("modulation family →");
 });
 
 test("a link written before ?effect= was dropped still lands on its pedal", async ({
@@ -56,7 +61,7 @@ test("a link written before ?effect= was dropped still lands on its pedal", asyn
   // leftover ?effect= is read by nobody, including when it's wrong.
   await page.goto("/?effect=clipping&pedal=warble");
   await expect(pedalName(page)).toHaveText("warble");
-  await expect(familyName(page)).toHaveText("modulation →");
+  await expect(familyName(page)).toHaveText("modulation family →");
 });
 
 test("a pedal nobody recognizes falls back instead of failing", async ({
@@ -64,7 +69,7 @@ test("a pedal nobody recognizes falls back instead of failing", async ({
 }) => {
   await page.goto("/?pedal=nonsense");
   await expect(pedalName(page)).toHaveText("overdrive");
-  await expect(familyName(page)).toHaveText("clipping →");
+  await expect(familyName(page)).toHaveText("clipping family →");
 });
 
 test("picking a pedal puts it in the URL", async ({ page }) => {
@@ -83,7 +88,7 @@ test("picking across families is the same move, without a page load", async ({
   await stampLoad(page);
   await pick(page, "slapback");
   await expect(page).toHaveURL(/\?pedal=slapback$/);
-  await expect(familyName(page)).toHaveText("delay →");
+  await expect(familyName(page)).toHaveText("delay family →");
   expect(await survivedWithoutReload(page)).toBe(true);
 });
 
@@ -109,12 +114,12 @@ test("back undoes a cross-family pick, restoring the pedal it was left on", asyn
   await page.goto("/");
   await pick(page, "fuzz");
   await pick(page, "echo");
-  await expect(familyName(page)).toHaveText("delay →");
+  await expect(familyName(page)).toHaveText("delay family →");
 
   await page.goBack();
   await expect(page).toHaveURL(/\?pedal=fuzz$/);
   await expect(pedalName(page)).toHaveText("fuzz");
-  await expect(familyName(page)).toHaveText("clipping →");
+  await expect(familyName(page)).toHaveText("clipping family →");
 });
 
 test("re-picking the pedal that's already open is not a history entry", async ({
@@ -134,5 +139,5 @@ test("a copied URL survives a hard reload", async ({ page }) => {
 
   await page.goto(shared);
   await expect(pedalName(page)).toHaveText("warble");
-  await expect(familyName(page)).toHaveText("modulation →");
+  await expect(familyName(page)).toHaveText("modulation family →");
 });

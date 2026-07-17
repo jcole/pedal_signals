@@ -51,7 +51,10 @@
 //                             // type — the word in its chip. Defaults to
 //                             // "waveform" (the generic dry-vs-wet plot below).
 //                             // A family that overrides drawTime renames it here.
-//     spectrumTitle,          // output bottom-panel headline
+//     spectrumTitle,          // output bottom-panel headline. A string is the
+//                             // family's, said once. A fn(pedal) is the pedal's,
+//                             // rewritten on every pick — for a family whose
+//                             // members differ in what that panel shows.
 //     spectrumTech,           // what the BOTTOM panel is ("spectrum",
 //                             // "envelope") — the word in its chip
 //     spectrumUnit?,          // its unit, parenthesized ("dB"); omit if the
@@ -110,7 +113,7 @@ import { frame as fit, H, line, titles, txt } from "./draw.js";
 // them is authored in index.html rather than built here, because the PEDAL cell
 // is standing DOM that a re-render would destroy. Neither page owns the geometry;
 // that's one rule in the stylesheet.
-import { headRow } from "./rows.js";
+import { famRow, headRow } from "./rows.js";
 // The rail's curve glyph is the catalog's thumbnail, live. See drawRail.
 import { drawThumb } from "./thumb.js";
 
@@ -313,16 +316,17 @@ function setPedal(id) {
   // it's the PEDAL's, and a pick inside a family never remounts, so art set up
   // there would stick on whatever you arrived with.
   document.getElementById("pedalart").innerHTML = pedalArt(pedal.art);
-  // The FAMILY cell. Just the name and an arrow — the column header says what
-  // kind of noun it is, which is the one thing the bench never used to say
-  // anywhere. Set here rather than in mount() for the same reason the tab title
-  // is: it names the family, but it has to survive a pick, and a pick within a
-  // family never remounts.
-  const fam = document.getElementById("famlink");
-  fam.textContent = `${view.navLabel} →`;
-  fam.href = `./pedals.html#${encodeURIComponent(view.id)}`;
   if (pedal.outnar)
     document.getElementById("outnar").textContent = pedal.outnar;
+  // The bottom panel's headline. A family whose members all show the same thing
+  // down there states it once as a string; one whose members show different
+  // things hands a fn(pedal) and gets a headline per pick. Written here either
+  // way, since a pick never remounts and a family's string is cheap to restate.
+  if (view.spectrumTitle)
+    document.getElementById("specnar").textContent =
+      typeof view.spectrumTitle === "function"
+        ? view.spectrumTitle(pedal)
+        : view.spectrumTitle;
   // The pedal names its own bar in the chain: INPUT → OVERDRIVE → OUTPUT. It's
   // the one label on the rig that isn't furniture, because it's the one the
   // reader chose.
@@ -587,13 +591,37 @@ export function mount(v, opts = {}) {
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
-  // page furniture the view owns
-  document.getElementById("whytxt").innerHTML = view.why;
+  // The family's band — the generic row the pedal row below it fills in, and the
+  // one thing on this page that says the site's whole argument by geometry rather
+  // than in prose: y[n] = f(x[n]) sits directly over tanh(drive·x + bias), and
+  // "it flattens the peaks" directly over "harmonics roll off gently". The bench
+  // spent a long time without it, with a FAMILY column in its place naming what
+  // the band is here.
+  //
+  // Here and not in setPedal(): it's the family's, and the family only changes on
+  // a mount. Its name is also the way out to the catalog, which is why the href is
+  // built here — the view is the only thing that knows its own id.
+  //
+  // Inserted as the pedal row's own previous sibling, not into a host of its own:
+  // the band is a ROW of this table, and the stylesheet reads the gap under it off
+  // that adjacency (.famhead + .catrow). Cleared by hand first, since a remount
+  // means a new family and there's no host to wipe.
+  const table = document.getElementById("ledetable");
+  const row = table.querySelector(".catrow");
+  table.querySelector(".famhead")?.remove();
+  table.insertBefore(
+    famRow(view, { href: `./pedals.html#${encodeURIComponent(view.id)}` }),
+    row,
+  );
+  // The family's word about its charts, beside the table rather than in it (see
+  // index.html) and no longer on the tray above them. Plain text now: it used to
+  // bold the two chart names in a "So:" clause, and both the clause and its bold
+  // are gone — the panels say what they are themselves.
+  document.getElementById("whytxt").textContent = view.why;
   document.getElementById("blend").value = view.blendDefault;
-  // headlines the view owns. The centre bar's isn't one of them: it names the
-  // pedal, not the family, so setPedal() writes it at the end of this function.
-  if (view.spectrumTitle)
-    document.getElementById("specnar").textContent = view.spectrumTitle;
+  // headlines the view owns. Two aren't here: the centre bar's names the pedal,
+  // and the spectrum's may — so setPedal() writes both at the end of this
+  // function, where they'll be rewritten on every pick.
   // What the two output panels ARE. Neither word is the page's to hardcode — it
   // did, for all three families, and both lines went quietly wrong the moment a
   // family drew something else. The top defaults to "waveform" because the
@@ -626,9 +654,10 @@ export function mount(v, opts = {}) {
     wired = true;
     // The bench row's column names. Not the view's — they're the same words
     // whatever is mounted, and they come from rows.js so that this page and the
-    // catalog name their shared columns once, together. "family" is the fourth,
-    // which only this page has.
-    document.getElementById("ledehead").appendChild(headRow("family"));
+    // catalog name their shared columns once, together. Three, and no fourth: this
+    // page's used to be the way out to the family (the band's name now), and the
+    // family's sentence sits beside the table rather than in a track of its own.
+    document.getElementById("ledehead").appendChild(headRow());
     wireSourceToggle();
     wireTransport();
     showReplay();

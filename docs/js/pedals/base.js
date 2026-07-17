@@ -22,9 +22,12 @@ export class Pedal {
   // whatChanges is the one-line "and so the signal does THIS", and `tech` the
   // operation that does it. They're the two columns a pedal fills in under its
   // family's — on the catalog page for every pedal, in the bench's lede for the
-  // one that's up (see ui/rows.js, which renders both). Not on the rig: the
-  // panels there caption their own charts, and whatChanges describes the output,
-  // which is one panel's chart and not the other two's. It says what the family's
+  // one that's up (see ui/rows.js, which renders both). Mostly not on the rig:
+  // the panels there caption their own charts, and whatChanges describes the
+  // output, which is one panel's chart and not the other two's — a family whose
+  // members differ in exactly that panel can point its spectrumTitle at this
+  // line (clipping does), but that's the view's call, not this line's. It says
+  // what the family's
   // mechanism DOES to the signal, never what the pedal's own maths looks like —
   // "hard corners" is the shape of distortion's knee, which is `techNote`'s job
   // below and the thing its siblings differ on, not a change to anything. The

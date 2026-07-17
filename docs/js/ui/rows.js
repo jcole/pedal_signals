@@ -20,33 +20,28 @@
 // the same three names each time, and the bands below are themselves worked
 // examples of the columns.
 //
-// `extra` is the bench's fourth column, which this page doesn't have — the way
-// out to the mounted pedal's family. It's a parameter rather than a fourth name
-// in the list because the two pages genuinely differ here: over there the family
-// is the band every row hangs off, so a column pointing at it would be pointing
-// at itself. Naming that column "family" is what lets the cell under it be a
-// bare "clipping →" — the label carries the noun, so the link doesn't have to
-// say it twice. Which is the whole reason the column exists: MODULATION under a
-// header reading PEDAL is what made a reader ask what modulation was.
-// `extra` is the fourth column, and both pages have one — but not the same one,
-// which is why it's a parameter and not a fourth name in the list. The bench
-// spends it on the way out to the family; the catalog spends it on the pedal's
-// own curve (see thumb.js). Each page's fourth column is the thing the OTHER
-// page is, which is about as good as a pair of pages gets.
+// `extra` is a fourth column, and only the catalog has one now: the pedal's own
+// curve (see thumb.js). A parameter rather than a fourth name in the list because
+// it's one page's, not the pair's.
 //
-// `at` is where it goes, and the two pages disagree because their columns mean
-// different things. The bench's FAMILY is a way out, and a way out belongs at the
-// end of what it's a way out of. The catalog's OPERATION SHAPE is the picture of
+// The bench used to spend a fourth column on the way out to the family, back when
+// it had no band. It has the band now — the same generic row this page hangs its
+// families off — so the way out is the band's name, and the two pages are down to
+// the same three columns they always claimed to share. The column was the fix for
+// a missing band; the band is a better one, and it's two lines instead of a whole
+// track.
+//
+// `at` is where the extra goes. The catalog's OPERATION SHAPE is the picture of
 // the OPERATION — its header names the column beside it because the row holds a
 // second shape (the pedal drawing) that a bare SHAPE would grab first. It's the
-// same pairing the bench itself makes, where the centre panel's title is the
-// pedal's formula and the curve under it is what that formula draws (see
-// setPedal). So it sits against the formula, and the row reads
-// operation → its picture → what it does to you: the cause, the shape of the
-// cause, the consequence. Put it on the end instead and WHAT CHANGES wedges
-// between the formula and the drawing OF that formula — which reads worst in the
-// delay family, where all three operations are the same string and the shapes
-// beside them are the only thing telling echo from slapback.
+// same pairing the bench makes, where the centre panel's title is the pedal's
+// formula and the curve under it is what that formula draws (see setPedal). So it
+// sits against the formula, and the row reads operation → its picture → what it
+// does to you: the cause, the shape of the cause, the consequence. Put it on the
+// end instead and WHAT CHANGES wedges between the formula and the drawing OF that
+// formula — which reads worst in the delay family, where all three operations are
+// the same string and the shapes beside them are the only thing telling echo from
+// slapback.
 export function headRow(extra, at = 3) {
   const r = mk("div", "cathead");
   const names = ["pedal", "operation", "what changes"];
@@ -61,25 +56,52 @@ export function headRow(extra, at = 3) {
 
 // A family, in the SAME three columns as its pedals.
 //
+// `href` is the way out to the catalog, and it's the bench's case: over there
+// this band is the only thing naming the family, so the name IS the link and the
+// row below it has no fourth cell to spend on one. Withheld on the catalog, where
+// the band would be linking to the page it's already on.
+//
+// `extra` and `at` are the fourth column, named the same as headRow's and for the
+// same reason: only one page has one. It's the catalog's curve thumbnails at index
+// 2, and the band has to hold its place in that track without filling it — the
+// cells are auto-placed, so a band that skipped it would slide its one-liner in
+// and print the family's prose under a column headed SHAPE. Empty on purpose, and
+// not for want of something to draw: every other cell in this row is the general
+// case its pedals are instances of, and there is no general case of a curve.
+// Clipping's three pedals ARE three shapes; what they have in common is the
+// formula two cells left, which is why that cell has y[n] = f(x[n]) in it and this
+// one has nothing.
+//
+// The bench passes neither, and the reason is worth keeping: it tried putting the
+// family's why-these-charts sentence here, and a sentence is not a cell. Every
+// other thing in this row is a general case with instances under it or an instance
+// with a general case over it; prose is neither, and dressing it as a column meant
+// naming that column with a question so the prose would read as an answer. It sits
+// beside the table now (see index.html).
+//
 // Worth knowing when you read the delay family: its formula and all three of its
 // pedals' tech are one identical string, because delay's pedals differ only in
 // where their knobs start. The column repeating itself there isn't a bug to
 // style around — it's the honest answer to "what's the difference between echo
 // and slapback", and it's visible precisely because the column lines up.
-export function famRow(f) {
+export function famRow(f, { href, extra, at = 3 } = {}) {
   const head = mk("h2", "famhead");
 
   const who = mk("span", "famcell");
-  const name = mk("span", "famname");
+  const name = mk(href ? "a" : "span", "famname");
+  if (href) name.href = href;
   name.textContent = f.navLabel;
   // The word the column header can't say for it. This name sits in the PEDAL
   // column, in the same mono caps as the pedals under it, one row above three
   // things that ARE pedals — so CLIPPING reads as a fourth one, and the band's
-  // whole job is to be the general case those three are instances of. The bench
-  // hit this and answered it with a column: over there the cell is a bare
-  // "clipping →" under a header reading FAMILY. This page can't borrow that fix,
-  // because here the family is the band every row hangs off and the header over
-  // it has to say PEDAL for the rows' sake. So the band says the noun itself.
+  // whole job is to be the general case those three are instances of. The header
+  // over it has to say PEDAL for the rows' sake, so the band says the noun itself.
+  //
+  // The bench used to answer this with a column instead — a bare "clipping →"
+  // under a header reading FAMILY — back when the band was a link and that link
+  // was the family's only trace on the page. It's this row now, on both pages, so
+  // both borrow this fix and the column is gone: the arrow rides on the noun, and
+  // a way out that names what it's a way out OF needs no header to say it.
   // Inside the name rather than under it: the cell's line below is already spoken
   // for by the signal class, and "family" is not a second fact about clipping —
   // it's what the word CLIPPING is.
@@ -88,7 +110,7 @@ export function famRow(f) {
   // words rather than the pixels — a screen reader, a copied selection, a test.
   // The two words are two words; only the styling is different.
   const noun = mk("span", "famnoun");
-  noun.textContent = " family";
+  noun.textContent = href ? " family →" : " family";
   name.appendChild(noun);
   who.appendChild(name);
   // Verbatim, exactly as the demo's header used to say it ("memoryless
@@ -115,20 +137,21 @@ export function famRow(f) {
     }
   }
 
+  // The family's answer to the column, and the general case of the line in every
+  // row under it. No full stop, and that's the column's rule rather than this
+  // cell's taste: nothing else in this track ends in one — "harmonics roll off
+  // gently", "one short repeat; reads as thickening, not echo" — because they're
+  // answers to a heading, not sentences. A period here made the general case a
+  // sentence and left every instance of it a fragment, which is the one relation
+  // these two rows exist to deny.
   const what = mk("span", "famwhat");
   what.textContent = f.lesson?.oneLiner ?? "";
 
-  // Nothing in the SHAPE column, but the band still has to hold its place in it:
-  // these cells are auto-placed, so a band that skipped the track would slide its
-  // one-liner into it and print the family's prose under a column headed SHAPE.
-  //
-  // Empty on purpose, and not for want of something to draw. Every other cell in
-  // this row is the general case its pedals are instances of — that's what the
-  // band is — and there is no general case of a curve. Clipping's three pedals
-  // ARE three shapes; the thing they have in common is the formula two cells
-  // left, which is exactly why that cell has y[n] = f(x[n]) in it and this one
-  // has nothing.
-  head.append(who, op, mk("span"), what);
+  // DOM order is column order — the cells are auto-placed — so this append IS the
+  // layout, exactly as it is in pedalRow. See the note above on `extra`/`at`.
+  const cells = [who, op, what];
+  if (extra) cells.splice(at, 0, extra);
+  head.append(...cells);
   return head;
 }
 

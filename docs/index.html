@@ -32,9 +32,9 @@
   <!-- The way out to the catalog, opposite pedals.html's "← back to the bench":
        same .catlink, same corner of the same header, so the two pages point at
        each other from the same place. The bar below has a link to that page too,
-       but it's the FAMILY cell — it says "modulation →", which is the family's
-       name and not an offer to see the rest. Nothing on the bench said the rest
-       existed.
+       but it's the family band's own name — it says "MODULATION family →", which
+       is what the pedal on the bench is an instance of and not an offer to see
+       the rest. Nothing on the bench said the rest existed.
 
        "compare", not "every pedal", because of who reads it: someone who just
        opened the picker, saw nine names, and closed it. To them a list of ALL
@@ -50,9 +50,9 @@
        "this goes somewhere" back when the link was a bare word, and the box says
        that now. -->
   <a class="catlink" href="./pedals.html">compare pedals</a>
-  <!-- Rides the slack at the end of the masthead's row, the way famlink rides
-       the bar's: the lede is flex:1 and asks for ~101ch of the 1233 the title
-       leaves it, so this is spent out of room that was already going empty.
+  <!-- Rides the slack at the end of the masthead's row: the lede is flex:1 and
+       asks for ~101ch of the 1233 the title leaves it, so this is spent out of
+       room that was already going empty.
 
        New tab. Every other link on this site is somewhere else on this site;
        this is the one that leaves, and leaving is not free here — the bench may
@@ -93,7 +93,23 @@
      PEDAL never once told you it was a family. -->
 <div id="bar">
   <div id="lede">
+    <!-- The table: column names, the family, the pedal. Three columns, the same
+         three the catalog page has, and it ends here — what's beside it is not a
+         fourth one. -->
+    <div id="ledetable">
     <div id="ledehead"></div>
+    <!-- The family's band goes here, inserted by harness.js from the mounted view:
+         the same generic row the catalog page hangs each family's pedals off, in
+         the same columns, one altitude up. It's what makes the row below it read
+         as an instance rather than as a fact on its own — the formula over the
+         formula it's a case of, the family's one-liner over this pedal's answer to
+         it.
+
+         No empty host element for it, and that's not a saving: a wrapper would
+         make the band its child rather than this row's sibling, and the stylesheet
+         reaches for it as `.famhead + .catrow` — the air under the band is a fact
+         about these two being adjacent. Wrap it and the rule silently stops
+         matching, which is exactly what it did for an hour. -->
     <div class="catrow">
       <!-- The PEDAL cell: a toy pedal, and the picker. This row is two lines of
            small text tall, which is the whole reason the play button isn't in it
@@ -122,17 +138,22 @@
         <span class="catnote" id="benchnote"></span>
       </span>
       <span class="catwhat" id="benchwhat"></span>
-      <!-- A fourth column the catalog page doesn't have, riding in slack the bar
-           was wasting rather than on a line of its own under the picker.
-
-           It's the way out to the page that lays every pedal out — the picker's
-           list is nine names, enough to find a pedal you can already name, not
-           enough to choose one — and it does that job by naming the family,
-           which is the fact the bench never used to state. Under a column headed
-           FAMILY the cell needs only the name: "clipping →". Filled by
-           setPedal(); the href needs the family, which only the harness knows. -->
-      <a class="catlink" id="famlink" href="./pedals.html">see all pedals →</a>
     </div>
+    </div>
+    <!-- Beside the table, and deliberately not in it. This is the family's word
+         about the pair of charts below — what the pedal leaves alone, which is
+         why the rig draws what it draws and not the panel you'd expect. It was a
+         column for about an hour and the column was wrong twice over: a sentence
+         has no general case and no instance, so it can't be a cell in a row whose
+         whole job is to be one or the other; and the name over it had to ask a
+         question ("why these charts") to make prose look like an answer. It's an
+         aside. Asides sit beside things.
+
+         It was also a paragraph on the tray above the charts before that, where
+         its two lines were two lines off the fold. Here it's in slack the row was
+         already wasting — see the stylesheet. Filled by harness.js from the
+         mounted family. -->
+    <p class="why" id="whytxt"></p>
   </div>
 </div>
 
@@ -141,16 +162,14 @@
      against the white page; it also draws the line the lesson prose sits below. -->
 <div id="rig">
 <div id="grid">
-  <!-- Why there are two charts, and why THESE two. Everything else in the rig
-       answers a question you only have once you can already read a chart —
-       which pedal, which knob, what the orange trace just did. This answers the
-       one you have before that, and it's the only thing on the rig that does:
-       the panels each say what they are, and neither can say why it has a
-       neighbour. Filled by harness.js from the mounted family, because the
-       answer is the family's whole argument for its own layout — each one earns
-       a chart for what it actually changes, so the pair IS the lesson and the
-       three pairs are different for a reason. -->
-  <p class="why" id="whytxt"></p>
+  <!-- No sentence here any more. "Why there are two charts, and why THESE two"
+       was a paragraph in this slot for a long time, and it was the one thing on
+       the rig addressed to a reader who can't read the charts yet — which is
+       exactly why it left. It's the band's fourth cell now, under a column name
+       that asks the question it answers (WHY THESE CHARTS), where it's read with
+       the rest of the row on the way down to the rig rather than in the tray the
+       charts are paying for by the pixel. The rig is instruments again, and the
+       page does the talking above it. -->
   <div class="stack">
     <!-- Neither output panel is the same chart on every page, so neither one's
          name is this file's to write: harness.js fills both from the mounted

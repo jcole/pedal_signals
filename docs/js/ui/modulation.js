@@ -27,16 +27,15 @@ const FSPAN_HZ = 60;
 export default {
   id: "modulation",
   navLabel: "modulation",
-  // The mirror of clipping's, deliberately: same sentence shape, opposite first
-  // clause. That's the pair being a lesson rather than a layout — these two
-  // families are each exactly what the other isn't (shape vs level, one sample vs
-  // one clock), and read one after the other the two paragraphs say it before
-  // either lesson does. No envelope-vs-waveform hedging in the second clause:
-  // this family doesn't touch the shape within a cycle, so a waveform panel would
-  // draw the envelope's own outline and nothing else — see drawTime.
+  // The mirror of clipping's, deliberately: same sentence shape, opposite claim.
+  // That's the pair being a lesson rather than a layout — these two families are
+  // each exactly what the other isn't (shape vs level, one sample vs one clock),
+  // and read one after the other the two cells say it before either lesson does.
+  // Which is a thing the column can do and the paragraph couldn't: these are the
+  // same cell on two mounts, so switching families swaps one sentence in place
+  // against a row that's otherwise identical.
   why: `This pedal leaves the shape of a cycle alone; it changes how loud the note
-    is, over seconds. So: <b>the level over time</b>, and <b>the new frequencies
-    that pulsing puts either side of the note</b>.`,
+    is, over seconds.`,
   // Half, which on this family is a real pedal's mix knob: the dry path is
   // unmodulated, so blending it back in is what shallows the pulse.
   blendDefault: 0.5,
@@ -51,7 +50,7 @@ export default {
     formula: "y[n] = x[n]·m(t)",
     formulaNote: "the multiplier depends on the clock, not on the sample",
     klass: "linear, time-varying (LTV)",
-    oneLiner: "it rides your volume knob for you.",
+    oneLiner: "it rides your volume knob for you",
     body: `
       <p><strong>What's actually going on:</strong> a second oscillator — far
       too slow to hear as a pitch, a few cycles per second — is turning your
