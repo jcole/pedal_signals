@@ -27,6 +27,10 @@ export default {
   pedals: MODULATIONS,
   // The top panel is the envelope, not the harness's waveform — see drawTime.
   timeTech: "envelope",
+  // The volume pulse (envelope, top) is what you HEAR; the sidebands (spectrum,
+  // bottom) are the signal change. That's the reverse of clipping, so the band
+  // crosses its CHANGES/YOU HEAR columns onto the right charts (see harness).
+  bandSwap: true,
   spectrumTitle: "new energy either side of the note — not up in the harmonics",
   spectrumTech: "spectrum",
   spectrumUnit: "dB",

@@ -227,20 +227,23 @@ function setParam(id, v) {
 // none of it can move to mount()).
 function setPedal(id) {
   pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
-  // the band's PEDAL cell: the toy pedal beside the picker, then the two chart
-  // claims — outnar (what the waveform shows) over whatChanges (the spectrum)
   document.getElementById("pedalart").innerHTML = pedalArt(pedal.art);
-  document.getElementById("benchchanges").textContent = pedal.outnar ?? "";
-  document.getElementById("benchhear").textContent = pedal.whatChanges ?? "";
-  // the same waveform line still titles its own panel (kept until we de-dupe)
-  if (pedal.outnar)
-    document.getElementById("outnar").textContent = pedal.outnar;
-  // the bottom panel's headline — a string per family, or a fn(pedal) per pick
-  if (view.spectrumTitle)
-    document.getElementById("specnar").textContent =
-      typeof view.spectrumTitle === "function"
-        ? view.spectrumTitle(pedal)
-        : view.spectrumTitle;
+  // The two chart narrations, resolved once: the top panel shows outnar, the bottom
+  // shows spectrumTitle (a family string, or fn(pedal)). The band shows these SAME
+  // two strings, so a claim and the chart it points at can't disagree.
+  const topNar = pedal.outnar ?? "";
+  const botNar =
+    typeof view.spectrumTitle === "function"
+      ? view.spectrumTitle(pedal)
+      : (view.spectrumTitle ?? "");
+  // CHANGES is the signal change, YOU HEAR the perceived one. Default maps signal to
+  // the top chart, perceived to the bottom (clipping, delay); bandSwap crosses them
+  // (modulation: the pulse you hear is the top chart, the sidebands it makes the
+  // bottom). Chips cross to match, in mount().
+  document.getElementById("benchchanges").textContent = view.bandSwap ? botNar : topNar;
+  document.getElementById("benchhear").textContent = view.bandSwap ? topNar : botNar;
+  if (topNar) document.getElementById("outnar").textContent = topNar;
+  if (botNar) document.getElementById("specnar").textContent = botNar;
   // the deck's formula over a gloss of the curve's character (tech over techNote);
   // techNote is absent on delay, and :empty hides the blank line
   document.getElementById("pedalop").textContent = pedal.tech ?? "";
@@ -479,10 +482,14 @@ export function mount(v, opts = {}) {
     ? ` (${view.spectrumUnit})`
     : "";
   // the band's chart chips mirror the panels' own names, so a claim points at the
-  // chart that proves it (see index.html)
-  document.getElementById("benchchangeschip").textContent =
-    view.timeTech ?? "waveform";
-  document.getElementById("benchhearchip").textContent = view.spectrumTech;
+  // chart that proves it (see index.html). bandSwap crosses them with the claims.
+  const topTech = view.timeTech ?? "waveform";
+  document.getElementById("benchchangeschip").textContent = view.bandSwap
+    ? view.spectrumTech
+    : topTech;
+  document.getElementById("benchhearchip").textContent = view.bandSwap
+    ? topTech
+    : view.spectrumTech;
   renderLesson();
   buildControls();
   // seed labels + defaults from the asked-for pedal, falling back to the
