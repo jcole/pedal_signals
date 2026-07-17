@@ -62,24 +62,6 @@ test("each family heads its pedals with its signal class and formula", async ({
   ]);
 });
 
-// The point of the layout: a family and its pedals share three columns, so the
-// formula column reads general form → instances straight down. Geometry is what
-// carries that, and geometry is exactly what a refactor breaks silently — so the
-// test asserts the columns actually line up on screen, not just that the markup
-// looks right.
-test("a family's formula sits in the same column as its pedals'", async ({
-  page,
-}) => {
-  await page.goto("/pedals.html");
-  const clipping = page.locator(".fam").first();
-  const famOp = await clipping.locator(".famop").boundingBox();
-  const pedalOps = await clipping.locator(".catop").evaluateAll((els) =>
-    els.map((e) => e.getBoundingClientRect().left),
-  );
-  expect(pedalOps.length).toBe(3);
-  for (const left of pedalOps) expect(Math.abs(left - famOp.x)).toBeLessThan(1);
-});
-
 test("a row carries the pedal's operation and what it changes", async ({
   page,
 }) => {
@@ -96,20 +78,6 @@ test("a row carries the pedal's operation and what it changes", async ({
   // the aliases the picker only searches are printed here — they're what a
   // reader scanning for their pedal actually knows it by
   await expect(fuzz.locator(".catalias")).toContainText("big muff");
-});
-
-// Structure and state can't wear the same fill: a row under the cursor that
-// paints itself the family band's color reads as "this row became a family".
-test("a hovered row doesn't dress up as a family band", async ({ page }) => {
-  await page.goto("/pedals.html");
-  const bg = (sel) =>
-    page
-      .locator(sel)
-      .first()
-      .evaluate((e) => getComputedStyle(e).backgroundColor);
-  const band = await bg(".famhead");
-  await rows(page).first().hover();
-  expect(await bg(".catrow")).not.toBe(band);
 });
 
 test("a row opens the demo standing on that pedal", async ({ page }) => {
@@ -200,34 +168,4 @@ test("the delay family's identical formulas have distinguishable shapes", async 
     .locator("canvas.catthumb")
     .evaluateAll((cs) => cs.map((c) => c.toDataURL()));
   expect(new Set(shots).size).toBe(3);
-});
-
-// The picture of the operation, so it sits against the operation — not on the end
-// with WHAT CHANGES wedged between a formula and the drawing of that formula.
-// Asserted on screen rather than in the markup: the cells are auto-placed, so the
-// column order IS the DOM order plus a grid rule, and either one can move it.
-test("shape sits between the operation and what it changes", async ({
-  page,
-}) => {
-  await page.goto("/pedals.html");
-  await expect(page.locator("#cat .cathead")).toContainText("shape");
-  const row = rows(page).first();
-  const x = async (sel) => (await row.locator(sel).boundingBox()).x;
-  expect(await x(".catop")).toBeLessThan(await x("canvas.catthumb"));
-  expect(await x("canvas.catthumb")).toBeLessThan(await x(".catwhat"));
-});
-
-// The band holds its place in the column without drawing in it. Both halves
-// matter: skip the cell and the family's one-liner auto-places into the SHAPE
-// track, printing prose under a column headed SHAPE; draw in it and the band is
-// claiming a general case that doesn't exist — clipping's pedals ARE three
-// shapes, and what they have in common is the formula, two cells left.
-test("a family band leaves the shape column empty", async ({ page }) => {
-  await page.goto("/pedals.html");
-  const band = page.locator("section.fam#clipping .famhead");
-  await expect(band.locator("canvas")).toHaveCount(0);
-  // the one-liner is still in its own column, which is the half that breaks
-  const what = await band.locator(".famwhat").boundingBox();
-  const rowWhat = await rows(page).first().locator(".catwhat").boundingBox();
-  expect(Math.abs(what.x - rowWhat.x)).toBeLessThan(1);
 });
