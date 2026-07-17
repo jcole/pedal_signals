@@ -11,7 +11,14 @@ import { CLIPPING } from "../pedals/index.js";
 export default {
   id: "clipping",
   navLabel: "clipping",
-  dual: "⇅ same signal — time above, spectrum below",
+  // Why this family's pair is a waveform and a spectrum, and not the pair either
+  // of the other two gets. The rule underneath all three: a family only earns a
+  // chart for what it actually changes. Clipping peak-matches wet to dry, so an
+  // envelope panel here would be two identical lines — the level is the one thing
+  // it doesn't touch, which is why the sentence opens by saying so.
+  why: `This pedal doesn't change how loud your note is; it changes the shape of
+    every cycle. So: <b>one cycle up close</b>, and <b>the harmonics that new
+    shape builds</b>.`,
   // The pedal alone. Clipping peak-matches wet to dry, so blending your note
   // back in only dilutes the one thing the page is showing you.
   blendDefault: 1,

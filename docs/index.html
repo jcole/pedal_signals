@@ -141,22 +141,59 @@
      against the white page; it also draws the line the lesson prose sits below. -->
 <div id="rig">
 <div id="grid">
+  <!-- Why there are two charts, and why THESE two. Everything else in the rig
+       answers a question you only have once you can already read a chart —
+       which pedal, which knob, what the orange trace just did. This answers the
+       one you have before that, and it's the only thing on the rig that does:
+       the panels each say what they are, and neither can say why it has a
+       neighbour. Filled by harness.js from the mounted family, because the
+       answer is the family's whole argument for its own layout — each one earns
+       a chart for what it actually changes, so the pair IS the lesson and the
+       three pairs are different for a reason. -->
+  <p class="why" id="whytxt"></p>
   <div class="stack">
     <!-- Neither output panel is the same chart on every page, so neither one's
-         tech line is this file's to write: harness.js fills both from the
-         mounted family. This one is the waveform on clipping, where 13.5 ms of
-         a 222 Hz carrier is a wave you can read; the families whose span is
-         sized for something slower than the carrier draw the envelope here
-         instead, because at their zoom a waveform is a solid band. -->
+         name is this file's to write: harness.js fills both from the mounted
+         family. This one is the waveform on clipping, where 13.5 ms of a 222 Hz
+         carrier is a wave you can read; the families whose span is sized for
+         something slower than the carrier draw the envelope here instead,
+         because at their zoom a waveform is a solid band.
+
+         The name comes FIRST in the header, ahead of the sentence, which is the
+         other half of the same fix as the .why above: a reader who doesn't know
+         what the chart is can't use a sentence about what it shows. So the panel
+         introduces itself, then speaks — on one line, because that's a label and
+         its reading rather than two stacked captions. -->
     <div class="panel">
-      <h3><span class="nar" id="outnar"></span><span class="tech"><span id="timetech"></span> · <span class="dry">in</span> vs <span class="wet">out</span></span></h3>
+      <h3>
+        <span class="ctype" id="timetech"></span>
+        <span class="nar" id="outnar"></span>
+        <span class="tech"><span class="dry">in</span> vs <span class="wet">out</span></span>
+      </h3>
       <canvas data-c="time"></canvas>
     </div>
-    <div class="dual" id="dualtxt"></div>
-    <!-- The bottom panel isn't a spectrum on every page — only clipping's is.
-         So what it plots, and the unit it plots in, are the view's words, not
-         this file's: harness.js fills both from the mounted family. -->
-    <div class="panel"><h3><span class="nar" id="specnar"></span><span class="tech"><span id="spectech"></span> · <span class="dry">in</span> vs <span class="wet">out</span><span id="specunit"></span></span></h3><canvas data-c="spec"></canvas></div>
+    <!-- Nothing between the panels. There was a caption here — "⇅ same signal —
+         envelope above, spectrum below" — from back when it was the only thing
+         on the rig explaining why there were two of these. The .why above is
+         that now, in a sentence, and the panels each name themselves in letters
+         you can't miss, so the caption had been reduced to reading those two
+         names back to you from the gap between them. What it uniquely said, "same
+         signal", the sentence says better by deriving the pair from one pedal.
+
+         The bottom panel isn't a spectrum on every page — only clipping's is.
+         So what it is, and the unit it plots in, are the view's words, not this
+         file's: harness.js fills both from the mounted family. The unit rides
+         inside the name rather than after the legend, where it used to read
+         "in vs out (dB)" and hang the unit off "out" — which is a trace, not an
+         axis. "SPECTRUM (dB)" attaches it to the thing it measures. -->
+    <div class="panel">
+      <h3>
+        <span class="ctype"><span id="spectech"></span><span class="cunit" id="specunit"></span></span>
+        <span class="nar" id="specnar"></span>
+        <span class="tech"><span class="dry">in</span> vs <span class="wet">out</span></span>
+      </h3>
+      <canvas data-c="spec"></canvas>
+    </div>
   </div>
 </div>
 

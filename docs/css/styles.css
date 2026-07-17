@@ -123,12 +123,46 @@ b {
 }
 /* Charts only, one column, full width of its track — a 1365 ms envelope and a
    120 Hz spectrum both want width far more than they want height. #rig places it;
-   this only has to say how tall the stack is. */
+   this only has to say how tall the stack is.
+
+   Two rows: the .why paragraph takes what it needs, the charts take the rest.
+   `auto` and not a fixed height because the three families' sentences are two
+   and three lines at this measure, and a row sized for the longest would leave
+   clipping's a gap it hasn't earned. The charts keep their own minmax, so the
+   paragraph costs the stack nothing — it's spent out of the tray's padding and
+   the page below. */
 #grid {
 	display: grid;
 	grid-template-columns: 1fr;
-	grid-template-rows: minmax(420px, 62vh);
+	grid-template-rows: auto minmax(420px, 62vh);
 	align-items: stretch;
+}
+/* The rig's one full sentence, and the only text on it addressed to someone who
+   can't read the charts yet. Page ink, because it's on the tray and not on the
+   glass — and set as prose, which is the thing the rig had no register for: every
+   other label here is the instrument naming or measuring itself, and this is the
+   page talking to a reader. So no mono, no uppercase, no letterspacing, and a
+   measure short enough to actually read (~86ch — the track is 1096px and a 14px
+   sentence run the full width of it is a line you lose your place in).
+
+   It also killed the caption that used to sit in the gap between the two panels,
+   which was the rig's previous answer to "why two?" and answered it in the
+   instrument's voice, in the one place you'd only look after you'd already given
+   up on the charts. See `why` in harness.js's view contract. */
+.why {
+	margin: 0 0 8px;
+	max-width: 86ch;
+	font-size: 14px;
+	line-height: 1.45;
+	color: var(--ink);
+}
+/* The two charts, named inside the sentence that says why they're there — in
+   the stacking order, so "one cycle up close, and the harmonics…" reads down
+   into the panel it names. Not the wet orange: these point at the panels, not
+   at a trace. */
+.why b {
+	color: var(--ink-hi);
+	font-weight: 650;
 }
 .panel canvas {
 	display: block;
@@ -136,8 +170,12 @@ b {
 	height: 200px;
 	touch-action: none;
 }
-/* The one place uppercase-with-letterspacing is allowed to shout: the rail's deck
-   names are the rig's own labels. Everything below them nests quieter. */
+/* Where uppercase-with-letterspacing is allowed to shout: the rig naming its own
+   objects. The rail's deck bars are two of them (INPUT, and whatever pedal you
+   picked); the charts' .ctype chips are the other two. Same lettering because
+   it's the same job — the reader is asking "what is this thing", and these four
+   are the only labels answering that rather than describing it. Everything
+   below them nests quieter. */
 .grp {
 	background: var(--inst-grp);
 	padding: 9px 10px;
@@ -199,16 +237,69 @@ b {
 	min-height: 0;
 	height: auto;
 }
+/* The whole header is one line: name, sentence, legend. It was two — the sentence
+   over a 10px spec line — and 45.2px tall; it's 32 now. Each canvas went 250.8px
+   to 274 across the two changes, since .stack > .panel > canvas is flex:1 and
+   takes back anything above it stops using. Only 13.2 of that per panel is this
+   rule, though: the other 20 is the connector caption between the panels going
+   away with its two 8px gaps. Worth knowing which change paid, if either is ever
+   reconsidered.
+
+   It reads better than it measures, and that's the actual reason. "WAVEFORM | the
+   peaks get clipped" on one line is a label and its reading — the chip punctuates
+   the sentence rather than standing above it — so the two things a reader wants
+   first arrive together instead of in sequence. The longest sentence any pedal has
+   is "new energy either side of the note — not up in the harmonics" (~420px),
+   which clears the 1096px track with the chip and the legend on it and room to
+   spare; under ~620px of track it wraps and the row just gets taller, which is why
+   .nar is the only item here allowed to shrink. */
 .panel h3 {
 	margin: 0;
 	padding: 6px 8px;
 	background: var(--inst-head);
 	border-bottom: 1px solid var(--inst-edge);
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
 }
-/* The teaching voice — a sentence, so it's set like one. It's the loudest thing
-   in the panel because it's the thing to read first. */
+/* The chart's NAME, in the lettering the rig names things with (see .grp). It
+   used to be the first word of the .tech line — "envelope · in vs out", 10px and
+   dim — which is where a name goes when nobody has decided it is one: a spec
+   line is skimmed, and the reader who most needs the word "envelope" is the one
+   skimming. Loud, and first in the header.
+
+   A chip and not a full-width bar like the rail's decks, because .grp is chassis
+   and these panels are glass: a bar across the top of a chart claims the chart
+   is a deck. A chip is the chassis label screwed to the glass, which is what it
+   is. */
+.panel h3 .ctype {
+	flex: none;
+	background: var(--inst-grp);
+	border-radius: 3px;
+	padding: 2px 7px;
+	font-family: var(--mono);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--inst-ink);
+	white-space: nowrap;
+}
+/* The unit, inside the name — "SPECTRUM (dB)". Out of the uppercase and the
+   letterspacing, because it's a unit and not a word: "(DB)" is neither. */
+.panel h3 .cunit {
+	text-transform: none;
+	letter-spacing: 0.02em;
+	font-weight: 400;
+	color: var(--inst-ink-lo);
+}
+/* The teaching voice — a sentence, so it's set like one, right after the chip
+   that names the chart it's about. The only thing in this row allowed to shrink
+   and to wrap: the chip and the legend are both fixed phrases that would only
+   break badly, and the sentence is the one that can afford a second line. */
 .panel h3 .nar {
-	display: block;
+	flex: 1;
+	min-width: 0;
 	font-size: 14px;
 	font-weight: 650;
 	letter-spacing: 0;
@@ -216,13 +307,13 @@ b {
 	color: var(--inst-ink);
 	line-height: 1.3;
 }
-/* What's plotted, in the instrument's lettering. On the output panels it's the
-   caption under the .nar sentence; on the input and the pedal it's the whole
-   header, because the bar above those two already names them and the only thing
-   left to say is what the chart is. */
+/* Which trace is which, in the instrument's lettering. Just the key now — the
+   word for what's plotted moved up into .ctype, and what's left is the one thing
+   this line was always actually good at: painting "in" and "out" the colour of
+   the lines they name. Last in the row, and .nar's flex:1 is what pushes it to
+   the right edge. */
 .panel h3 .tech {
-	display: block;
-	margin-top: 3px;
+	flex: none;
 	font-family: var(--mono);
 	font-size: 10px;
 	/* lightened with the header bar under it — at #858d78 it was 4.35:1 on the new
@@ -231,6 +322,7 @@ b {
 	font-weight: 400;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
+	white-space: nowrap;
 }
 /* These two words are a key: each is painted the color of the trace it names, so
    they take the same vars the canvas reads. Don't retune one for legibility on
@@ -241,18 +333,6 @@ b {
 .panel h3 .wet {
 	color: var(--wet);
 	font-weight: 700;
-}
-/* the one machine caption that sits on the page rather than on a panel — it
-   falls in the gap between the two output panels, so it takes page ink */
-.dual {
-	font-family: var(--mono);
-	font-size: 10px;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--ink-lo);
-	text-align: center;
-	padding: 1px 0;
-	line-height: 1;
 }
 /* One column, so the decks stack down the rail in signal order: what's going in,
    then what the pedal is doing to it. Placed into the rail's track by #rig.

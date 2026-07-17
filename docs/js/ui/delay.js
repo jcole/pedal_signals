@@ -47,16 +47,38 @@ let loopEnd = GAP_MAX_MS / 1000,
 export default {
   id: "delay",
   navLabel: "delay",
-  // Still owed, but a different debt than it looks. The top chart is the harness
-  // waveform over 683 ms, and it used to be the solid band modulation got rid of
-  // by drawing its envelope instead — that band was the raw guitar input, and it's
-  // gone (see genInput). What's left is the honest version of the problem: at
-  // 1.6 px a carrier cycle a waveform can only draw its own envelope outline, so
-  // this panel and the one below it answer the same question, and the one below
-  // wins. The freed slot wants the burst and one repeat at carrier zoom — the one
+  // The third of the three, and the only one whose second clause is a zoom rather
+  // than a spectrum — which is the rule working, not being bent: this family's
+  // whatChanges says "no new frequencies", so it doesn't get a frequency panel.
+  //
+  // WRITTEN TO TODAY'S PANELS, AND IT SHOWS — this family's top slot is still
+  // owed a chart, and the sentence is where the debt shows up as words. The other
+  // two families name two charts that answer different questions. This one names
+  // the same train twice, because that's what's on the page (§1c of the working
+  // notes): the top panel is the harness's default waveform over 683 ms, at
+  // 1.6 px a carrier cycle, so it can only draw its own envelope outline — the
+  // chart underneath, worse. It used to be a solid band as well, the one
+  // modulation got rid of by drawing its envelope instead; that band was the raw
+  // guitar input and it's gone (see genInput), which fixed the picture's legibility
+  // without giving the panel a second question to answer.
+  //
+  // So the honest thing a reader gets from the bottom panel today is the DASHED
+  // dry — the one fact the top panel can't show, since only 63 of its 1096 columns
+  // carry any grey at all — and that's what the sentence sends them to. It is a
+  // caption doing a panel's job.
+  //
+  // When the carrier zoom lands (the burst and one repeat side by side — the one
   // thing about a delay neither panel shows, and where "no new frequencies" stops
-  // being a sentence and becomes a picture.
-  dual: "⇅ same signal — waveform above, envelope below",
+  // being a sentence and becomes a picture), the sentence it wants is already
+  // written and needs no hedge, because the two panels will finally differ:
+  //   "…So: one repeat up close against the note it copies, and the whole train
+  //    fading out over two thirds of a second."
+  // That sentence is the test for 1c. If it reads true against the page, 1c is
+  // done; today it doesn't, and this is what's left when you refuse to pretend.
+  why: `This pedal doesn't change your note at all; it hands it back to you, late
+    and quieter. So: <b>the repeats arriving over two thirds of a second</b>, and
+    <b>the same train measured as a decay</b> — where the dashed line is your
+    note, stopping while the pedal carries on.`,
   // Half. This family's wet chain carries ONLY the repeats — the dry tap is
   // where your note itself comes from — so a full-wet delay is echoes of a note
   // you never hear.

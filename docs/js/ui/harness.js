@@ -19,17 +19,41 @@
 //     id, navLabel,           // this family's key + its name, which the picker
 //                             // uses twice: the heading over this family's
 //                             // pedals, and the gloss under the chosen one
-//     dual,                    // the "⇅ ..." caption between the output panels
+//     why,                    // HTML: why this family gets THESE two charts —
+//                             // the paragraph above the pair. Every other label
+//                             // on the rig answers a question you only have once
+//                             // you can read a chart; this one is addressed to a
+//                             // reader who can't yet, so it's the only thing here
+//                             // that says why the pair is a pair. The shape is
+//                             // the same on all three: what the pedal leaves
+//                             // alone, what it changes instead, and "So:" the two
+//                             // charts that fall out — in the order they're
+//                             // stacked, so the sentence reads down into them.
+//                             //
+//                             // There is no connector caption between the panels
+//                             // any more, and this is what replaced it: `dual`
+//                             // said "⇅ same signal — envelope above, spectrum
+//                             // below" in the gap, which was the pair's only
+//                             // explanation back when nothing above it was one.
+//                             // Once the panels started NAMING themselves (see
+//                             // .ctype) it was reading the two chips back to the
+//                             // reader a few pixels from where they're printed,
+//                             // and every family's was exactly
+//                             // `${timeTech} above, ${spectrumTech} below` — a
+//                             // third copy of two words, free to drift from
+//                             // both. Don't add it back: if the pair needs
+//                             // saying, it needs saying here, in a sentence.
 //     blendDefault,           // where the dry/wet crossfade starts: 0 is your
 //                             // note alone, 1 is the pedal alone
 //     pedals: [ Pedal, … ],   // what the picker lists for this family; the
 //                             // selected one drives input+process
-//     timeTech?,              // what the output TOP panel plots; defaults to
-//                             // "time" (the generic dry-vs-wet waveform below).
+//     timeTech?,              // what the output TOP panel IS, named as a chart
+//                             // type — the word in its chip. Defaults to
+//                             // "waveform" (the generic dry-vs-wet plot below).
 //                             // A family that overrides drawTime renames it here.
 //     spectrumTitle,          // output bottom-panel headline
-//     spectrumTech,           // what that panel plots ("spectrum", "envelope"):
-//                             // the tech line reads "<spectrumTech> · in vs out"
+//     spectrumTech,           // what the BOTTOM panel is ("spectrum",
+//                             // "envelope") — the word in its chip
 //     spectrumUnit?,          // its unit, parenthesized ("dB"); omit if the
 //                             // panel's axis is unitless (a 0..1 level)
 //     lesson?,                // {formula, formulaNote, klass?, oneLiner, body,
@@ -549,17 +573,28 @@ export function mount(v, opts = {}) {
     C[cv.dataset.c] = cv;
   });
   // page furniture the view owns
-  document.getElementById("dualtxt").textContent = view.dual;
+  document.getElementById("whytxt").innerHTML = view.why;
   document.getElementById("blend").value = view.blendDefault;
   // headlines the view owns. The centre bar's isn't one of them: it names the
   // pedal, not the family, so setPedal() writes it at the end of this function.
   if (view.spectrumTitle)
     document.getElementById("specnar").textContent = view.spectrumTitle;
-  // What the two output panels actually plot. Neither word is the page's to
-  // hardcode — it did, for all three families, and both lines went quietly wrong
-  // the moment a family drew something else. The top defaults to "time" because
-  // the harness's own waveform is what it draws unless a view says otherwise.
-  document.getElementById("timetech").textContent = view.timeTech ?? "time";
+  // What the two output panels ARE. Neither word is the page's to hardcode — it
+  // did, for all three families, and both lines went quietly wrong the moment a
+  // family drew something else. The top defaults to "waveform" because the
+  // harness's own dry-vs-wet plot is what it draws unless a view says otherwise.
+  //
+  // "waveform", where this said "time" for as long as the word was the head of a
+  // 10px spec line — "time · in vs out" — and "time" is fine there, because a
+  // spec line is read as a list of axes and that IS the x axis. It's the chart's
+  // NAME now (see .ctype), and a name has to be the kind of noun the reader is
+  // asking for: they want to know what they're looking at, and the answer is a
+  // waveform, an envelope, a spectrum. None of those is "time". The connector
+  // caption between the panels already used the chart-type word on every family,
+  // so this was the vocabulary the page had — it just wasn't the one the loud
+  // label was using. That caption is gone now (see `why` in the contract) and
+  // these two chips are the only place the words live.
+  document.getElementById("timetech").textContent = view.timeTech ?? "waveform";
   document.getElementById("spectech").textContent = view.spectrumTech;
   document.getElementById("specunit").textContent = view.spectrumUnit
     ? ` (${view.spectrumUnit})`

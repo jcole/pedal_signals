@@ -27,14 +27,16 @@ const FSPAN_HZ = 60;
 export default {
   id: "modulation",
   navLabel: "modulation",
-  // Two panels, two questions — what the pedal did to the signal, and what that
-  // sounds like. Which is what this caption used to be covering for: it said
-  // "waveform above, envelope below" and meant it, because the two panels really
-  // were one signal drawn twice. The waveform was the same 1365 ms the envelope
-  // covers, at 1.3 px a carrier cycle, so it could only ever be the envelope's
-  // own outline filled in solid. The envelope is that chart, drawn by something
-  // that can draw it, and the slot it vacated goes to the sidebands.
-  dual: "⇅ same signal — envelope above, spectrum below",
+  // The mirror of clipping's, deliberately: same sentence shape, opposite first
+  // clause. That's the pair being a lesson rather than a layout — these two
+  // families are each exactly what the other isn't (shape vs level, one sample vs
+  // one clock), and read one after the other the two paragraphs say it before
+  // either lesson does. No envelope-vs-waveform hedging in the second clause:
+  // this family doesn't touch the shape within a cycle, so a waveform panel would
+  // draw the envelope's own outline and nothing else — see drawTime.
+  why: `This pedal leaves the shape of a cycle alone; it changes how loud the note
+    is, over seconds. So: <b>the level over time</b>, and <b>the new frequencies
+    that pulsing puts either side of the note</b>.`,
   // Half, which on this family is a real pedal's mix knob: the dry path is
   // unmodulated, so blending it back in is what shallows the pulse.
   blendDefault: 0.5,
