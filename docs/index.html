@@ -141,60 +141,6 @@
      against the white page; it also draws the line the lesson prose sits below. -->
 <div id="rig">
 <div id="grid">
-  <!-- The arrows hang off the label bars, not the charts: INPUT → OVERDRIVE →
-       OUTPUT is the signal chain, and the label row is the only row where all
-       three columns line up. Pinned to a chart they'd have to guess a height,
-       and the output column stacks two of them — there's no one right answer
-       there.
-       The middle bar names the pedal rather than saying "PEDAL": the two ends
-       are the generic thing that's always true, and the box between them is
-       whatever you picked, so it's the only one of the three with a name to
-       give. The harness fills it — see setPedal(). -->
-  <div class="grp" id="ingrp">Input</div>
-  <div class="grp flowarr" id="pedalgrp"></div>
-  <div class="grp flowarr" id="outgrp">Output</div>
-  <!-- Both of these headers are one line now: the bar above each already names
-       it ("INPUT", the pedal), so the panel only has to say what's plotted. What
-       went was two restatements — "your signal" under INPUT, and the pedal's
-       name under its own bar. -->
-  <div class="panel" id="inpanel">
-    <h3><span class="tech" id="inh3"></span></h3>
-    <canvas data-c="input"></canvas>
-  </div>
-  <!-- The invitation, sitting on the one panel the lede points at ("watch it
-       work — in the middle panel"). A 44px circle in the header was findable
-       only if you already knew to look for it; this is the video-player idiom,
-       and nobody has ever failed to find the play button on a video. It's the
-       same click as the transport up in the header — it just admits that before
-       the first press, the thing you're about to watch is a better place to ask
-       than a corner of the page. Gone for good after that press: once you've
-       started it, you've seen where the transport lives, and a slab over the
-       transfer curve is then covering the lesson it was advertising. -->
-  <div class="panel" id="centerpanel">
-    <!-- One play button, in two sizes. It belongs in this header — small, beside
-         the label, the way a transport is furniture once you know where it is —
-         but nothing tells a cold reader where that is, and a 28px disc in a
-         caption bar is exactly what they were failing to find when it was up in
-         the page header. So on a page nobody has pressed yet it wears .inviting:
-         the same button, lifted out over the chart at 88px, which is the
-         video-player idiom and the one control nobody has ever failed to locate.
-         The first press drops the class and it settles into the header it was
-         always in. Not two buttons — the earlier draft had a slab AND a
-         transport, which is two things to explain and, on a cold load, two play
-         buttons on screen at once.
-
-         Here rather than in the INPUT column with ↻ pluck and the source
-         switcher, where the taxonomy says it goes (those three are all "what's
-         going in, and is it running"): it sat there, and the slab retiring to
-         another surface two columns away meant the button hadn't been found, it
-         had been lost. The lede points at this panel — "watch it work, in the
-         middle panel" — so this is where the eye already is. -->
-    <h3 id="centerhead">
-      <span class="tech" id="centertech"></span>
-      <button id="play" class="inviting" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
-    </h3>
-    <canvas data-c="center"></canvas>
-  </div>
   <div class="stack">
     <!-- Neither output panel is the same chart on every page, so neither one's
          tech line is this file's to write: harness.js fills both from the
@@ -221,10 +167,16 @@
        or the blend — those three reach the AudioContext and stop. So they aren't
        a stage of the chain, they're how you listen to it, and the decks below are
        the model. Which is also why there's no OUTPUT deck: the only thing that
-       was ever in it was a level, and a level is this row's business.
-       (play is moved in here by harness.js — it starts life on the centre panel's
-       header, where the chain layout wants it.) -->
-  <div class="railonly" id="railtop">
+       was ever in it was a level, and a level is this row's business. -->
+  <div id="railtop">
+    <!-- First, because it starts everything else, and big (60px — see the styles)
+         because it has two jobs at once. It used to have two sizes for them: an
+         88px slab lifted out over the centre chart to find it for you the first
+         time, which then retired into a 28px disc in that chart's caption bar.
+         There is no centre chart to lift a slab over now, and no caption bar to
+         retire into. One button, at the head of the rail, at a size that doesn't
+         need a slab to advertise it. -->
+    <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
     <button id="replay" hidden title="restart the note from the pluck">↻ pluck</button>
     <!-- One knob where there were two. They were a dry level and a wet level,
          which is a blend written as two numbers that are free to disagree:
@@ -238,24 +190,33 @@
       <output id="blendo">0.50</output>
     </label>
   </div>
+  <!-- The rail's decks are the chain, turned ninety degrees: what's going in,
+       what the pedal does to it, and — reading on into the charts to the right —
+       what comes out. The bars that used to label three columns caption the two
+       decks instead. No arrow between them: across a row of three it said the
+       columns were a sequence and not a set, which nothing else on that line
+       said; stacked, reading order says it for free.
+
+       #ingrp has to keep its id — it's the only bar the harness doesn't write,
+       but #pedalgrp beside it is written by setPedal() on every pick. -->
   <div class="ctlcol">
-    <!-- PROTOTYPE (outputs layout): what's going in, at three carrier periods and
-         with no axes on it. Not the input panel shrunk — that panel plots
-         spanSamples, which on this family is 1365 ms of a 222 Hz carrier and
-         can only draw as a solid band. This is a glyph: it says "a steady tone"
-         or "a plucked note" and claims nothing about how long. The axes are what
-         made the old panel a lie (a hardcoded 3 cycles under a 0–1365 ms label);
-         take them away and there's no span left to be wrong about.
+    <div class="grp" id="ingrp">Input</div>
+    <!-- What's going in, at three carrier periods and with no axes on it. Not the
+         old input panel shrunk — that panel plotted spanSamples, which on
+         modulation is 1365 ms of a 222 Hz carrier and can only draw as a solid
+         band. This is a glyph: it says "a steady tone" or "a plucked note" and
+         claims nothing about how long. The axes are what made the old panel a lie
+         (a hardcoded 3 cycles under a 0–1365 ms label); take them away and
+         there's no span left to be wrong about.
 
          On top, because that's where the pedal deck's curve is and where both
          output panels put their trace: every deck in the rail reads picture
          first, then the controls that shape it. -->
-    <div class="ctl railonly"><canvas class="glyph" data-c="srcglyph" aria-hidden="true"></canvas></div>
-    <!-- Everything about the signal going in: which source it is, and ↻ pluck to
-         restart the note. Play/stop is arguably the third of those — it's the
-         same question, "is it running?" — and it sat here for a while. It's on
-         the centre panel's header instead, and the reason is discovery, not
-         taxonomy: see the note there. -->
+    <div class="ctl"><canvas class="glyph" data-c="srcglyph" aria-hidden="true"></canvas></div>
+    <!-- Everything about the signal going in: which source it is. ↻ pluck and
+         play/stop are arguably the rest of that — they're the same question, "is
+         it running?" — and they're on the tray instead, because they change
+         nothing on a chart. See the note up there. -->
     <div class="ctl">
       <span class="seg">
         <button class="srcbtn active" data-src="sine">sine</button>
@@ -263,14 +224,19 @@
       </span>
     </div>
   </div>
-  <!-- The rail's middle deck is the pedal: what it does to the signal, and the
+  <!-- The rail's second deck is the pedal: what it does to the signal, and the
        knobs that shape it. The canvas is the same drawCenter the catalog's
        thumbnails call — the family's own curve, minus the axis labels, live on
-       the knobs directly under it. #centerctls stays its own element because
-       buildControls() wipes it, and standing DOM can't live inside the thing
-       that clears its own host. -->
+       the knobs directly under it. The bar names the pedal rather than saying
+       "PEDAL": the deck above is the generic thing that's always true, and this
+       is whatever you picked, so it's the one with a name to give. setPedal()
+       fills it.
+
+       #centerctls stays its own element because buildControls() wipes it, and the
+       bar and the canvas can't live inside the thing that clears its own host. -->
   <div class="ctlcol" id="pedalcol">
-    <div class="ctl railonly"><canvas class="glyph glyph--curve" data-c="curve" aria-hidden="true"></canvas></div>
+    <div class="grp" id="pedalgrp"></div>
+    <div class="ctl"><canvas class="glyph glyph--curve" data-c="curve" aria-hidden="true"></canvas></div>
     <div id="centerctls"></div>
   </div>
   <!-- Spans the columns; it's about the guitar button in the first. It used to

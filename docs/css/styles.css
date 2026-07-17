@@ -89,22 +89,45 @@ b {
 	color: var(--wet-ink);
 }
 /* full-bleed on purpose: the bench runs edge to edge, so the rig reads as one
-   band across the page rather than a card floating in it */
+   band across the page rather than a card floating in it.
+
+   A rail and the charts. There's no INPUT → PEDAL → OUTPUT chain here, because
+   every chart the rig draws is already the output against the input: the two
+   things that aren't — the input alone, and the pedal's own internals — are
+   respectively a trace the output panels carry in grey, and a curve the output
+   panels measure. Both are glyphs in the rail instead. See drawRail in harness.js.
+
+   #grid is placed, not flowed: it comes first in the markup because the charts
+   are the point and a reader who never reaches the rail has still seen them, but
+   left to source order it would take the rail's 240px track. */
+/* The tracks are centred rather than the box: 240 + 24 + 1096 is the same 1360 the
+   grid was capped at, but spent inside a full-bleed element. max-width here would
+   have been the easier way to the same measure and would have cost the band —
+   the tray would stop at 1360px and the rig would be the card the note above says
+   it isn't. */
 #rig {
 	background: var(--tray);
 	border-top: 1px solid var(--rule);
 	border-bottom: 1px solid var(--rule);
-	padding: 10px 0 14px;
+	padding: 10px 8px 14px;
 	margin: 10px 0 0;
+	display: grid;
+	grid-template-columns: 240px minmax(0, 1096px);
+	justify-content: center;
+	gap: 8px 24px;
+	align-items: start;
 }
 #grid {
+	grid-column: 2;
+	grid-row: 1;
+}
+/* Charts only, one column, full width of its track — a 1365 ms envelope and a
+   120 Hz spectrum both want width far more than they want height. #rig places it;
+   this only has to say how tall the stack is. */
+#grid {
 	display: grid;
-	grid-template-columns: 0.8fr 1fr 1.1fr;
-	grid-template-rows: auto minmax(380px, 48vh);
-	gap: 8px 44px;
-	max-width: 1360px;
-	margin: 0 auto;
-	padding: 8px;
+	grid-template-columns: 1fr;
+	grid-template-rows: minmax(420px, 62vh);
 	align-items: stretch;
 }
 .panel canvas {
@@ -113,32 +136,8 @@ b {
 	height: 200px;
 	touch-action: none;
 }
-.panel canvas[data-c="input"],
-.panel canvas[data-c="center"] {
-	flex: 1;
-	min-height: 0;
-	height: auto;
-}
-/* Rides on a .grp label bar and reaches back into the 44px grid gap to its left,
-   so the three bars read as one chain. Sized to the bar rather than to the old
-   full-column height — at 38px it was taller than the bar it now sits in. */
-.flowarr {
-	position: relative;
-}
-.flowarr::before {
-	content: "→";
-	position: absolute;
-	left: -34px;
-	top: 50%;
-	transform: translateY(-50%);
-	color: var(--accent);
-	font-size: 25px;
-	font-weight: 700;
-	line-height: 1;
-	pointer-events: none;
-}
-/* The one place uppercase-with-letterspacing is allowed to shout: the three
-   column names are the rig's own labels. Everything below them nests quieter. */
+/* The one place uppercase-with-letterspacing is allowed to shout: the rail's deck
+   names are the rig's own labels. Everything below them nests quieter. */
 .grp {
 	background: var(--inst-grp);
 	padding: 9px 10px;
@@ -255,13 +254,27 @@ b {
 	padding: 1px 0;
 	line-height: 1;
 }
+/* One column, so the decks stack down the rail in signal order: what's going in,
+   then what the pedal is doing to it. Placed into the rail's track by #rig.
+
+   Both of these say the same thing twice, because auto-minimums hide in two
+   places and the rail is a fixed 240px track that neither respects by default.
+   `min-width: 0` is this element as an item of #rig: a grid item won't shrink
+   below its own min-content and silently overflows its track instead.
+   `minmax(0, 1fr)` is the column INSIDE it: a bare `1fr` means `minmax(auto,
+   1fr)`, and that auto floor is the widest item's min-content, so the track
+   inflates even when the box around it doesn't. Miss either and delay's
+   `feedback` row — the widest thing in any rail — pushes every deck on that
+   family to 254px while clipping and modulation sit at 240. Which is a rail that
+   changes width when you switch family, and a gap to the charts that changes
+   with it. The knobs shrink instead — see the range rule below. */
 #controls {
 	display: grid;
-	grid-template-columns: 0.8fr 1fr 1.1fr;
-	gap: 8px 44px;
-	max-width: 1360px;
-	margin: 0 auto;
-	padding: 8px;
+	grid-template-columns: minmax(0, 1fr);
+	grid-column: 1;
+	grid-row: 1;
+	gap: 14px;
+	min-width: 0;
 }
 /* The knob deck, and it is NOT the screen. Both were --inst, which made a column
    read as one tall dark panel with charts at the top and sliders at the bottom —
@@ -286,80 +299,20 @@ b {
 	font-size: 12px;
 	color: var(--inst-ink-lo);
 }
-.ctlcol .ctl:first-child {
-	border-top: 0;
-}
+/* No `.ctl:first-child { border-top: 0 }` here any more. It was right when a deck
+   opened with a knob — the column's own top edge was already the boundary, and a
+   rule there drew a line against nothing. Every deck opens with its .grp caption
+   bar now, so the first .ctl's border is the line UNDER the caption, which is a
+   line worth having: the bar and the deck share --inst-grp, and without it the
+   caption floats on the knobs with no seam. The rule went rather than moved. */
 
-/* ---- PROTOTYPE: the all-output-charts layout -------------------------------
-   Opt-in, per view (harness.js writes data-layout off view.layout), so the two
-   families still drawing the chain are untouched while this is looked at.
-
-   The premise: every chart the rig draws is the output against the input, and
-   the two things that aren't — the input alone, and the pedal's own internals
-   (an LFO curve, a tap train) — are respectively a trace the output panels
-   already carry in grey, and a curve the output panels already measure. So
-   there's no INPUT → PEDAL → OUTPUT chain here. There's a rail of controls and
-   there are the charts, full width, because a 1365 ms envelope and a 120 Hz
-   spectrum both want width far more than they want height. */
-#rig[data-layout="outputs"] {
-	display: grid;
-	grid-template-columns: 240px 1fr;
-	gap: 8px 24px;
-	max-width: 1360px;
-	margin: 10px auto 0;
-	padding: 10px 8px 14px;
-	align-items: start;
-}
-#rig[data-layout="outputs"] #controls,
-#rig[data-layout="outputs"] #grid {
-	max-width: none;
-	margin: 0;
-	padding: 0;
-}
-/* Placed, not flowed: #grid comes first in the markup because the chain layout
-   wants the charts above the knobs, and left to source order it would take the
-   rail's track and hand the charts 240px. */
-/* One column, so the three knob decks stack down the rail in signal order:
-   what's going in, what the pedal is doing to it, how loud each is. */
-#rig[data-layout="outputs"] #controls {
-	grid-column: 1;
-	grid-row: 1;
-	grid-template-columns: 1fr;
-	gap: 10px;
-}
-#rig[data-layout="outputs"] #grid {
-	grid-column: 2;
-	grid-row: 1;
-	grid-template-columns: 1fr;
-	grid-template-rows: minmax(420px, 62vh);
-	gap: 0;
-}
-/* The input panel is the grey trace on both charts to its right; the centre is
-   the curve the envelope panel measures. Neither is the output against the
-   input, which is the only thing this layout draws. Both survive in the rail as
-   glyphs — see .glyph, and drawRail in harness.js. */
-#rig[data-layout="outputs"] #inpanel,
-#rig[data-layout="outputs"] #centerpanel {
-	display: none;
-}
-/* The chain, ninety degrees over: the decks are input → pedal → output stacked,
-   so the bars that named the three columns caption the three decks instead.
-   harness.js moves the bars; this is only how they sit.
-
-   No arrow. Across a row of three it was doing real work — it said the columns
-   were a sequence and not a set, which nothing else on that line said. Stacked,
-   reading order says it for free, and a ↓ in every gap is the diagram insisting
-   on something the reader has already done. */
-#rig[data-layout="outputs"] #controls {
-	gap: 14px;
-}
-#rig[data-layout="outputs"] .flowarr::before {
-	content: none;
-}
-/* Play sits on the tray, not on a deck — it's the only control here that isn't
-   a stage of the chain, and inside the INPUT block it read as a property of the
-   source rather than of the whole rig. */
-#rig[data-layout="outputs"] #railtop {
+/* ---- the tray, and the rail's glyphs ---------------------------------------
+   Play and ↻ pluck and the blend sit on the tray, not on a deck: they're the only
+   controls on the page that change nothing on a chart. render() reads the source
+   and the knobs and has never read any of these three — they reach the
+   AudioContext and stop. Inside the INPUT deck the transport read as a property
+   of the source rather than of the whole rig. */
+#railtop {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: flex-start;
@@ -380,25 +333,16 @@ b {
 }
 .blendctl input[type="range"] {
 	flex: 1;
+	min-width: 0; /* same reason as .ctl's slider, a few rules down */
 	accent-color: var(--accent-lo);
 }
 .blendctl output {
 	min-width: 2.6em;
 	text-align: right;
 }
-/* There is no OUTPUT deck for this bar to caption — the level that was the only
-   thing under it belongs to the transport now. Left in the markup because the
-   chain layout still lays out three columns and still wants it. */
-#rig[data-layout="outputs"] #outgrp {
-	display: none;
-}
-/* The rail's glyphs exist only in the rail: the chain layout has both of them
-   full size, as the two panels this layout dropped. */
-#rig[data-layout="chain"] .railonly {
-	display: none;
-}
-/* #centerctls is the pedal deck's knobs, but the deck is now the canvas AND the
-   knobs, so the element stops being the deck and its children become it. */
+/* #centerctls is the pedal deck's knobs, but the deck is the bar AND the canvas
+   AND the knobs, so the element stops being the deck and its children become it.
+   It exists at all because buildControls() wipes it — see index.html. */
 #pedalcol > #centerctls {
 	display: contents;
 }
@@ -426,8 +370,14 @@ b {
 	display: block;
 	padding: 6px 8px;
 }
+/* min-width: 0, or the slider doesn't shrink. A range input carries an intrinsic
+   min-content width (~139px in Chromium) that flex: 1 will grow but never shrink
+   past, so on a 240px rail the widest knob label — delay's `feedback` — pushed
+   its whole row, its deck, and the rail out to 254. The track is fixed; the
+   slider is the part that's meant to give. */
 .ctl input[type="range"] {
 	flex: 1;
+	min-width: 0;
 	accent-color: var(--accent-lo);
 }
 .ctl output {
@@ -593,34 +543,16 @@ b {
 /* The centre panel's header bar: what the chart is, on the left, and the
    transport on the right. Every other .panel h3 stacks its lines, so this is
    scoped rather than set on h3 — it's the one header with a control in it. */
-#centerhead {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	padding-top: 4px;
-	padding-bottom: 4px;
-	/* Holds the docked button's height whether or not the button is in flow. While
-	   #play is .inviting it's lifted out over the chart and this bar would collapse
-	   to its text — then snap 20px taller on the first press, resizing the canvas
-	   under a chart that's mid-render. The bar is the same height in both states,
-	   so the press changes nothing but the button. */
-	min-height: 28px;
-}
-/* .tech carries 3px of top margin to sit under a .nar sentence. There's no
-   sentence here and nothing to sit under — in a flex row it just pushes the
-   label off centre. */
-#centerhead .tech {
-	margin-top: 0;
-}
-/* Sized to the header bar it sits in, not to the page: this is instrument chrome
-   now, and a 44px disc in a 10px-caption bar reads as a thing that fell in from
-   another layout. Discovery is #bigplay's job (below); this is the transport you
-   use once you know where it is — which, having just watched the slab retire
-   into this corner, you do. */
+/* Big, and permanently. This button has two jobs at once and used to have two
+   sizes for them: an 88px slab lifted out over the centre chart, which found it
+   for you on a page nobody had pressed yet, retiring on the first press into a
+   28px disc in that chart's caption bar. There is no centre chart to lift a slab
+   over now and no caption bar to retire into — it's the first thing on the tray,
+   at the head of the rail, which is what the slab was buying. So: one size, and
+   60px is what the only control on the tray is worth. */
 #play {
-	width: 28px;
-	height: 28px;
+	width: 60px;
+	height: 60px;
 	border: 0;
 	border-radius: 50%;
 	padding: 0;
@@ -634,8 +566,8 @@ b {
 		transform 0.15s;
 }
 #play svg {
-	width: 15px;
-	height: 15px;
+	width: 28px;
+	height: 28px;
 	fill: #fff;
 	display: block;
 }
@@ -646,54 +578,6 @@ b {
    colors come from the other side. */
 #play.playing {
 	background: var(--wet);
-}
-/* The same button before anyone has pressed it: lifted out of the header bar and
-   laid over the chart at video-player size. Absolute, so the bar it belongs to
-   keeps its place (and its height — see #centerhead) and the button can sit in
-   the middle of the canvas without being in the middle of the markup.
-
-   The scrim is not decoration: the transfer curve runs directly under this disc,
-   and green-on-dark-green with a trace through it has nothing holding the edge.
-   It can afford to be this loud because it's the shortest-lived thing on the
-   page — one press and it's furniture again. */
-#play.inviting {
-	position: absolute;
-	inset: 0;
-	margin: auto;
-	width: 88px;
-	height: 88px;
-	box-shadow: 0 0 0 10px rgb(25 28 21 / 45%);
-}
-#play.inviting:hover {
-	background: var(--accent-lo);
-	transform: scale(1.06);
-}
-#play.inviting svg {
-	width: 44px;
-	height: 44px;
-	/* the triangle's own mass sits left of its bounding box's centre; nudged so it
-	   looks centred in the disc rather than measuring as it */
-	margin-left: 4px;
-}
-
-/* Big, and permanently. 28px is what this button is worth in a caption bar —
-   the transport you reach for once you know where it is — and .inviting's 88px
-   slab over the centre chart was what found it for you the first time. There is
-   no centre chart to lift a slab over now, so this one button has to do both
-   jobs at once: the only control on the tray, at the head of the rail, at a size
-   that doesn't need a slab to advertise it. Which is .inviting retired for good
-   rather than hidden — see harness.js, which drops the class here.
-
-   Sits below the #play rules it overrides rather than up with the rest of the
-   outputs layout: it is more specific than they are, and above them it would be
-   the one selector making every plain #play rule below it read as descending. */
-#rig[data-layout="outputs"] #play {
-	width: 60px;
-	height: 60px;
-}
-#rig[data-layout="outputs"] #play svg {
-	width: 28px;
-	height: 28px;
 }
 /* ---- the pedal picker -----------------------------------------------------
    The one picker living on the page instead of on the rig — the source switcher
@@ -864,8 +748,7 @@ b {
    fold's biggest tenant; 20px there is 20px off the lesson.
 
    Absolute, none of that happens: the cell's baseline is the picker's, exactly as
-   it was when the cell held nothing else. It's the same trick #play.inviting uses
-   a few rules up, for the same reason — a picture that must not set a height.
+   it was when the cell held nothing else — a picture that must not set a height.
 
    The padding is the picture's own slot, so the picker starts clear of it: 40px
    of art plus the 9px gap. Reserved by the cell rather than by the image, which

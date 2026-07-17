@@ -47,11 +47,10 @@ let loopEnd = GAP_MAX_MS / 1000,
 export default {
   id: "delay",
   navLabel: "delay",
-  // PROTOTYPE: the rail. Its charts are NOT sorted — the top one is still the
-  // harness waveform over 683 ms, which is the same solid band modulation just
-  // got rid of. The layout and the charts are separate questions; this is the
-  // layout, and leaving delay behind on the chain would only cost it the blend.
-  layout: "outputs",
+  // NOT sorted: the top chart is still the harness waveform over 683 ms, which is
+  // the same solid band modulation got rid of by drawing its envelope instead.
+  // The rail and the charts were always separate questions — this family still
+  // owes an answer to the second one.
   dual: "⇅ same signal — waveform above, envelope below",
   // Half. This family's wet chain carries ONLY the repeats — the dry tap is
   // where your note itself comes from — so a full-wet delay is echoes of a note

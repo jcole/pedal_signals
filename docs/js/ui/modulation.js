@@ -27,11 +27,6 @@ const FSPAN_HZ = 60;
 export default {
   id: "modulation",
   navLabel: "modulation",
-  // PROTOTYPE: a control rail and nothing but output charts. This family is the
-  // one closest to that shape already — both its panels are the output against
-  // the input, and the LFO curve the centre draws is the same m(t) the envelope
-  // panel measures off the real buffer.
-  layout: "outputs",
   // Two panels, two questions — what the pedal did to the signal, and what that
   // sounds like. Which is what this caption used to be covering for: it said
   // "waveform above, envelope below" and meant it, because the two panels really

@@ -1,10 +1,16 @@
 // Effect-neutral harness. Everything that isn't specific to one page lives here:
-// the generic panels (input waveform, dry-vs-wet time), the transport, the
-// dry/wet blend audio graph, the source toggle, and the control UI. It renders a
-// VIEW over a list of PEDALS: the pedals (from pedals/) are the model — each one
-// knows how to generate its input and process it; the view is the page's UI — its
-// panels, its controls, its live audio graph. The pure DSP (WAV parse, FFT,
-// spectrum) is imported from dsp.js.
+// the generic output panel (dry-vs-wet time), the control rail, the transport,
+// the dry/wet blend audio graph, the source toggle, and the control UI. It
+// renders a VIEW over a list of PEDALS: the pedals (from pedals/) are the model —
+// each one knows how to generate its input and process it; the view is the page's
+// UI — its panels, its controls, its live audio graph. The pure DSP (WAV parse,
+// FFT, spectrum) is imported from dsp.js.
+//
+// The rig is a control rail and two output charts. Every chart it draws is the
+// output against the input; the two things that aren't — the input alone, and the
+// pedal's own internals (an LFO curve, a tap train) — are respectively a trace the
+// output panels already carry in grey, and a curve the output panels already
+// measure. So neither gets a panel: they're glyphs in the rail. See drawRail.
 //
 // A view module (clipping.js, delay.js, …) supplies only the family's UI and its
 // list of pedals, and hands it to mount(). The contract:
@@ -30,7 +36,13 @@
 //                             // aside?:{title, body}} — the prose above and below
 //                             // the rig. Omit it and both sections stay hidden.
 //     controls:[ {id, label, min, max, step, def, fmt?(v)->string}, … ],
-//     drawCenter(F, pedal, params, H),           // draw the center panel
+//     thumbSquare?,           // does this family's curve read against a y = x?
+//                             // Squares the rail's glyph and the catalog's
+//                             // thumbnail — see thumb.js's marginsFor.
+//     drawCenter(F, pedal, params, H),           // draw the family's own curve.
+//                             // Not a panel on the rig any more: it's the rail's
+//                             // curve glyph, and the catalog's row thumbnail, off
+//                             // this one hook. See drawRail and thumb.js.
 //     drawTime?(F, inp, out, pedal, src, H),     // draw the output TOP panel.
 //                             // Optional: omit it and the harness draws its own
 //                             // dry-vs-wet waveform (drawTime below), which is
@@ -52,13 +64,12 @@
 // ever gets told, and never has to tell anyone back.
 //
 // Each Pedal instance carries what makes it that pedal, and what the harness reads
-// off the *selected* one: sampleCount / spanSamples (analysis sizing), analytic
-// (redraw the input smoothly?), srcTitles ({sine, guitar} input-panel labels),
-// defaults (knobs to snap to on select — empty = leave them put), genInput(...)
-// and process(...). H is the harness helper bundle: drawing primitives and the
-// shared palette, passed into the view's draw/audio hooks. The DSP core (specDb,
+// off the *selected* one: sampleCount / spanSamples (analysis sizing), defaults
+// (knobs to snap to on select — empty = leave them put), genInput(...) and
+// process(...). H is the harness helper bundle: drawing primitives and the shared
+// palette, passed into the view's draw/audio hooks. The DSP core (specDb,
 // windowed) and constants (SR, N, KBIN, …) live in dsp.js.
-import { CYCLES, F0, MSMAX, normalize, parseWav, SPAN, SR } from "../dsp.js";
+import { F0, MSMAX, normalize, parseWav, SPAN, SR } from "../dsp.js";
 // The toy pedal in the bench row's PEDAL cell — what the row says to someone who
 // hasn't read it yet. That file is where the reasoning lives.
 import { pedalArt } from "./art.js";
@@ -74,7 +85,7 @@ import { frame as fit, H, line, titles, txt } from "./draw.js";
 // is standing DOM that a re-render would destroy. Neither page owns the geometry;
 // that's one rule in the stylesheet.
 import { headRow } from "./rows.js";
-// PROTOTYPE: the rail's curve glyph is the catalog's thumbnail, live. See drawRail.
+// The rail's curve glyph is the catalog's thumbnail, live. See drawRail.
 import { drawThumb } from "./thumb.js";
 
 const { DRY, WET, ZERO } = H.colors;
@@ -95,6 +106,13 @@ const C = {};
 // takes them as an argument rather than knowing them: a thumbnail on the catalog
 // page draws the same curve with no labels to reserve for, so it passes zeroes.
 const MARGINS = { L: 40, R: 12, T: 10, B: 26 };
+// A glyph reserves nothing, because it labels nothing — just enough to keep a
+// 1.5px stroke off its own edge. Passed to `fit` rather than to `frame`: the
+// wrapper below closes over MARGINS and takes no margins of its own, so handing
+// it a second argument silently draws the axis panel's inset instead. Which it
+// did — a 40px left margin on a 46px-tall glyph put the whole trace in a 10px
+// band in the top-left corner.
+const GLYPH_MARGINS = { L: 2, R: 2, T: 2, B: 2 };
 const frame = (cv) => fit(cv, MARGINS);
 
 // ---- pedal-declared sizing --------------------------------------------------
@@ -103,8 +121,6 @@ const frame = (cv) => fit(cv, MARGINS);
 // the consts. (Pedals on one page share a family, so these don't jump on select.)
 const spanMs = () =>
   pedal.spanSamples === SPAN ? MSMAX : (pedal.spanSamples / SR) * 1000;
-// input-panel headline per source; a pedal renames them (a delay's "sine" is a burst)
-const srcTitle = (m) => pedal.srcTitles[m] ?? m;
 
 // ---- input generation ------------------------------------------------------
 // The selected pedal makes its own input buffer — a steady sine (Pedal's default),
@@ -121,20 +137,16 @@ function render() {
   lastState = r.state ?? null;
   lastMatch = r.match ?? 1;
 
-  if (view.layout === "outputs") drawRail(inp);
-  else {
-    drawInput(inp);
-    view.drawCenter(frame(C.center), pedal, params, H);
-  }
+  drawRail(inp);
   if (view.drawTime) view.drawTime(frame(C.time), inp, r.out, pedal, srcMode, H);
   else drawTime(inp, r.out, lastMatch);
   view.drawSpec(frame(C.spec), inp, r.out, pedal, srcMode, H);
 }
 
-// PROTOTYPE: the rail's two glyphs, which are what's left of the input and centre
-// panels when neither is a chart any more. The curve is the catalog's thumbnail
-// — literally drawThumb, so it's the family's own drawCenter with the labels
-// struck out — handed the LIVE knobs rather than the pedal's defaults.
+// The rail's two glyphs, which are what's left of the input and centre panels now
+// that neither is a chart. The curve is the catalog's thumbnail — literally
+// drawThumb, so it's the family's own drawCenter with the labels struck out —
+// handed the LIVE knobs rather than the pedal's defaults.
 //
 // The source glyph draws SPAN samples, not spanSamples: three carrier periods,
 // which is a wave on every family and every source. That's the whole trick. The
@@ -152,9 +164,8 @@ function drawRail(inp) {
   // page has to know about the other.
   C.curve.classList.toggle("glyph--square", !!view.thumbSquare);
   drawThumb(C.curve, view, pedal, params);
-  const F = frame(C.srcglyph, { L: 2, R: 2, T: 2, B: 2 }),
-    { g, L, R, T, B } = F;
-  const n = Math.min(SPAN, inp.length);
+  const { g, L, R, T, B } = fit(C.srcglyph, GLYPH_MARGINS);
+  const n = Math.max(2, Math.min(SPAN, inp.length));
   const sx = (i) => L + (i / (n - 1)) * (R - L),
     sy = (y) => (T + B) / 2 - y * ((B - T) / 2 - 2);
   g.strokeStyle = ZERO;
@@ -162,51 +173,20 @@ function drawRail(inp) {
   g.moveTo(L, sy(0));
   g.lineTo(R, sy(0));
   g.stroke();
-  const xs = new Array(n),
-    ys = new Array(n);
-  for (let i = 0; i < n; i++) {
-    xs[i] = i;
-    ys[i] = inp[i] || 0;
-  }
-  line(g, xs, ys, sx, sy, DRY, 1.5);
+  line(g, ramp(n), inp.subarray(0, n), sx, sy, DRY, 1.5);
 }
 
-function drawInput(inp) {
-  const F = frame(C.input),
-    { g, L, R, T, B } = F;
-  const sx = (t) => L + t * (R - L),
-    sy = (y) => (T + B) / 2 - y * ((B - T) / 2 - 4);
-  g.strokeStyle = ZERO;
-  g.beginPath();
-  g.moveTo(L, sy(0));
-  g.lineTo(R, sy(0));
-  g.stroke();
-  const xs = [],
-    ys = [];
-  // A generated steady sine is redrawn analytically (smooth at any width); any
-  // real buffer — the guitar, or a pedal that makes its own input — is plotted as
-  // samples. `analytic` marks a pedal whose sine input is that redrawable sine.
-  if (!(pedal.analytic && srcMode === "sine")) {
-    const span = pedal.spanSamples;
-    for (let i = 0; i < span; i++) {
-      xs.push(i / span);
-      ys.push(inp[i] || 0);
-    }
-    line(g, xs, ys, sx, sy, DRY, 1.5);
-  } else {
-    for (let i = 0; i <= 400; i++) {
-      const t = i / 400;
-      xs.push(t);
-      ys.push(level * Math.sin(2 * Math.PI * CYCLES * t));
-    }
-    line(g, xs, ys, sx, sy, DRY, 2);
+// The index ramp every sample plot needs for its x's, built once and handed out
+// by length. render() runs on every knob drag, and the two callers here ask for
+// the same two lengths for the life of the page.
+const ramps = new Map();
+function ramp(n) {
+  let r = ramps.get(n);
+  if (!r) {
+    r = Array.from({ length: n }, (_, i) => i);
+    ramps.set(n, r);
   }
-  txt(g, "+1", L - 5, sy(1), "end", "middle");
-  txt(g, "0", L - 5, sy(0), "end", "middle");
-  txt(g, "-1", L - 5, sy(-1), "end", "middle");
-  txt(g, "0", sx(0), B + 3, "start", "top");
-  txt(g, spanMs().toFixed(0), sx(1), B + 3, "end", "top");
-  titles(g, F, "amplitude", "time (ms)");
+  return r;
 }
 
 // The output top panel's default: dry and wet waveforms on shared axes. Only
@@ -227,14 +207,10 @@ function drawTime(inp, out, match) {
   g.moveTo(L, sy(0));
   g.lineTo(R, sy(0));
   g.stroke();
-  const xs = [],
-    od = new Float64Array(span);
-  for (let i = 0; i < span; i++) {
-    xs.push(i);
-    od[i] = out[i] * match;
-  }
-  line(g, xs, inp.subarray(0, span), sx, sy, DRY, 1.5);
-  line(g, xs, od, sx, sy, WET, 2);
+  const od = new Float64Array(span);
+  for (let i = 0; i < span; i++) od[i] = out[i] * match;
+  line(g, ramp(span), inp.subarray(0, span), sx, sy, DRY, 1.5);
+  line(g, ramp(span), od, sx, sy, WET, 2);
   txt(g, "+1", L - 5, sy(1), "end", "middle");
   txt(g, "0", L - 5, sy(0), "end", "middle");
   txt(g, "-1", L - 5, sy(-1), "end", "middle");
@@ -319,7 +295,6 @@ function setPedal(id) {
   const fam = document.getElementById("famlink");
   fam.textContent = `${view.navLabel} →`;
   fam.href = `./pedals.html#${encodeURIComponent(view.id)}`;
-  if (pedal.tech) document.getElementById("centertech").textContent = pedal.tech;
   if (pedal.outnar)
     document.getElementById("outnar").textContent = pedal.outnar;
   // The pedal names its own bar in the chain: INPUT → OVERDRIVE → OUTPUT. It's
@@ -341,7 +316,6 @@ function setPedal(id) {
   // from the right, so the half that survives should be the half that says where
   // you are.
   document.title = `Pedal signals — ${pedal.label}`;
-  document.getElementById("inh3").textContent = srcTitle(srcMode);
   for (const [k, v] of Object.entries(pedal.defaults)) {
     const c = ctlEls[k]?.def;
     params[k] = c ? clampCtl(c, v) : v;
@@ -372,7 +346,6 @@ function wireSourceToggle() {
       document.querySelectorAll(".srcbtn").forEach((x) => {
         x.classList.toggle("active", x === b);
       });
-      document.getElementById("inh3").textContent = srcTitle(srcMode);
       document.getElementById("gcredit").style.display =
         srcMode === "guitar" ? "" : "none";
       showReplay();
@@ -489,13 +462,6 @@ function wireTransport() {
     playBtn.innerHTML = playing ? ICON_STOP : ICON_PLAY;
     playBtn.classList.toggle("playing", playing);
     playBtn.title = playBtn.ariaLabel = playing ? "stop audio" : "start audio";
-    // One way only. .inviting is the big lifted state this button wears on a
-    // page nobody has pressed yet; the first yes settles it into its header for
-    // good. Not toggled back off on stop — by then it has been found, and a slab
-    // that reappears over the chart every time you pause is asking a question
-    // that's already been answered. Set from here rather than from the click
-    // handler so that ↻ pluck, which also starts the audio, retires it too.
-    if (playing) playBtn.classList.remove("inviting");
   };
   playBtn.onclick = async () => {
     ensureAudio();
@@ -574,44 +540,6 @@ export function mount(v, opts = {}) {
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
-  // PROTOTYPE: which shape the rig is in. "chain" (the default) is INPUT →
-  // PEDAL → OUTPUT, three columns. "outputs" is a control rail and nothing but
-  // output charts — see the styles. Per view, so a family opts in alone.
-  document.getElementById("rig").dataset.layout = view.layout ?? "chain";
-  // Play lives on the centre panel's header, which the outputs layout doesn't
-  // have, so it moves to the head of the rail. .inviting goes with it: that
-  // class is an 88px slab lifted over the centre chart, and there's no centre
-  // chart to lift it over — in the rail it's already the first thing in the
-  // first column, which is what the slab was buying.
-  const play = document.getElementById("play");
-  if (view.layout === "outputs") {
-    document.getElementById("railtop").prepend(play); // first: it starts the rest
-    play.classList.remove("inviting");
-  } else {
-    document.getElementById("centerhead").appendChild(play);
-  }
-  // PROTOTYPE: the chain's three bars. INPUT → PEDAL → OUTPUT looked like the
-  // price of dropping the three columns, and it isn't: the rail's three decks
-  // ARE those three things, stacked, so the bars that labelled the columns
-  // caption the decks instead and the chain turns ninety degrees. It has to be
-  // these elements and not copies of them — setPedal() writes the middle one's
-  // text on every pick, and must keep finding the one that's on screen.
-  //
-  // Which also settles what the decks were missing: two of them said "vol" and
-  // nothing else, and in the chain layout it was the column over each that told
-  // you which was which.
-  const grps = ["ingrp", "pedalgrp"].map((id) => document.getElementById(id));
-  if (view.layout === "outputs") {
-    const cols = document.querySelectorAll("#controls .ctlcol");
-    grps.forEach((g, i) => {
-      cols[i].prepend(g);
-    });
-  } else {
-    // Back in front of the bar that never left, so the row reads in → pedal →
-    // out again. Before #inpanel would put them AFTER it.
-    const outgrp = document.getElementById("outgrp");
-    for (const g of grps) outgrp.parentNode.insertBefore(g, outgrp);
-  }
   // page furniture the view owns
   document.getElementById("dualtxt").textContent = view.dual;
   document.getElementById("blend").value = view.blendDefault;
