@@ -22,15 +22,11 @@ export class DelayPedal extends Pedal {
   }
 
   // The base class's steady sine is useless here (a delayed copy of a continuous
-  // tone just overlaps the original): synthetic -> a decaying pluck; guitar ->
-  // the real note from its pick attack (offset 0), so the transient repeats too.
+  // tone just overlaps the original), and so is the raw note, for the same reason
+  // — it just takes 683 ms to say so. Both sources are the same burst: a hit,
+  // then silence for it to come back into. Only the carrier differs.
   genInput({ srcMode, guitar, n }) {
-    if (srcMode === "guitar" && guitar) {
-      const inp = new Float64Array(n);
-      for (let i = 0; i < n; i++) inp[i] = guitar[i] || 0;
-      return inp;
-    }
-    return pluck(n);
+    return srcMode === "guitar" && guitar ? guitarBurst(guitar, n) : pluck(n);
   }
 
   // out = dry + geometric repeats. No peak-match (match=1): the whole point is
@@ -78,17 +74,37 @@ export function impulseResponse(delayMs, feedback, spanMs, floor = TAP_FLOOR) {
 // has to outlast the pluck as well as its echoes.
 export const PLUCK_MS = 70;
 
-// A short decaying tone-burst: the transient a delay needs to make repeats
-// visible (and the "hit" the impulse-response panel idealizes). One pluck at the
-// note's pitch, ~12 ms decay, silent after PLUCK_MS so echoes land in clear air.
-export function pluck(n) {
+// The decay of the hit itself, ~12 ms — fast enough that the burst is over well
+// inside PLUCK_MS, so even the shortest delay time lands its repeat in clear air.
+const TAU = 0.012 * SR;
+
+// The transient a delay needs to make repeats visible (and the "hit" the
+// impulse-response panel idealizes): whatever you're playing, cut to a single
+// decaying burst and silent after PLUCK_MS, so each echo lands in clear air.
+//
+// This is the family's ONE envelope, and both sources go through it. The shape
+// is the lesson — a hit, then room for it to come back — and it can't be the
+// sine's private property, because a source the shape doesn't apply to shows a
+// different pedal. A sustained input has its repeats land on a note that's still
+// ringing: no train, nothing for the panel above to draw, and the headline "a
+// fading train of repeats" describes something that isn't in the signal.
+// `carrier` is what's playing; this decides how long you hear it.
+export function burst(carrier, n) {
   const out = new Float64Array(n),
-    tau = 0.012 * SR,
     len = Math.min(n, Math.round((PLUCK_MS / 1000) * SR));
-  for (let i = 0; i < len; i++)
-    out[i] = Math.sin((2 * Math.PI * F0 * i) / SR) * Math.exp(-i / tau);
+  for (let i = 0; i < len; i++) out[i] = carrier(i) * Math.exp(-i / TAU);
   return out;
 }
+
+// The synthetic hit: one pluck at the note's pitch.
+export const pluck = (n) => burst((i) => Math.sin((2 * Math.PI * F0 * i) / SR), n);
+
+// The real note's own attack, cut to the same burst. The recording's pick
+// transient is at index 0 (onset ~1.9 ms), so the decay starts where the note
+// does; what it removes is the 683 ms of ring that follows, which is the guitar
+// being a guitar and is exactly what a delay lesson can't use. Every harmonic
+// the pick threw is still in here — that's the reason the source exists.
+export const guitarBurst = (guitar, n) => burst((i) => guitar[i] || 0, n);
 
 // Same math throughout (y[n] = x[n] + fb·y[n−D]); these just start the two knobs
 // somewhere different. Echo leads because it shows the whole lesson at once;

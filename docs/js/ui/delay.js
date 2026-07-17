@@ -3,12 +3,12 @@
 // pluck input, its longer analysis buffer — lives on the DelayPedal instances in
 // pedals/. This module renders them: the tap-train center panel, the wet-vs-dry
 // envelope panel, the time/feedback controls, and the live DelayNode feedback
-// loop. Both envelope followers come from dsp.js — this is the one family that
-// needs both, see drawSpec; the tap train + the live source's pluck come from
-// pedals/ (they're the delay's own DSP).
-import { envelope, envelopeHeld, SR } from "../dsp.js";
+// loop. The envelope follower comes from dsp.js; the tap train + the burst both
+// sources are cut to come from pedals/ (they're the delay's own DSP).
+import { envelope, SR } from "../dsp.js";
 import {
   DELAYS,
+  guitarBurst,
   impulseResponse,
   PLUCK_MS,
   pluck,
@@ -47,10 +47,15 @@ let loopEnd = GAP_MAX_MS / 1000,
 export default {
   id: "delay",
   navLabel: "delay",
-  // NOT sorted: the top chart is still the harness waveform over 683 ms, which is
-  // the same solid band modulation got rid of by drawing its envelope instead.
-  // The rail and the charts were always separate questions — this family still
-  // owes an answer to the second one.
+  // Still owed, but a different debt than it looks. The top chart is the harness
+  // waveform over 683 ms, and it used to be the solid band modulation got rid of
+  // by drawing its envelope instead — that band was the raw guitar input, and it's
+  // gone (see genInput). What's left is the honest version of the problem: at
+  // 1.6 px a carrier cycle a waveform can only draw its own envelope outline, so
+  // this panel and the one below it answer the same question, and the one below
+  // wins. The freed slot wants the burst and one repeat at carrier zoom — the one
+  // thing about a delay neither panel shows, and where "no new frequencies" stops
+  // being a sentence and becomes a picture.
   dual: "⇅ same signal — waveform above, envelope below",
   // Half. This family's wet chain carries ONLY the repeats — the dry tap is
   // where your note itself comes from — so a full-wet delay is echoes of a note
@@ -146,23 +151,20 @@ export default {
   // bottom panel: the wet envelope (orange) over the dry envelope (grey) — the
   // decaying row of humps, one per repeat, that the ear hears as the echo.
   //
-  // The follower answers to the SOURCE, not to this family. dsp.js says to pick
-  // by the signal, and this is the one page where the same panel gets two: the
-  // synthetic source is a 70 ms pluck, a transient, which wants envelope()'s
-  // coast — hold it and 4.5 ms of stale peak sits on a 12 ms decay, which is most
-  // of the hump. The guitar is the real note from its pick attack, which rings
-  // for the whole 683 ms and is therefore SUSTAINED, exactly what a coasting
-  // follower can't draw: it ripples 18% between the carrier's peaks and smears a
-  // band up to 43% of level across the panel. Same page, opposite answers.
-  drawSpec(F, inp, out, _pedal, src, H) {
+  // One follower, both sources. This panel used to pick by src — envelope()'s
+  // coast for the pluck, envelopeHeld() for the guitar — because the guitar rang
+  // for the whole 683 ms and a coasting follower can't draw a sustained signal
+  // without rippling between the carrier's peaks. That was the follower being
+  // patched for a fact about the INPUT: both sources are transients now (see
+  // genInput), so both want the coast, and the hold was only ever the symptom.
+  drawSpec(F, inp, out, _pedal, _src, H) {
     const { g, L, R, T, B } = F;
     const { DRY, WET } = H.colors;
     const span = out.length;
     const sx = (i) => L + (i / span) * (R - L),
       sy = (v) => B - Math.min(1, v) * (B - T - 4);
-    const env = src === "guitar" ? envelopeHeld : envelope;
-    const de = env(inp),
-      we = env(out);
+    const de = envelope(inp),
+      we = envelope(out);
     const xs = new Array(span);
     for (let i = 0; i < span; i++) xs[i] = i;
     // Dry LAST and dashed, which is this panel's alone and not the harness's
@@ -189,10 +191,12 @@ export default {
     H.titles(g, F, "level", "time (ms)");
   },
 
-  // Live source for pluck mode. The harness's default steady oscillator would be
-  // useless here: a delayed copy of a continuous tone just overlaps the original,
-  // so you'd see a pluck but hear no repeat. Loop one pluck followed by silence
-  // instead, so each hit's echoes ring out in the gap before the next.
+  // Live source, for BOTH src modes — the same burst genInput draws, so the panel
+  // and the speaker are the same signal. Neither of the harness's defaults works
+  // here: a delayed copy of a continuous tone just overlaps the original, and so
+  // does the looped raw note, which rings for 683 ms. Either way you'd see a hit
+  // and hear no repeat. Loop one burst followed by silence instead, so each hit's
+  // echoes ring out in the gap before the next.
   //
   // The buffer holds the worst-case gap, because it's allocated once at mount and
   // the knobs move afterwards. The loop point doesn't have to sit at its end,
@@ -200,10 +204,12 @@ export default {
   // update() below turns the loop over wherever *this* setting's echoes have
   // finished. Moving loopEnd is silence-to-silence — no reallocation mid-drag,
   // and nothing to click.
-  buildSource(actx) {
+  buildSource(actx, { srcMode, guitar }) {
     const len = Math.round((GAP_MAX_MS / 1000) * SR);
+    const hit =
+      srcMode === "guitar" && guitar ? guitarBurst(guitar, len) : pluck(len);
     const buf = actx.createBuffer(1, len, SR);
-    buf.copyToChannel(Float32Array.from(pluck(len)), 0);
+    buf.copyToChannel(Float32Array.from(hit), 0);
     const src = actx.createBufferSource();
     src.buffer = buf;
     src.loop = true;

@@ -6,9 +6,11 @@
 export { Pedal } from "./base.js";
 export { CLIPPING, ClippingPedal } from "./clipping.js";
 export {
+  burst,
   DELAYS,
   DelayPedal,
   echo,
+  guitarBurst,
   impulseResponse,
   NLONG,
   PLUCK_MS,

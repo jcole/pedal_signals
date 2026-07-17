@@ -15,6 +15,7 @@ import {
   echo,
   impulseResponse,
   PEDALS,
+  PLUCK_MS,
   sineShape,
   squareShape,
   MODULATIONS,
@@ -158,6 +159,32 @@ test("DelayPedal.process runs the feedback equation at match=1 (repeats stay low
   assert.equal(match, 1, "no peak-match — echoes must read as quieter");
   const D = Math.round((10 / 1000) * 48000); // time ms -> samples
   assert.ok(Math.abs(out[D] - 0.5) < 1e-9, "first repeat = fb");
+});
+
+// Both of the delay's sources are the same burst, and that's the lesson, not a
+// detail of the synthetic one: a sustained input lands every repeat on a note
+// that's still ringing, so there's no train in the signal for any panel to draw.
+// The guitar path used to hand over 683 ms of raw ring and this is what caught
+// nothing. Asserted on the SHAPE (silent past the burst), not on sample values,
+// since it's the silence the echoes need.
+test("both of a delay's sources are a burst — silent past PLUCK_MS, so echoes land in clear air", () => {
+  const n = 32768,
+    hit = Math.round((PLUCK_MS / 1000) * 48000);
+  // stand-in for the real note: a sustained tone that never decays on its own
+  const sustained = new Float32Array(n);
+  for (let i = 0; i < n; i++) sustained[i] = Math.sin((2 * Math.PI * 220 * i) / 48000);
+
+  for (const [src, inp] of [
+    ["sine", PEDALS.echo.genInput({ srcMode: "sine", guitar: null, n })],
+    ["guitar", PEDALS.echo.genInput({ srcMode: "guitar", guitar: sustained, n })],
+  ]) {
+    let after = 0;
+    for (let i = hit; i < n; i++) after = Math.max(after, Math.abs(inp[i]));
+    assert.equal(after, 0, `${src}: still ringing past the burst`);
+    let peak = 0;
+    for (let i = 0; i < hit; i++) peak = Math.max(peak, Math.abs(inp[i]));
+    assert.ok(peak > 0.5, `${src}: no hit to echo (peak ${peak})`);
+  }
 });
 
 // ---- delay: echo (y[n] = x[n] + fb·y[n-D]) ---------------------------------

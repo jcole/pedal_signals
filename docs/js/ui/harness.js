@@ -50,7 +50,9 @@
 //                             // cycles wide and useless for one whose isn't.
 //     drawSpec(F, inp, out, pedal, src, H),      // draw the output BOTTOM panel
 //     buildAudio(actx, inGain, H) -> { wetOut, update(pedal, params, state, match), dispose?() },
-//     buildSource?(actx) -> AudioNode,   // live synthetic source; default: a steady oscillator
+//     buildSource?(actx, {srcMode, guitar}) -> AudioNode,  // the view's own live
+//                             // source, for BOTH src modes. Default: the looped
+//                             // guitar buffer, or a steady oscillator.
 //   };
 //
 // mount(view, {pedal}) can be called again with another view to swap families in
@@ -367,17 +369,23 @@ let actx,
   master,
   audio = null, // { wetOut, update } from effect.buildAudio
   running = false;
+// A view that declares buildSource is asked FIRST, and for both sources — it
+// doesn't get to shape the sine and then have the guitar handed to it whole. The
+// order used to be the other way round, so delay's pluck-and-silence loop only
+// ever ran on sine: the charts drew a burst while your ears got 683 ms of ring
+// smeared into itself, and the panel and the speaker disagreed about what the
+// pedal does. If a view has an opinion about its input, it has it on every input.
 function startSource() {
   if (!actx) return;
   stopSource();
-  if (srcMode === "guitar" && guitar) {
+  if (view.buildSource) {
+    srcNode = view.buildSource(actx, { srcMode, guitar }); // started below
+  } else if (srcMode === "guitar" && guitar) {
     const ab = actx.createBuffer(1, guitar.length, SR);
     ab.copyToChannel(guitar, 0);
     srcNode = actx.createBufferSource();
     srcNode.buffer = ab;
     srcNode.loop = true;
-  } else if (view.buildSource) {
-    srcNode = view.buildSource(actx); // the view's own synthetic source (started below)
   } else {
     srcNode = actx.createOscillator();
     srcNode.frequency.value = F0;
