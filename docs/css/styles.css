@@ -67,7 +67,19 @@
 	   (--accent) means the pedal's own math: every family's centre curve is drawn
 	   in it (draw.js), and so are the formulas that curve is a picture of (.catop,
 	   .famop). Grey means in. Reach for one of the three by what a thing IS, not by
-	   how it should look; that's the whole reason they're named after signals. */
+	   how it should look; that's the whole reason they're named after signals.
+
+	   One formula is not green — the rail deck's (.deckop) — so the rule has an
+	   exception, and it's here rather than only down there because this is where
+	   you'd read the rule and go "fix" it. Both greens are tuned for a material
+	   that deck isn't made of: --accent for white, --accent-lo for the glass.
+	   Neither clears AA as TEXT on --inst-grp, the chassis. Keeping it green meant
+	   giving that one row a black --inst background, and a black slot cut across a
+	   column that alternates chassis and screen for real reasons announces itself
+	   as a fourth material when it's a caption. So it takes --inst-ink. What the
+	   green buys elsewhere — a formula and the curve it draws being one value —
+	   is bought there by adjacency instead: the curve is the next element down.
+	   Where a formula is NOT touching its own drawing, it stays green. */
 	--dry: #9aa0a6;
 	--wet: #dd7048;
 	--wet-ink: #c0522f;
@@ -421,6 +433,38 @@ b {
 	flex: 1;
 	min-width: 0; /* same reason as .ctl's slider, a few rules down */
 	accent-color: var(--accent-lo);
+}
+/* The pedal deck's formula, under its OPERATION bar and over the curve that draws
+   it. This is the one formula on the site that ISN'T green, and the exception is
+   recorded up at the signal colors where the rule is stated — read that first.
+
+   Short version: green here costs a black strip, and the strip was worse than the
+   exception. --accent-lo on --inst-grp is 3.73:1, under AA for text this size (the
+   curve below gets away with the same value as a graphic at 3:1; a string of
+   characters doesn't), and no size fixes it — WCAG's large-text exemption starts
+   at 18.66px bold, which a 240px rail can't hold. The only way to keep the green
+   was to put the row on --inst, where it's 6.13:1. That worked and it read as a
+   black slot cut across the deck: chassis, screen, chassis, in a column that
+   already alternates those materials for real reasons, so it announced itself as a
+   fourth kind of thing when it's just a caption. --inst-ink on the chassis is
+   8.15:1 and looks like what it is.
+
+   What the green was FOR still has to happen, and here it's done by position
+   instead: this sits directly above the curve, and the curve is the drawing of it.
+   The page-side formulas keep the green because they have no such adjacency —
+   .catop is in a table cell with its shape a column away.
+
+   Brighter than the knob labels under it (--inst-ink, not --inst-ink-lo) because
+   it's the deck's statement, not one of its parts.
+
+   Not letter-spaced and not uppercased — see index.html for what .grp would have
+   done to `tanh`. .ctl is a flex row for a label and a slider; this is a block of
+   text, so it opts out and wraps instead, which modulation's 35 characters need on
+   a 240px rail. */
+.deckop {
+	display: block;
+	color: var(--inst-ink);
+	overflow-wrap: anywhere;
 }
 /* #centerctls is the pedal deck's knobs, but the deck is the bar AND the canvas
    AND the knobs, so the element stops being the deck and its children become it.

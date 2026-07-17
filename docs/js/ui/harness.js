@@ -332,15 +332,22 @@ function setPedal(id) {
   // describes the output, which the panels downstream were already saying
   // themselves. It now sits in the lede, where the pedal's row states it once
   // against the family it's an instance of.
-  document.getElementById("pedalgrp").textContent = pedal.label;
-  // The tab names the pedal for the same reason the bar does, and it's the same
-  // fact: the URL is ?pedal=overdrive, so a tab that said "clipping" would be
-  // answering a question nobody asked of it. This has to live here rather than
-  // in mount() — a pick inside a family never remounts, so a title set up there
-  // would stick on the pedal you arrived with and go quietly wrong from the
-  // second pick on. Site name first: these are tabs, and a row of them truncates
-  // from the right, so the half that survives should be the half that says where
-  // you are.
+  // The deck's formula. Its bar isn't written here any more and isn't written at
+  // all — it's standing text reading OPERATION, because it stopped naming the
+  // pedal (see index.html). This is what replaced that name, and it's the better
+  // fact for the slot: the bar sits over the curve that draws this string, and on
+  // the clipping family over knobs named after its own terms.
+  document.getElementById("pedalop").textContent = pedal.tech ?? "";
+  // The tab names the pedal, and the URL is the reason: it's ?pedal=overdrive, so
+  // a tab that said "clipping" would be answering a question nobody asked of it.
+  // This used to say "for the same reason the bar does" — the bar named the pedal
+  // then, and it doesn't now, so the tab is on its own here.
+  //
+  // This has to live here rather than in mount() — a pick inside a family never
+  // remounts, so a title set up there would stick on the pedal you arrived with
+  // and go quietly wrong from the second pick on. Site name first: these are tabs,
+  // and a row of them truncates from the right, so the half that survives should
+  // be the half that says where you are.
   document.title = `Pedal signals — ${pedal.label}`;
   for (const [k, v] of Object.entries(pedal.defaults)) {
     const c = ctlEls[k]?.def;

@@ -248,8 +248,12 @@
        columns were a sequence and not a set, which nothing else on that line
        said; stacked, reading order says it for free.
 
-       #ingrp has to keep its id — it's the only bar the harness doesn't write,
-       but #pedalgrp beside it is written by setPedal() on every pick. -->
+       Both bars are standing text, and INPUT / OPERATION is the parallel the
+       chain reading above depends on — two roles, neither of them a name. This
+       used to note that only this one was standing while #pedalgrp beside it was
+       rewritten by setPedal() on every pick; the bar over there stopped naming the
+       pedal, so there's no asymmetry left to explain and no id on it to explain
+       it with. Nothing selects this one either — it's here for the reader. -->
   <div class="ctlcol">
     <div class="grp" id="ingrp">Input</div>
     <!-- What's going in, at three carrier periods and with no axes on it. Not the
@@ -281,15 +285,39 @@
   <!-- The rail's second deck is the pedal: what it does to the signal, and the
        knobs that shape it. The canvas is the same drawCenter the catalog's
        thumbnails call — the family's own curve, minus the axis labels, live on
-       the knobs directly under it. The bar names the pedal rather than saying
-       "PEDAL": the deck above is the generic thing that's always true, and this
-       is whatever you picked, so it's the one with a name to give. setPedal()
-       fills it.
+       the knobs directly under it.
+
+       The bar used to name the pedal — OVERDRIVE — and the argument was that INPUT
+       above is the generic thing that's always true, so this is the one with a
+       name to give. But the name was already given: the picker says it and the
+       PEDAL cell says it, both a few hundred pixels up, and this was the only bar
+       on the page repeating a word already on screen while adding nothing. What
+       the deck HOLDS is a formula, the curve that formula draws, and the terms
+       that shape it — which is an operation, not an identity. OPERATION also
+       restores the parallel the decks are built on (in, operation, and the charts
+       for what comes out), and it's the page's own word for this: the bench row
+       and the catalog both head this column with it. So the bar is standing text
+       now, like #ingrp — there's no pick that changes it.
+
+       The formula under it is the reinforcement the bar stopped giving: the deck
+       reads operation → the picture of it → its terms, which is the order rows.js
+       already argues for, and on the clipping family `drive` and `bias` are then
+       literally the knobs beneath. It's a line of its own and not part of the bar
+       because .grp is uppercase and letter-spaced, which would render this
+       `TANH(DRIVE·X + BIAS)` — a different string, since tanh isn't TANH and x
+       carries what X doesn't — and because modulation's is 35 characters and no
+       240px bar holds it.
+
+       Worth knowing what it does NOT do, so it isn't mistaken for broken: the
+       delay family's three pedals share one tech string, so this line doesn't move
+       when you pick across them (see rows.js, which says the same of the bench
+       cell). Its terms are also weakest there — `D` sits above a knob called time.
 
        #centerctls stays its own element because buildControls() wipes it, and the
        bar and the canvas can't live inside the thing that clears its own host. -->
   <div class="ctlcol" id="pedalcol">
-    <div class="grp" id="pedalgrp"></div>
+    <div class="grp">Operation</div>
+    <code class="ctl deckop" id="pedalop"></code>
     <div class="ctl"><canvas class="glyph glyph--curve" data-c="curve" aria-hidden="true"></canvas></div>
     <div id="centerctls"></div>
   </div>
