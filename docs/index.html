@@ -35,42 +35,27 @@
   </a>
 </header>
 
-<!-- The picked pedal's row, in the catalog page's three columns and under the
-     same names — but the PEDAL cell is the picker itself: the row you're reading
-     is the row you change. The catalog page spends that cell on a link into here
-     instead. -->
+<!-- The family band: the catalog's three columns naming the family you're in,
+     not the pedal you picked — that lives in the rig's OPERATION deck, where the
+     picker sits by the formula, curve and knobs it drives. Just context here, and
+     the way out to compare (the family name is the link). -->
 <div id="bar">
   <div id="lede">
     <!-- The table: three columns, the same the catalog page has; it ends here,
          and what's beside it (.why) is not a fourth column. -->
     <div id="ledetable">
     <div id="ledehead"></div>
-    <!-- The family's band, inserted by harness.js from the mounted view — the
-         catalog's generic family row, one altitude up, so the row below reads as
-         an instance. No wrapper element: the stylesheet reaches for it as
-         `.famhead + .catrow`, so it must be this row's sibling, not a child. -->
-    <div class="catrow">
-      <!-- The PEDAL cell: a toy pedal and the picker. Two elements because
-           mountPicker() owns #pedalpick and clears it, so the picture can't live
-           inside it. The art is absolutely positioned (see .pedalcell) so it adds
-           no height; js/ui/art.js says why it's a toy with dead knobs. -->
-      <div class="pedalcell">
-        <span id="pedalart" class="pedalart"></span>
-        <div id="pedalpick"></div>
-      </div>
-      <!-- the formula over its plain-English reading, the catalog rows' stack (see
-           pedalRow) -->
-      <span class="catcell">
-        <code class="catop" id="benchop"></code>
-        <span class="catnote" id="benchnote"></span>
-      </span>
-      <span class="catwhat" id="benchwhat"></span>
-    </div>
+    <!-- The family's band, appended by harness.js from the mounted view — the
+         catalog's generic family row, the only row here now. -->
     </div>
     <!-- Beside the table, not in it: the family's word about the two charts below
          — an aside, not a cell, and it sits in slack the row was already wasting
-         (see the stylesheet). Filled by harness.js from the mounted family. -->
-    <p class="why" id="whytxt"></p>
+         (see the stylesheet). The label is the page's; the sentence is filled by
+         harness.js from the mounted family (so #whytxt owns only the text). -->
+    <aside class="why">
+      <span class="whylabel">reading the charts</span>
+      <p id="whytxt"></p>
+    </aside>
   </div>
 </div>
 
@@ -107,35 +92,38 @@
 </div>
 
 <div id="controls">
-  <!-- The transport: the controls that change nothing on a chart. render() reads
-       the source and the knobs, never play/blend — those reach the AudioContext
-       and stop, so they're how you listen, not a stage of the chain (hence no
-       OUTPUT deck). ↻ pluck went to the INPUT deck instead — it's the one that's
-       a property of the source, not the rig. -->
-  <div id="railtop">
-    <!-- first, because it starts everything; big (60px) because it's the only
-         control on the tray -->
-    <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
-    <!-- A crossfade, one knob: a dry level and a wet level free to disagree would
-         change loudness across an A/B, the one thing it must not do. Ends as the
-         label, no readout — the direction is the only thing worth saying about a
-         blend you set by ear. -->
-    <label class="blendctl">
-      <span>dry</span>
-      <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="dry/wet blend" title="0 is your note alone, 1 is the pedal alone">
-      <span>wet</span>
-    </label>
+  <!-- The rail's decks, OPERATION first: it holds the picker now, and picking the
+       pedal is where you start. INPUT (the source you feed it) follows, then the
+       transport at the foot — set the operation and the source, then press play.
+       Both bars are standing text — roles, not names, nothing selects them. No
+       arrow: stacked, reading order says "sequence" (here, priority — the chain is
+       left-to-right in the charts, not top-to-bottom in the rail). -->
+  <!-- The pedal deck: the picker, the operation it selects, the curve it draws (the
+       same drawCenter the catalog thumbnails call), and the knobs that shape it. The
+       bar is standing text — OPERATION, a role, the page's own column head. The
+       formula is a line of its own, not part of the bar, because .grp's uppercase
+       would render `tanh` as `TANH` and no 240px bar holds modulation's 35 chars.
+       #centerctls is its own element because buildControls() wipes it. -->
+  <div class="ctlcol" id="pedalcol">
+    <div class="grp">Operation</div>
+    <!-- The picker, first in the deck: choosing the pedal is choosing the
+         operation, so it sits above the formula/curve/knobs it drives. A toy
+         pedal beside it (dead knobs; art.js says why). mountPicker() owns
+         #pedalpick and clears it, so the picture can't live inside it. -->
+    <div class="ctl pickrow">
+      <span id="pedalart" class="pedalart"></span>
+      <div id="pedalpick"></div>
+    </div>
+    <code class="ctl deckop" id="pedalop"></code>
+    <div class="ctl"><canvas class="glyph glyph--curve" data-c="curve" aria-hidden="true"></canvas></div>
+    <div id="centerctls"></div>
   </div>
-  <!-- The rail's decks are the chain turned ninety degrees: input, operation, and
-       (reading on into the charts) output. Both bars are standing text — INPUT /
-       OPERATION are roles, not names, and nothing selects them. No arrow between
-       them: stacked, reading order already says "sequence". -->
   <div class="ctlcol">
     <div class="grp" id="ingrp">Input</div>
     <!-- A glyph of what's going in — "a steady tone" or "a plucked note", three
          carrier periods, no axes. Not the source panel shrunk: with a real span
          label it was a lie (hardcoded 3 cycles under a 0–1365 ms axis). On top,
-         like the curve on the deck below — picture first, then its controls. -->
+         like the curve on the deck above — picture first, then its controls. -->
     <div class="ctl"><canvas class="glyph" data-c="srcglyph" aria-hidden="true"></canvas></div>
     <!-- The source and (for the source that has a beginning) the way back to it.
          play/stop stays on the tray — it asks "is the rig running", true of every
@@ -148,20 +136,25 @@
       <button id="replay" hidden title="restart the note from the pluck">↻ pluck</button>
     </div>
   </div>
-  <!-- The pedal deck: the operation, the curve it draws (the same drawCenter the
-       catalog thumbnails call), and the knobs that shape it. The bar is standing
-       text — OPERATION, a role, the page's own column head — not the pedal's name,
-       which the picker and PEDAL cell already give. The formula is a line of its
-       own, not part of the bar, because .grp's uppercase would render `tanh` as
-       `TANH` and no 240px bar holds modulation's 35 chars. #centerctls is its own
-       element because buildControls() wipes it. -->
-  <div class="ctlcol" id="pedalcol">
-    <div class="grp">Operation</div>
-    <code class="ctl deckop" id="pedalop"></code>
-    <div class="ctl"><canvas class="glyph glyph--curve" data-c="curve" aria-hidden="true"></canvas></div>
-    <div id="centerctls"></div>
+  <!-- The transport, at the foot: the controls that change nothing on a chart.
+       render() reads the source and the knobs, never play/blend — those reach the
+       AudioContext and stop, so they're how you listen, not a stage of the chain
+       (hence no OUTPUT deck). ↻ pluck went to the INPUT deck instead — it's the
+       one that's a property of the source, not the rig. -->
+  <div id="railtop">
+    <!-- big (60px) — the one control on the tray, and the page's one "go" -->
+    <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
+    <!-- A crossfade, one knob: a dry level and a wet level free to disagree would
+         change loudness across an A/B, the one thing it must not do. Ends as the
+         label, no readout — the direction is the only thing worth saying about a
+         blend you set by ear. -->
+    <label class="blendctl">
+      <span>dry</span>
+      <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="dry/wet blend" title="0 is your note alone, 1 is the pedal alone">
+      <span>wet</span>
+    </label>
   </div>
-  <!-- Spans the columns; it's about the guitar button in the first. -->
+  <!-- Spans the columns; it's about the guitar button two decks up. -->
   <p class="hint ctlhint" id="gcredit" style="display:none">
     guitar input: a clean Stratocaster A3 (bridge pickup) from
     <a href="https://egfxset.github.io/">EGFxSet</a> — Pedroza, Meza &amp; Roman,

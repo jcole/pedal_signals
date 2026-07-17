@@ -21,11 +21,12 @@ const FSPAN_HZ = 60;
 export default {
   id: "modulation",
   navLabel: "modulation",
-  // The mirror of clipping's why: same sentence shape, opposite claim (shape vs
-  // level). Same cell on two mounts, so switching families swaps one sentence in
+  // The mirror of clipping's why: same sentence shape, opposite claim (level vs
+  // shape). Same cell on two mounts, so switching families swaps one sentence in
   // place against an otherwise identical row.
-  why: `This pedal leaves the shape of a cycle alone; it changes how loud the note
-    is, over seconds.`,
+  why: `The <span class="chartref">envelope</span> shows the note swelling and
+    dipping over seconds; the <span class="chartref">spectrum</span>, the sidebands
+    that adds. The shape of each cycle, it leaves alone.`,
   // Half — a real pedal's mix knob: the dry path is unmodulated, so blending it
   // back shallows the pulse.
   blendDefault: 0.5,

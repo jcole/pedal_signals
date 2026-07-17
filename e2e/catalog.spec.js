@@ -85,7 +85,7 @@ test("a row opens the demo standing on that pedal", async ({ page }) => {
   await rows(page).filter({ hasText: "ambient" }).first().click();
   await expect(page).toHaveURL(/\?pedal=ambient$/);
   await expect(pedalName(page)).toHaveText("ambient");
-  await expect(familyName(page)).toHaveText("delay family →");
+  await expect(familyName(page)).toHaveText("delay →");
 });
 
 test("every row's link opens a pedal the demo recognizes", async ({ page }) => {
@@ -103,16 +103,16 @@ test("every row's link opens a pedal the demo recognizes", async ({ page }) => {
 });
 
 // The bench's one way out, and the one place the site says what a family is. The
-// noun used to be a column name over a bare "clipping →"; it's inside the band's
-// name now, which is why the assertion below is on the name itself rather than on
-// a header. It aims at the mounted family's own band, not at the top of the page:
-// the link is answering "what IS modulation", so it has to land on the row that
-// says — a band on the bench pointing at the same band on the catalog.
+// family name (under its own FAMILY column head, reading "modulation →") is the
+// link, so the assertion is on the name itself. It aims at the mounted family's own
+// band, not at the top of the page: the link is answering "what IS modulation", so
+// it has to land on the row that says — a band on the bench pointing at the same
+// band on the catalog.
 test("the bench links out to its family's band in the catalog", async ({
   page,
 }) => {
   await page.goto("/?pedal=warble");
-  await expect(familyName(page)).toHaveText("modulation family →");
+  await expect(familyName(page)).toHaveText("modulation →");
   await familyName(page).click();
   await expect(page).toHaveURL(/\/pedals\.html#modulation$/);
   // the anchor has to exist, or the hash is a link to the top of the page

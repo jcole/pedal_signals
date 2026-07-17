@@ -67,7 +67,7 @@ import { pedalArt } from "./art.js";
 import { frame as fit, H, line, titles, txt } from "./draw.js";
 // the bench row's column names, from the same module the catalog uses — named once,
 // together. The row itself is in index.html (standing DOM a re-render would destroy).
-import { famRow, headRow } from "./rows.js";
+import { benchRow, headRow } from "./rows.js";
 // the rail's curve glyph is the catalog's thumbnail, live. See drawRail.
 import { drawThumb } from "./thumb.js";
 
@@ -235,11 +235,11 @@ function setParam(id, v) {
 // none of it can move to mount()).
 function setPedal(id) {
   pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
-  // the bench row's other two columns (the PEDAL cell is the picker's standing DOM)
-  document.getElementById("benchop").textContent = pedal.tech ?? "";
-  document.getElementById("benchnote").textContent = pedal.techNote ?? "";
+  // the top band's PEDAL cell: the picked pedal's name and, under it, its own
+  // effect (overdrive and fuzz differ — the family's shared effect is a column over)
+  document.getElementById("benchped").textContent = pedal.label;
   document.getElementById("benchwhat").textContent = pedal.whatChanges ?? "";
-  // the toy pedal beside the picker
+  // the toy pedal beside the picker, in the OPERATION deck
   document.getElementById("pedalart").innerHTML = pedalArt(pedal.art);
   if (pedal.outnar)
     document.getElementById("outnar").textContent = pedal.outnar;
@@ -468,21 +468,20 @@ export function mount(v, opts = {}) {
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
-  // The family's band — the generic row the pedal row fills in. Here, not in
-  // setPedal(): it's the family's, and the family only changes on a mount; its name
-  // is the way out to the catalog, so the href is built here (the view knows its
-  // own id). Inserted as the pedal row's previous sibling, not a host of its own —
-  // the stylesheet reads the gap under it off that adjacency (.famhead + .catrow);
-  // cleared by hand since a remount has no host to wipe.
+  // The family's band — the only row in the top table now (the pedal moved to the
+  // rig's OPERATION deck). Here, not in setPedal(): it's the family's, and the
+  // family only changes on a mount; its name is the way out to the catalog, so the
+  // href is built here (the view knows its own id). Appended after #ledehead's
+  // column names, and cleared by hand since a remount has no host to wipe.
   const table = document.getElementById("ledetable");
-  const row = table.querySelector(".catrow");
-  table.querySelector(".famhead")?.remove();
-  table.insertBefore(
-    famRow(view, { href: `./pedals.html#${encodeURIComponent(view.id)}` }),
-    row,
+  table.querySelector(".benchrow")?.remove();
+  table.appendChild(
+    benchRow(view, { href: `./pedals.html#${encodeURIComponent(view.id)}` }),
   );
-  // the family's word about its charts, beside the table (see index.html)
-  document.getElementById("whytxt").textContent = view.why;
+  // the family's word about its charts (see index.html). innerHTML, not text: the
+  // copy wraps its chart names in <span class="chartref"> to echo the panel chips —
+  // authored strings, same as lesson.body below.
+  document.getElementById("whytxt").innerHTML = view.why;
   document.getElementById("blend").value = view.blendDefault;
   // What the two output panels ARE — the view's words, not hardcoded (a family may
   // draw something else). Top defaults to "waveform", the harness's own plot; the
@@ -502,9 +501,9 @@ export function mount(v, opts = {}) {
 
   if (!wired) {
     wired = true;
-    // the bench row's column names, from rows.js so this page and the catalog name
-    // their shared columns once, together
-    document.getElementById("ledehead").appendChild(headRow());
+    // the bench's column names — the catalog's three plus FAMILY inserted second,
+    // because here the pedal and its family are separate columns (see benchRow)
+    document.getElementById("ledehead").appendChild(headRow("family", 1));
     wireSourceToggle();
     wireTransport();
     showReplay();

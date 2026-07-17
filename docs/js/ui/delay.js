@@ -44,9 +44,10 @@ export default {
   // This family's whatChanges says "no new frequencies", so it gets no frequency
   // panel. The second sentence is a legend for the dashed dry, which nothing else
   // on the rig names.
-  why: `This pedal doesn't change your note at all; it hands it back to you, late
-    and quieter. The dashed line is your note, stopping while the pedal carries
-    on.`,
+  why: `The <span class="chartref">waveform</span> shows your note handed back late
+    and quieter, repeat by repeat; the <span class="chartref">envelope</span>
+    traces their decay. The dashed line is your note, stopping while the pedal
+    carries on.`,
   // Half. The wet chain carries ONLY the repeats — your note comes from the dry
   // tap — so a full-wet delay is echoes of a note you never hear.
   blendDefault: 0.5,

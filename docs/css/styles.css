@@ -319,6 +319,8 @@ b {
 	display: block;
 	padding: 6px 8px;
 }
+/* the deck picker's dark overrides live at the foot of the picker section, after
+   the base rules they override (see there) */
 /* min-width: 0 or the slider won't shrink below its intrinsic ~139px and pushes
    the fixed rail wider (delay's `feedback` row). The slider is what gives. */
 .ctl input[type="range"] {
@@ -554,6 +556,45 @@ b {
 	color: var(--ink-lo);
 	margin: 10px 8px;
 }
+/* The picker in the OPERATION deck — dark overrides on the lit base above, so
+   they sit here, after the rules they override (the linter's descending-specificity
+   warning). The .pickrow (toy pedal, then picker) is a plain .ctl; it just centres
+   and gaps them. */
+#pedalcol .pickrow {
+	gap: 9px;
+}
+/* the toy pedal, in flow now (the old top row pinned it absolute to keep an
+   svg's baseline from dropping the row; a .ctl centres, so no pin) */
+#pedalcol .pedalart {
+	display: flex;
+	flex: none;
+	pointer-events: none;
+}
+#pedalcol .pedalart svg {
+	height: 36px;
+	width: auto;
+	display: block;
+}
+/* the picker itself: a control cut into the chassis like the source .seg —
+   darker than the deck, --inst-ink text — not the lit header button it was up
+   top. Fills the row (min-width dropped: the base 210px would overflow a 240px
+   rail). Green still marks open, as it marks chosen elsewhere. */
+#pedalcol .pickbtn {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	background: var(--inst);
+	color: var(--inst-ink);
+	border-color: var(--inst-edge);
+}
+#pedalcol .pickbtn:hover,
+#pedalcol .openpick .pickbtn {
+	background: var(--inst-head);
+	border-color: var(--accent);
+}
+#pedalcol .pickcar {
+	color: var(--inst-ink-lo);
+}
 .srcbtn:disabled {
 	opacity: 0.5;
 	cursor: default;
@@ -575,57 +616,21 @@ b {
 	opacity: 0.4;
 	cursor: default;
 }
-/* The picked pedal's row, under the catalog page's column names — .cathead,
-   .catrow and their cells are all that page's; these rules own only what's
-   different on the bench. The table is 1000px (the catalog's own measure, so the
-   three columns keep their proportions); the block is the bar's 1360, and the
-   family's sentence sits beside the table in the slack. flex not grid — a grid
-   track would line the sentence up with the columns and it'd read as one. */
+/* The bench's top band: the four-column context row (pedal, family, operation,
+   what-changes) and, beside it, the reading-the-charts box. flex not grid — a grid
+   track would line the box up with the columns and it'd read as a fifth one. */
 #lede {
 	max-width: 1360px;
 	display: flex;
 	align-items: flex-start;
 	gap: 32px;
 }
-/* the table takes the catalog's measure and no more; basis not width so a narrow
-   window shrinks the table before stranding the prose */
+/* the table takes what its four columns need and no more; the box takes the rest.
+   A wide box wraps the copy to two lines instead of four, so the box stops being
+   taller than the table and the whole band shrinks to the table's height. */
 #ledetable {
-	flex: 0 1 1000px;
+	flex: 0 1 780px;
 	min-width: 0;
-}
-/* the PEDAL cell: toy pedal (out of flow) then picker. Absolute-positioned art
-   because an <svg> has no baseline: in flow it would hand the cell a baseline
-   below the image and drop every other column ~20px — off the fold. The padding
-   reserves the picture's slot (40px + 9px gap) so the picker stays in one place
-   across picks. */
-.pedalcell {
-	position: relative;
-	padding-left: 49px;
-}
-.pedalart {
-	position: absolute;
-	left: 0;
-	/* top-aligned, not centred: centring hangs 6px of pedal up through the PEDAL
-	   name above; pinned to top it runs down into the row's two-line slack */
-	top: 0;
-	display: flex;
-	pointer-events: none;
-}
-/* 40px is the measurement: the row's content box is 42px (the two-line OPERATION
-   cell), so this is the tallest a free picture fits — bigger buys its own height
-   off the fold (re-measure, see #masthead). Scoped to #lede to clear the linter
-   against #play svg above, which never meets this. */
-#lede .pedalart svg {
-	height: 40px;
-	width: auto;
-	display: block;
-}
-/* the picker fills its cell, not its content — sizing to the name would resize
-   the button on every pick, and it's a control you return to repeatedly */
-#lede .pickbtn {
-	width: 100%;
-	min-width: 0;
-	overflow: hidden;
 }
 /* the bench's other row overrides live at the foot of the catalog section — they
    must follow the rules they override */
@@ -721,7 +726,8 @@ b {
    padding here and you change all three. */
 .cathead,
 .famhead,
-.catrow {
+.catrow,
+.benchrow {
 	display: grid;
 	grid-template-columns: minmax(9rem, 1fr) minmax(11rem, 1.15fr) minmax(
 			11rem,
@@ -912,28 +918,40 @@ a.catrow:hover .catlabel {
 		display: block;
 	}
 }
-/* the bench borrows these rows and changes one thing: no 40px family gap (only
-   one band here, under the picker's own gap). Down here, after the rules it
-   overrides — a plain .cathead following it would read as losing to an ID (the
-   linter's descending-specificity warning). */
+/* the bench splits the catalog's PEDAL column into two — the picked pedal, then
+   its FAMILY — so header and row run four columns, not the catalog's three. Down
+   here, after the rules they override (a plain .cathead following would read as
+   losing to an ID — the linter's descending-specificity warning). */
+#lede .cathead,
+#lede .benchrow {
+	grid-template-columns:
+		minmax(6rem, 0.7fr) minmax(8rem, 0.95fr)
+		minmax(9rem, 1.15fr) minmax(8rem, 1.1fr);
+}
 #lede .cathead {
 	margin-top: 0;
 	/* and no gap below — here the names head one row and sit right on it */
 	padding-bottom: 2px;
 }
-/* No track override: the bench's three columns ARE the catalog's three. The one
-   thing the two tables don't share is #cat's SHAPE column. */
-/* the band on the bench: one family, its row directly under it, so drop the
-   catalog's between-families margin and the two read as one object */
-#lede .famhead {
+/* the bench's one row: quiet context (the active choice lives in the rig's deck
+   now), so no tray fill, no green edge. */
+#lede .benchrow {
 	margin: 0;
-	padding-bottom: 4px;
+	padding-top: 4px;
 }
-#lede .famhead + .catrow {
-	/* 12px, not the 2px used under bare column names: the band is a filled block
-	   with a rule down its edge, and the pictures directly under it (toy pedal,
-	   bordered picker) would read as touching its underside at 2px */
-	padding-top: 12px;
+/* the picked pedal, first and the loudest thing read — a proper sans headline,
+   not the family's mono caps (the family is secondary here, one column right) */
+#benchped {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--ink-hi);
+}
+/* the pedal's own effect, under its name — a quiet sub-line like the family's
+   class or note, the specific case the WHAT CHANGES column generalises */
+#benchwhat {
+	font-size: 11.5px;
+	line-height: 1.45;
+	color: var(--ink-lo);
 }
 /* the family's word about its two charts, beside the table (see index.html for
    why beside, not in). The one bit of prose on the page — so no mono, no caps.
@@ -941,11 +959,48 @@ a.catrow:hover .catlabel {
    aside about its own layout, quieter than the rows' claims about the pedal. */
 .why {
 	margin: 0;
-	padding-top: 11px;
+	padding: 12px 16px;
+	border: 1px solid var(--rule);
+	border-radius: 4px;
+	flex: 1 1 0;
+	min-width: 280px;
+	max-width: 72ch;
+	align-self: stretch;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 7px;
+}
+/* the box's own label, in the rig's caption voice (mono caps, --ink-lo) — the
+   panels below title themselves the same way, so the aside reads as one of them */
+.whylabel {
+	font-family: var(--mono);
+	font-size: 10px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--ink-lo);
+}
+/* scoped to #lede so its specificity clears #lesson p above (the linter's
+   descending-specificity warning) — they never meet, different sections */
+#lede .why p {
+	margin: 0;
 	font-size: 13px;
 	line-height: 1.5;
 	color: var(--ink-lo);
-	max-width: 42ch;
+}
+/* the chart names in the prose, echoing the panels' .ctype chips (mono caps) so a
+   word in the sentence points at the panel it names. Lighter than the dark chip —
+   two per sentence in light prose — but the same mono-caps signal. */
+.chartref {
+	font-family: var(--mono);
+	font-size: 0.82em;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--ink-hi);
+	background: var(--sunk);
+	border-radius: 3px;
+	padding: 1px 5px;
+	white-space: nowrap;
 }
 /* on this page the band's name is the way out (see famRow), the one .famname
    that's an <a>: mono caps kept, underline dropped (it'd rule under a heading);
@@ -956,14 +1011,6 @@ a.catrow:hover .catlabel {
 #lede a.famname:hover .famnoun,
 #lede a.famname:focus-visible .famnoun {
 	color: var(--accent);
-}
-#lede .catrow {
-	/* No align-items: takes the shared baseline like every catalog row — the three
-	   cells at three sizes have no shared top edge, only a baseline. No padding-top:
-	   the band above spaces it (see `.famhead + .catrow`). No border-top: on the
-	   catalog it separates one pedal from the next; here there's one row and
-	   nothing to separate it from. */
-	border-top: 0;
 }
 /* the way back to the bench, and the way out to the catalog: one small mono
    link, on the page side both times */
