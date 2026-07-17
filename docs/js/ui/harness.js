@@ -429,8 +429,12 @@ function stopSource() {
 // the sine is a continuous oscillator with no beginning to go back to. It used to
 // sit here greyed out on every other view of the page, which is a control
 // advertising a capability the page doesn't have: a disabled button says "not
-// yet", and this one means "not here". Gone instead, and the transport is two
-// things whenever it's two things.
+// yet", and this one means "not here". Gone instead.
+//
+// This line is why the button sits in the INPUT deck next to the source segment
+// rather than on the tray next to play: what it's hidden by is srcMode, so the
+// control that governs it is the one it now stands beside. play has no such line
+// and never disappears.
 function showReplay() {
   document.getElementById("replay").hidden = srcMode !== "guitar";
 }
@@ -438,10 +442,14 @@ function showReplay() {
 // One crossfade, where there were two independent levels. See index.html for why
 // two numbers were the wrong shape for one question; here it just means the pair
 // can't drift, because there's only one of them: dry is whatever wet isn't.
+//
+// Nothing to echo back: the slider is labelled `dry ——— wet` at its ends and has
+// no readout, so the handle's position is the whole display. Every other knob in
+// the rail writes a number next to itself; this one doesn't, because a crossfade
+// is set by ear and 0.50 was never a figure anyone read.
 const blendS = () => document.getElementById("blend");
 function setBlend() {
   const b = +blendS().value;
-  document.getElementById("blendo").textContent = b.toFixed(2);
   if (actx) {
     dryGain.gain.value = 1 - b;
     wetGain.gain.value = b;

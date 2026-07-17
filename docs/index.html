@@ -204,7 +204,13 @@
        or the blend — those three reach the AudioContext and stop. So they aren't
        a stage of the chain, they're how you listen to it, and the decks below are
        the model. Which is also why there's no OUTPUT deck: the only thing that
-       was ever in it was a level, and a level is this row's business. -->
+       was ever in it was a level, and a level is this row's business.
+
+       That line holds for all three, but it doesn't make them one row. ↻ pluck
+       went down to the INPUT deck: of the three it's the only one that's a
+       property of the SOURCE rather than of the rig, which the code has always
+       said by hiding it on sine while play stays put. What's left up here is the
+       two that are true of every view — start it, and how much pedal you hear. -->
   <div id="railtop">
     <!-- First, because it starts everything else, and big (60px — see the styles)
          because it has two jobs at once. It used to have two sizes for them: an
@@ -214,17 +220,25 @@
          retire into. One button, at the head of the rail, at a size that doesn't
          need a slab to advertise it. -->
     <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
-    <button id="replay" hidden title="restart the note from the pluck">↻ pluck</button>
     <!-- One knob where there were two. They were a dry level and a wet level,
          which is a blend written as two numbers that are free to disagree:
          nothing made them sum to anything, so moving between "hear the pedal"
          and "hear your note" changed the LOUDNESS as well as the tone — the one
          thing an A/B must not do. A crossfade can't: dry is whatever wet isn't.
          dry/wet because that is what the knob is called on the box this page is
-         about. -->
-    <label class="blendctl">dry/wet
-      <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5" title="0 is your note alone, 1 is the pedal alone">
-      <output id="blendo">0.50</output>
+         about.
+
+         The ends are the label, and there's no readout. `dry/wet 0.50` spent two
+         pieces of chrome to say less than `dry ——— wet` does: neither the caption
+         nor the number told you which way the handle goes, and 0.50 is a figure
+         you'd never read off or reproduce — it's a crossfade you set by ear, not
+         a delay time. Naming the ends says the direction, which is the only thing
+         about this control there was ever anything to say, and it buys the track
+         the width the caption and the number were holding. -->
+    <label class="blendctl">
+      <span>dry</span>
+      <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="dry/wet blend" title="0 is your note alone, 1 is the pedal alone">
+      <span>wet</span>
     </label>
   </div>
   <!-- The rail's decks are the chain, turned ninety degrees: what's going in,
@@ -250,15 +264,18 @@
          output panels put their trace: every deck in the rail reads picture
          first, then the controls that shape it. -->
     <div class="ctl"><canvas class="glyph" data-c="srcglyph" aria-hidden="true"></canvas></div>
-    <!-- Everything about the signal going in: which source it is. ↻ pluck and
-         play/stop are arguably the rest of that — they're the same question, "is
-         it running?" — and they're on the tray instead, because they change
-         nothing on a chart. See the note up there. -->
+    <!-- Everything about the signal going in: which source it is, and — when it's
+         the one source that has a beginning — the way back to that beginning.
+         play/stop is NOT the rest of that: it asks "is the rig running", which is
+         true of every view, so it stays on the tray with the blend. ↻ pluck can't
+         ask that, because half the time there's nothing for it to ask it about.
+         It sits beside the button that decides whether it exists at all. -->
     <div class="ctl">
       <span class="seg">
         <button class="srcbtn active" data-src="sine">sine</button>
         <button class="srcbtn" data-src="guitar" disabled>guitar ⏳</button>
       </span>
+      <button id="replay" hidden title="restart the note from the pluck">↻ pluck</button>
     </div>
   </div>
   <!-- The rail's second deck is the pedal: what it does to the signal, and the

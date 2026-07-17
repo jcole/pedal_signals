@@ -387,23 +387,29 @@ b {
    caption floats on the knobs with no seam. The rule went rather than moved. */
 
 /* ---- the tray, and the rail's glyphs ---------------------------------------
-   Play and ↻ pluck and the blend sit on the tray, not on a deck: they're the only
-   controls on the page that change nothing on a chart. render() reads the source
-   and the knobs and has never read any of these three — they reach the
-   AudioContext and stop. Inside the INPUT deck the transport read as a property
-   of the source rather than of the whole rig. */
+   Play and the blend sit on the tray, not on a deck: they're the controls that
+   change nothing on a chart AND are true of every view. render() reads the source
+   and the knobs and has never read either of them — they reach the AudioContext
+   and stop. Inside the INPUT deck they read as a property of the source rather
+   than of the whole rig. ↻ pluck is the third that changes no chart, and it went
+   the other way, down to that deck: it IS a property of the source. */
 #railtop {
 	display: flex;
-	flex-wrap: wrap;
-	justify-content: flex-start;
 	align-items: center;
-	gap: 8px 10px;
+	gap: 10px;
 	padding: 0 2px 8px;
 }
-/* Its own line: the rail is 240px, and a 60px button, a ↻ pluck and a labelled
-   slider are not 240px. */
+/* One line now, and no wrap to allow. It used to take a line of its own with
+   `flex: 1 0 100%`, and the note here said why: a 60px button, a ↻ pluck and a
+   labelled slider are not 240px. Two of those three are gone — pluck moved to the
+   INPUT deck, and the caption and readout came off the slider — so what's left is
+   a button and a track, which fit. The row was never full anyway: pluck is hidden
+   on sine, so on half the page's states this held 60px of button and 170px of
+   nothing, and `margin-left: auto` put the hole in the middle on the other half.
+   The slider is what fills it. */
 .blendctl {
-	flex: 1 0 100%;
+	flex: 1;
+	min-width: 0;
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -415,10 +421,6 @@ b {
 	flex: 1;
 	min-width: 0; /* same reason as .ctl's slider, a few rules down */
 	accent-color: var(--accent-lo);
-}
-.blendctl output {
-	min-width: 2.6em;
-	text-align: right;
 }
 /* #centerctls is the pedal deck's knobs, but the deck is the bar AND the canvas
    AND the knobs, so the element stops being the deck and its children become it.
@@ -779,17 +781,37 @@ b {
 	opacity: 0.5;
 	cursor: default;
 }
-/* Recessed into the deck, for the same reason .seg is: at #2c3125 this button was
-   within a hair of the chassis it sits on and disappeared into it. */
+/* On the chassis, not recessed into it — the one thing this button must not look
+   like is the segment it now stands beside. It used to be --inst with no border,
+   which is .srcbtn's own colouring, and that was fine while it lived out on the
+   tray with nothing to be confused with. Next to .seg it made the row read
+   `sine | guitar | ↻ pluck`: three dark wells in a line, the first greyed, the
+   second green, the third apparently a source you could pick. Dark-and-recessed
+   is this deck's word for "a slot you choose from", and pluck isn't a choice,
+   it's a thing you do.
+
+   So: no fill, and the chassis shows through. An outline on --inst-grp is the
+   opposite of a well cut into it, which is the distinction doing the work — the
+   colors stay the deck's either way, it's the direction that changed. Secondary
+   to the segment on purpose; picking the source is the question here, and pluck
+   only answers a follow-up.
+
+   The border also squares the heights. .seg is a 1px border around 4px padding;
+   this was 4px padding and no border, so it sat 2px shorter than the thing it's
+   aligned with and only align-items hid it.
+
+   No `margin-left: auto`. On the tray it pushed pluck to the far edge and left a
+   gap between it and play, which is the hole this whole change is about. Here the
+   .ctl's 8px gap is the point: pluck sits against the guitar button because that
+   button is what decides whether pluck exists at all. */
 #replay {
 	font: 14px var(--mono);
-	background: var(--inst);
-	color: #d8dbd2;
-	border: 0;
+	background: transparent;
+	color: var(--inst-ink);
+	border: 1px solid var(--inst-ink-lo);
 	border-radius: 4px;
 	padding: 4px 10px;
 	cursor: pointer;
-	margin-left: auto;
 }
 #replay:disabled {
 	opacity: 0.4;
