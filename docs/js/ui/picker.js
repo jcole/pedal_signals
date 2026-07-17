@@ -156,6 +156,14 @@ export function mountPicker(host, { families, onPick }) {
     setActive(hits[(i + d + hits.length) % hits.length]);
   }
 
+  // Popup closed, button focused: arrow keys pick the next/prev pedal outright,
+  // like a native <select>. No wrap — the ends stop, so holding a key can't loop.
+  function nudge(d) {
+    const i = entries.indexOf(current) + d;
+    if (i < 0 || i >= entries.length) return;
+    choose(entries[i]);
+  }
+
   // Keep focus where it is (same as the options above): Safari doesn't focus a
   // button on click, so with the popup open the mousedown blurs the search,
   // focusout closes the popup, and the click reopens what the blur just shut — a
@@ -164,7 +172,13 @@ export function mountPicker(host, { families, onPick }) {
   btn.onmousedown = (ev) => ev.preventDefault();
   btn.onclick = () => setOpen(!open, true);
   btn.onkeydown = (ev) => {
-    if (ev.key === "ArrowDown" || ev.key === "Enter" || ev.key === " ") {
+    if (ev.key === "ArrowDown") {
+      ev.preventDefault();
+      nudge(1);
+    } else if (ev.key === "ArrowUp") {
+      ev.preventDefault();
+      nudge(-1);
+    } else if (ev.key === "Enter" || ev.key === " ") {
       ev.preventDefault();
       setOpen(true);
     }

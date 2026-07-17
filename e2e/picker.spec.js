@@ -119,3 +119,18 @@ test("it picks from the keyboard, and Escape leaves without picking", async ({
   await expect(page.locator(".pickbtn .pickped")).toHaveText("fuzz");
   await expect(page).toHaveURL(/pedal=fuzz$/);
 });
+
+test("arrows on the closed button step the catalog like a native select", async ({
+  page,
+}) => {
+  // Focused and shut, Up/Down pick outright instead of opening — no popup, the
+  // choice lands straight on the URL. overdrive is first, so Up stays put.
+  await page.goto("/");
+  await page.locator(".pickbtn").focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(page.locator(".pickpop")).toBeHidden();
+  await expect(page.locator(".pickbtn .pickped")).toHaveText("distortion");
+  await expect(page).toHaveURL(/pedal=distortion$/);
+  await page.keyboard.press("ArrowUp");
+  await expect(page.locator(".pickbtn .pickped")).toHaveText("overdrive");
+});
