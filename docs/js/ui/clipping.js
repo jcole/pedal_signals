@@ -1,9 +1,8 @@
-// Clipping-family VIEW (overdrive / distortion / fuzz): only the UI. What a
-// clipping pedal IS — its transfer curve out = f(drive·x + bias), and how it
-// processes a buffer — lives on the ClippingPedal instances in pedals/. This
-// module renders them: the transfer-curve center panel, the harmonic-stem
-// spectrum, the drive/bias controls, and the WaveShaper audio node. The analysis
-// core (FFT/spectrum, windowing) comes from dsp.js.
+// Clipping-family VIEW (overdrive / distortion / fuzz): only the UI. The pedal
+// model (transfer curve out = f(drive·x + bias), buffer processing) lives on
+// ClippingPedal in pedals/; this module renders the transfer-curve panel, the
+// harmonic-stem spectrum, the drive/bias controls, and the WaveShaper node.
+// Analysis core (FFT/spectrum, windowing) from dsp.js.
 
 import { F0, FMAX, KBIN, N, SR, specDb, windowed } from "../dsp.js";
 import { CLIPPING } from "../pedals/index.js";
@@ -11,50 +10,30 @@ import { CLIPPING } from "../pedals/index.js";
 export default {
   id: "clipping",
   navLabel: "clipping",
-  // Why this family's pair is a waveform and a spectrum, and not the pair either
-  // of the other two gets. The rule underneath all three: a family only earns a
-  // chart for what it actually changes. Clipping peak-matches wet to dry, so an
-  // envelope panel here would be two identical lines — the level is the one thing
-  // it doesn't touch, which is why the sentence says so and says nothing else.
-  //
-  // It used to name the two charts as well ("So: one cycle up close, and the
-  // harmonics that new shape builds"), from back when it was a paragraph on the
-  // rig and the panels didn't introduce themselves. They do now — each says what
-  // it is and what it shows, in letters you can't miss, four inches below this —
-  // so the clause was reading two headlines back to the reader a moment before
-  // they'd have read them anyway. What's left is the half nothing else says.
+  // A family only earns a chart for what it changes. Clipping peak-matches wet to
+  // dry, so there's no envelope panel — level is the one thing it doesn't touch.
   why: `This pedal doesn't change how loud your note is; it changes the shape of
     every cycle.`,
-  // The pedal alone. Clipping peak-matches wet to dry, so blending your note
-  // back in only dilutes the one thing the page is showing you.
+  // Pedal alone: clipping peak-matches wet to dry, so blending dry back in only
+  // dilutes what the page is showing.
   blendDefault: 1,
   pedals: CLIPPING,
-  // The one panel where this family's three pedals visibly disagree: they all
-  // build new harmonics, and which ones is the whole difference between them. So
-  // the headline is the pedal's, not the family's — and it's `whatChanges`
-  // rather than a second string beside it, because for clipping that line is
-  // already a sentence about this chart ("harmonics roll off gently", "strong
-  // even harmonics as well as odd"). The bench row above states it as the pedal's
-  // claim; here it's the caption on the evidence. Two copies of one string would
-  // only be two places for it to drift.
+  // The one panel where the three pedals disagree — which harmonics each builds.
+  // Headline is the pedal's whatChanges, not a second string beside it, so there's
+  // only one copy to drift.
   spectrumTitle: (pedal) => pedal.whatChanges,
   spectrumTech: "spectrum",
   spectrumUnit: "dB",
-  // The centre panel plots output against input — the same unit on both axes —
-  // so its curve only means what it looks like at 1:1, and it's read against a
-  // y = x that has to actually be at 45°. The catalog's thumbnail is the drawing
-  // with the axis labels taken away, which makes the box itself the only thing
-  // saying what the scale is; squashed, this family's whole distinction (a knee
-  // that bends vs one that corners) flattens out. delay and modulation plot
-  // against time and have no such diagonal, so they don't ask. See thumb.js.
+  // Centre panel plots output vs input, same unit both axes, read against a y=x
+  // at 45°. The thumbnail drops the axis labels, so a non-square box flattens this
+  // family's distinction (a knee that bends vs one that corners). delay and
+  // modulation plot against time, no diagonal, so they don't ask. See thumb.js.
   thumbSquare: true,
 
   lesson: {
     formula: "y[n] = f(x[n])",
     formulaNote: "one sample in, one sample out, no memory",
-    // The family's signal class, named once here rather than stamped on every
-    // pedal: it's the same for all three, and the formula note above is exactly
-    // what the term means.
+    // The family's signal class, named once here: same for all three.
     klass: "memoryless nonlinearity (NL)",
     oneLiner: "it flattens the peaks",
     body: `
@@ -85,10 +64,9 @@ export default {
     },
   },
 
-  // Each pedal declares its own starting drive, so selecting one snaps that knob
-  // to where its knee reads best. bias isn't declared by any of them, so it stays
-  // where the user left it across a switch. `def` below only seeds the very first
-  // render, before any pedal has been selected.
+  // Each pedal declares its own drive, so selecting one snaps that knob to its
+  // knee. bias isn't declared, so it persists across a switch. `def` only seeds
+  // the first render, before any pedal is selected.
   controls: [
     { id: "drive", label: "drive", min: 1, max: 40, step: 0.1, def: CLIPPING[0].drive, fmt: (v) => v.toFixed(1) },
     {
@@ -144,8 +122,8 @@ export default {
     else drawSpecStems(F, specDb(inp), specDb(out), H);
   },
 
-  // WaveShaper wet path: the same curve the panel draws, minus its DC offset (a
-  // coupling cap), then a trim that peak-matches wet to dry.
+  // WaveShaper wet path: the panel's curve minus its DC offset (a coupling cap),
+  // then a trim that peak-matches wet to dry.
   buildAudio(actx, inGain, _H) {
     const shaper = actx.createWaveShaper();
     shaper.oversample = "4x";

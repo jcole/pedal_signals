@@ -1,120 +1,74 @@
-// Effect-neutral harness. Everything that isn't specific to one page lives here:
-// the generic output panel (dry-vs-wet time), the control rail, the transport,
-// the dry/wet blend audio graph, the source toggle, and the control UI. It
-// renders a VIEW over a list of PEDALS: the pedals (from pedals/) are the model —
-// each one knows how to generate its input and process it; the view is the page's
-// UI — its panels, its controls, its live audio graph. The pure DSP (WAV parse,
-// FFT, spectrum) is imported from dsp.js.
+// Effect-neutral harness. Everything not specific to one page lives here: the
+// generic output panel (dry-vs-wet time), the control rail, the transport, the
+// dry/wet blend audio graph, the source toggle, and the control UI. It renders a
+// VIEW over a list of PEDALS: the pedals (from pedals/) are the model, the view is
+// the page's UI. Pure DSP is imported from dsp.js.
 //
-// The rig is a control rail and two output charts. Every chart it draws is the
-// output against the input; the two things that aren't — the input alone, and the
-// pedal's own internals (an LFO curve, a tap train) — are respectively a trace the
-// output panels already carry in grey, and a curve the output panels already
-// measure. So neither gets a panel: they're glyphs in the rail. See drawRail.
+// The rig is a control rail and two output charts. Every chart is the output
+// against the input; the input alone and the pedal's own internals get no panel
+// (they're a grey trace and a measured curve already), only glyphs in the rail —
+// see drawRail.
 //
-// A view module (clipping.js, delay.js, …) supplies only the family's UI and its
-// list of pedals, and hands it to mount(). The contract:
+// A view module (clipping.js, delay.js, …) supplies the family's UI and pedals and
+// hands it to mount(). The contract:
 //
 //   const view = {
-//     id, navLabel,           // this family's key + its name, which the picker
-//                             // uses twice: the heading over this family's
-//                             // pedals, and the gloss under the chosen one
-//     why,                    // HTML: why this family gets THESE two charts —
-//                             // the paragraph above the pair. Every other label
-//                             // on the rig answers a question you only have once
-//                             // you can read a chart; this one is addressed to a
-//                             // reader who can't yet, so it's the only thing here
-//                             // that says why the pair is a pair. The shape is
-//                             // the same on all three: what the pedal leaves
-//                             // alone, what it changes instead, and "So:" the two
-//                             // charts that fall out — in the order they're
-//                             // stacked, so the sentence reads down into them.
-//                             //
-//                             // There is no connector caption between the panels
-//                             // any more, and this is what replaced it: `dual`
-//                             // said "⇅ same signal — envelope above, spectrum
-//                             // below" in the gap, which was the pair's only
-//                             // explanation back when nothing above it was one.
-//                             // Once the panels started NAMING themselves (see
-//                             // .ctype) it was reading the two chips back to the
-//                             // reader a few pixels from where they're printed,
-//                             // and every family's was exactly
-//                             // `${timeTech} above, ${spectrumTech} below` — a
-//                             // third copy of two words, free to drift from
-//                             // both. Don't add it back: if the pair needs
-//                             // saying, it needs saying here, in a sentence.
-//     blendDefault,           // where the dry/wet crossfade starts: 0 is your
-//                             // note alone, 1 is the pedal alone
-//     pedals: [ Pedal, … ],   // what the picker lists for this family; the
-//                             // selected one drives input+process
-//     timeTech?,              // what the output TOP panel IS, named as a chart
-//                             // type — the word in its chip. Defaults to
-//                             // "waveform" (the generic dry-vs-wet plot below).
-//                             // A family that overrides drawTime renames it here.
-//     spectrumTitle,          // output bottom-panel headline. A string is the
-//                             // family's, said once. A fn(pedal) is the pedal's,
-//                             // rewritten on every pick — for a family whose
-//                             // members differ in what that panel shows.
-//     spectrumTech,           // what the BOTTOM panel is ("spectrum",
-//                             // "envelope") — the word in its chip
-//     spectrumUnit?,          // its unit, parenthesized ("dB"); omit if the
-//                             // panel's axis is unitless (a 0..1 level)
+//     id, navLabel,           // family key + name; the picker uses it as the
+//                             // heading and as the gloss under the chosen pedal
+//     why,                    // HTML: why this family gets THESE two charts — the
+//                             // sentence beside the charts, addressed to a reader
+//                             // who can't read them yet. Shape: what the pedal
+//                             // leaves alone, what it changes, "So:" the two charts
+//                             // that fall out, in stacking order.
+//     blendDefault,           // where the dry/wet crossfade starts (0 dry, 1 wet)
+//     pedals: [ Pedal, … ],   // what the picker lists; the selected one drives
+//                             // input+process
+//     timeTech?,              // the TOP panel's chart-type word (its chip).
+//                             // Defaults to "waveform"; override with drawTime.
+//     spectrumTitle,          // bottom-panel headline. A string is the family's;
+//                             // a fn(pedal) is rewritten per pick.
+//     spectrumTech,           // the BOTTOM panel's chart-type word
+//     spectrumUnit?,          // its unit, parenthesized ("dB"); omit if unitless
 //     lesson?,                // {formula, formulaNote, klass?, oneLiner, body,
-//                             // aside?:{title, body}} — the prose above and below
-//                             // the rig. Omit it and both sections stay hidden.
+//                             // aside?:{title, body}} — prose above/below the rig.
+//                             // Omit and both sections stay hidden.
 //     controls:[ {id, label, min, max, step, def, fmt?(v)->string}, … ],
-//     thumbSquare?,           // does this family's curve read against a y = x?
-//                             // Squares the rail's glyph and the catalog's
-//                             // thumbnail — see thumb.js's marginsFor.
-//     drawCenter(F, pedal, params, H),           // draw the family's own curve.
-//                             // Not a panel on the rig any more: it's the rail's
-//                             // curve glyph, and the catalog's row thumbnail, off
-//                             // this one hook. See drawRail and thumb.js.
-//     drawTime?(F, inp, out, pedal, src, H),     // draw the output TOP panel.
-//                             // Optional: omit it and the harness draws its own
-//                             // dry-vs-wet waveform (drawTime below), which is
-//                             // right for a family whose span is a few carrier
-//                             // cycles wide and useless for one whose isn't.
-//     drawSpec(F, inp, out, pedal, src, H),      // draw the output BOTTOM panel
+//     thumbSquare?,           // curve reads against y = x? Squares the rail glyph
+//                             // and catalog thumbnail — see thumb.js's marginsFor.
+//     drawCenter(F, pedal, params, H),           // the family's own curve; the
+//                             // rail glyph and catalog thumbnail, off this one hook
+//     drawTime?(F, inp, out, pedal, src, H),     // the TOP panel. Omit and the
+//                             // harness draws dry-vs-wet waveform (drawTime below),
+//                             // right only for a span a few carrier cycles wide.
+//     drawSpec(F, inp, out, pedal, src, H),      // the BOTTOM panel
 //     buildAudio(actx, inGain, H) -> { wetOut, update(pedal, params, state, match), dispose?() },
 //     buildSource?(actx, {srcMode, guitar}) -> AudioNode,  // the view's own live
-//                             // source, for BOTH src modes. Default: the looped
-//                             // guitar buffer, or a steady oscillator.
+//                             // source, for BOTH src modes. Default: looped guitar
+//                             // buffer, or a steady oscillator.
 //   };
 //
-// mount(view, {pedal}) can be called again with another view to swap families in
-// place. The harness disconnects the old wet chain and calls its dispose() — a
-// view whose buildAudio start()s anything (an LFO, a ConstantSource) must stop it
-// there, or it keeps running, unheard, for the life of the page. `pedal` is the
-// id to open on (an unknown one falls back to the family's first).
+// mount(view, {pedal}) can be called again to swap families in place. The harness
+// disconnects the old wet chain and calls dispose() — a buildAudio that start()s
+// anything (an LFO, a ConstantSource) MUST stop it there or it runs unheard for the
+// life of the page. `pedal` is the id to open on (unknown falls back to first).
 //
-// Nothing here chooses a pedal: the picker (ui/picker.js) owns that, and the
-// page turns its choice into a mount() or a selectPedal(). So the harness only
-// ever gets told, and never has to tell anyone back.
+// Nothing here chooses a pedal: the picker owns that; the page turns its choice
+// into a mount() or selectPedal().
 //
-// Each Pedal instance carries what makes it that pedal, and what the harness reads
-// off the *selected* one: sampleCount / spanSamples (analysis sizing), defaults
-// (knobs to snap to on select — empty = leave them put), genInput(...) and
-// process(...). H is the harness helper bundle: drawing primitives and the shared
-// palette, passed into the view's draw/audio hooks. The DSP core (specDb,
-// windowed) and constants (SR, N, KBIN, …) live in dsp.js.
+// The harness reads off the *selected* pedal: sampleCount / spanSamples (analysis
+// sizing), defaults (knobs to snap to; empty = leave them put), genInput() and
+// process(). H is the helper bundle (drawing primitives + palette) passed to the
+// view hooks. DSP core and constants (SR, N, KBIN, …) live in dsp.js.
 import { F0, MSMAX, normalize, parseWav, SPAN, SR } from "../dsp.js";
-// The toy pedal in the bench row's PEDAL cell — what the row says to someone who
-// hasn't read it yet. That file is where the reasoning lives.
+// the toy pedal in the bench row's PEDAL cell (art.js has the reasoning)
 import { pedalArt } from "./art.js";
-// The drawing primitives and the palette, which this file used to own. They moved
-// out when the catalog page started drawing the same curves at row size and had
-// to draw them in the same ink — see draw.js. `H` is the bundle handed to a
-// view's hooks; the three colours below are the ones this file's own panels
-// stroke with.
+// drawing primitives and palette, shared with the catalog so both draw the same
+// curves in the same ink (see draw.js). `H` is the bundle handed to view hooks.
 import { frame as fit, H, line, titles, txt } from "./draw.js";
-// The bench row's column names, from the same module the catalog page takes
-// theirs from — the two pages name their columns once, together. The row under
-// them is authored in index.html rather than built here, because the PEDAL cell
-// is standing DOM that a re-render would destroy. Neither page owns the geometry;
-// that's one rule in the stylesheet.
+// the bench row's column names, from the same module the catalog uses — named once,
+// together. The row itself is in index.html (standing DOM a re-render would destroy).
 import { famRow, headRow } from "./rows.js";
-// The rail's curve glyph is the catalog's thumbnail, live. See drawRail.
+// the rail's curve glyph is the catalog's thumbnail, live. See drawRail.
 import { drawThumb } from "./thumb.js";
 
 const { DRY, WET, ZERO } = H.colors;
@@ -131,30 +85,24 @@ let lastState = null,
 
 // ---- canvas plumbing -------------------------------------------------------
 const C = {};
-// Plot margins, reserved for axis labels. The rig's own, and the reason draw.js
-// takes them as an argument rather than knowing them: a thumbnail on the catalog
-// page draws the same curve with no labels to reserve for, so it passes zeroes.
+// plot margins reserved for axis labels (draw.js takes them as an argument so a
+// catalog thumbnail can pass zeroes)
 const MARGINS = { L: 40, R: 12, T: 10, B: 26 };
-// A glyph reserves nothing, because it labels nothing — just enough to keep a
-// 1.5px stroke off its own edge. Passed to `fit` rather than to `frame`: the
-// wrapper below closes over MARGINS and takes no margins of its own, so handing
-// it a second argument silently draws the axis panel's inset instead. Which it
-// did — a 40px left margin on a 46px-tall glyph put the whole trace in a 10px
-// band in the top-left corner.
+// a glyph labels nothing — just enough to keep a 1.5px stroke off its edge. Passed
+// to `fit`, not `frame` (which closes over MARGINS): frame would draw the axis
+// panel's 40px inset and bury the trace in a corner.
 const GLYPH_MARGINS = { L: 2, R: 2, T: 2, B: 2 };
 const frame = (cv) => fit(cv, MARGINS);
 
 // ---- pedal-declared sizing --------------------------------------------------
-// A per-sample pedal analyses N samples and shows ~13.5 ms of them; a time-based
-// one asks for more of both. Everything downstream reads the selected pedal, not
-// the consts. (Pedals on one page share a family, so these don't jump on select.)
+// per-sample pedal shows ~13.5 ms; a time-based one asks for more. Downstream reads
+// the selected pedal, not the consts.
 const spanMs = () =>
   pedal.spanSamples === SPAN ? MSMAX : (pedal.spanSamples / SR) * 1000;
 
 // ---- input generation ------------------------------------------------------
-// The selected pedal makes its own input buffer — a steady sine (Pedal's default),
-// a mid-note guitar slice, or something its lesson needs (a delay makes a transient
-// pluck, since a steady tone can't show a repeat).
+// the selected pedal makes its own input — a steady sine, a guitar slice, or what
+// its lesson needs (delay makes a transient pluck; a steady tone can't show a repeat)
 function genInput() {
   return pedal.genInput({ srcMode, guitar, n: pedal.sampleCount });
 }
@@ -172,25 +120,15 @@ function render() {
   view.drawSpec(frame(C.spec), inp, r.out, pedal, srcMode, H);
 }
 
-// The rail's two glyphs, which are what's left of the input and centre panels now
-// that neither is a chart. The curve is the catalog's thumbnail — literally
-// drawThumb, so it's the family's own drawCenter with the labels struck out —
-// handed the LIVE knobs rather than the pedal's defaults.
-//
-// The source glyph draws SPAN samples, not spanSamples: three carrier periods,
-// which is a wave on every family and every source. That's the whole trick. The
-// input panel had to plot the family's own span, and a span sized for an LFO
-// makes a band; a glyph owes the reader a picture of the SIGNAL, not of the
-// window, so it takes the only zoom at which the signal is one.
+// The rail's two glyphs. The curve is the catalog's thumbnail live — drawThumb
+// with the live knobs. The source glyph draws SPAN samples, not spanSamples: three
+// carrier periods, which is a readable wave on every family and source (a span
+// sized for an LFO would be a solid band).
 function drawRail(inp) {
-  // Square the CANVAS for a family that reads its curve against a y = x, rather
-  // than squaring the plot inside a wide one. marginsFor() does the latter and
-  // spends the slack on the right — deliberately, so the catalog's clipping rows
-  // start at the same left edge as delay's and modulation's, which is the one
-  // thing that column is for. There's no column here: it's one curve in a deck,
-  // where left-aligned just reads as fallen over. A square canvas leaves
-  // marginsFor nothing to distribute and CSS centres the box instead, so neither
-  // page has to know about the other.
+  // Square the canvas for a family whose curve reads against y = x, rather than
+  // squaring the plot inside a wide one (marginsFor does that, spending the slack
+  // on the right for the catalog's column). Here there's no column; a square canvas
+  // lets CSS centre the box, so neither page has to know about the other.
   C.curve.classList.toggle("glyph--square", !!view.thumbSquare);
   drawThumb(C.curve, view, pedal, params);
   const { g, L, R, T, B } = fit(C.srcglyph, GLYPH_MARGINS);
@@ -205,9 +143,8 @@ function drawRail(inp) {
   line(g, ramp(n), inp.subarray(0, n), sx, sy, DRY, 1.5);
 }
 
-// The index ramp every sample plot needs for its x's, built once and handed out
-// by length. render() runs on every knob drag, and the two callers here ask for
-// the same two lengths for the life of the page.
+// index ramp for sample plots' x's, memoized by length (render() runs on every
+// knob drag and the callers ask for the same lengths)
 const ramps = new Map();
 function ramp(n) {
   let r = ramps.get(n);
@@ -218,13 +155,9 @@ function ramp(n) {
   return r;
 }
 
-// The output top panel's default: dry and wet waveforms on shared axes. Only
-// legible while spanSamples stays within a few carrier cycles — clipping shows
-// 3 of them across ~13.5 ms, which is ~5 px a cycle. A family whose span is
-// sized for something slower than the carrier (an LFO, a row of echoes) is
-// asking this to draw hundreds of cycles into a few hundred pixels, where a
-// polyline can only come out a solid band; those families override drawTime and
-// plot what survives the zoom instead. See the view contract at the top.
+// The top panel's default: dry and wet waveforms on shared axes. Legible only
+// while spanSamples is a few carrier cycles wide; a slower-span family (an LFO, a
+// row of echoes) would draw a solid band and overrides drawTime instead.
 function drawTime(inp, out, match) {
   const F = frame(C.time),
     { g, L, R, T, B } = F;
@@ -295,63 +228,31 @@ function setParam(id, v) {
   ctlEls[id].output.textContent = fmtCtl(c, params[id]);
   schedule();
 }
-// Select a pedal: swap its labels (formula, output narrative) and snap any knobs
-// it declares defaults for. A pedal with no defaults (the clipping family) leaves
-// the knobs where the user left them — switching there changes only the knee.
-// Always silent: the picker owns the choosing and the page owns the URL, so by
-// the time this runs the decision is made and everyone else already knows.
+// Select a pedal: swap its labels and snap any knobs it declares defaults for. A
+// pedal with no defaults (clipping) leaves the knobs put. Silent — the picker owns
+// the choosing, the page owns the URL; by the time this runs the decision is made.
+// Everything here is the PEDAL's, written on every pick (a pick never remounts, so
+// none of it can move to mount()).
 function setPedal(id) {
   pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
-  // The bench row's other two columns. The PEDAL cell isn't written here — it's
-  // the picker, which is standing DOM and already says the pedal's name; this
-  // fills the two cells that describe whatever it's currently saying. Both are
-  // the pedal's own, not the family's, which is the difference between this row
-  // and the band that used to sit above it.
+  // the bench row's other two columns (the PEDAL cell is the picker's standing DOM)
   document.getElementById("benchop").textContent = pedal.tech ?? "";
   document.getElementById("benchnote").textContent = pedal.techNote ?? "";
   document.getElementById("benchwhat").textContent = pedal.whatChanges ?? "";
-  // The toy pedal beside the picker — the only thing in this row that answers
-  // "what am I looking at" without being read. Here rather than in mount() with
-  // the rest of the furniture for the reason every line in this function is here:
-  // it's the PEDAL's, and a pick inside a family never remounts, so art set up
-  // there would stick on whatever you arrived with.
+  // the toy pedal beside the picker
   document.getElementById("pedalart").innerHTML = pedalArt(pedal.art);
   if (pedal.outnar)
     document.getElementById("outnar").textContent = pedal.outnar;
-  // The bottom panel's headline. A family whose members all show the same thing
-  // down there states it once as a string; one whose members show different
-  // things hands a fn(pedal) and gets a headline per pick. Written here either
-  // way, since a pick never remounts and a family's string is cheap to restate.
+  // the bottom panel's headline — a string per family, or a fn(pedal) per pick
   if (view.spectrumTitle)
     document.getElementById("specnar").textContent =
       typeof view.spectrumTitle === "function"
         ? view.spectrumTitle(pedal)
         : view.spectrumTitle;
-  // The pedal names its own bar in the chain: INPUT → OVERDRIVE → OUTPUT. It's
-  // the one label on the rig that isn't furniture, because it's the one the
-  // reader chose.
-  //
-  // The panel under it used to carry the pedal's whatChanges, which was a caption
-  // for the wrong panel: this one plots the transfer curve, and whatChanges
-  // describes the output, which the panels downstream were already saying
-  // themselves. It now sits in the lede, where the pedal's row states it once
-  // against the family it's an instance of.
-  // The deck's formula. Its bar isn't written here any more and isn't written at
-  // all — it's standing text reading OPERATION, because it stopped naming the
-  // pedal (see index.html). This is what replaced that name, and it's the better
-  // fact for the slot: the bar sits over the curve that draws this string, and on
-  // the clipping family over knobs named after its own terms.
+  // the deck's formula, under the OPERATION bar and over the curve that draws it
   document.getElementById("pedalop").textContent = pedal.tech ?? "";
-  // The tab names the pedal, and the URL is the reason: it's ?pedal=overdrive, so
-  // a tab that said "clipping" would be answering a question nobody asked of it.
-  // This used to say "for the same reason the bar does" — the bar named the pedal
-  // then, and it doesn't now, so the tab is on its own here.
-  //
-  // This has to live here rather than in mount() — a pick inside a family never
-  // remounts, so a title set up there would stick on the pedal you arrived with
-  // and go quietly wrong from the second pick on. Site name first: these are tabs,
-  // and a row of them truncates from the right, so the half that survives should
-  // be the half that says where you are.
+  // the tab names the pedal, because the URL does (?pedal=overdrive). Site name
+  // first: tabs truncate from the right, so keep the half that says where you are.
   document.title = `Pedal signals — ${pedal.label}`;
   for (const [k, v] of Object.entries(pedal.defaults)) {
     const c = ctlEls[k]?.def;
@@ -373,8 +274,7 @@ function schedule() {
     });
 }
 
-// input-source toggle: sine keeps the clean generation lesson; guitar drives
-// both the audio and the analysis panels from the real EGFxSet note.
+// input-source toggle: sine is the clean generated tone, guitar the real EGFxSet note
 function wireSourceToggle() {
   document.querySelectorAll(".srcbtn").forEach((b) => {
     b.onclick = () => {
@@ -393,9 +293,8 @@ function wireSourceToggle() {
 }
 
 // ---- audio -----------------------------------------------------------------
-// Generic graph: a dry tap and the effect's wet chain, each with its own volume
-// (the sliders under the input and output graphs), summed through a master with
-// headroom. The effect owns everything between inGain and wetOut.
+// Generic graph: a dry tap and the effect's wet chain, blended and summed through a
+// master with headroom. The effect owns everything between inGain and wetOut.
 let actx,
   srcNode,
   inGain,
@@ -404,12 +303,9 @@ let actx,
   master,
   audio = null, // { wetOut, update } from effect.buildAudio
   running = false;
-// A view that declares buildSource is asked FIRST, and for both sources — it
-// doesn't get to shape the sine and then have the guitar handed to it whole. The
-// order used to be the other way round, so delay's pluck-and-silence loop only
-// ever ran on sine: the charts drew a burst while your ears got 683 ms of ring
-// smeared into itself, and the panel and the speaker disagreed about what the
-// pedal does. If a view has an opinion about its input, it has it on every input.
+// A view's buildSource is asked FIRST and for both sources — if a view has an
+// opinion about its input, it has it on every input (else delay's pluck loop would
+// run on sine only, and the charts and the speaker would disagree).
 function startSource() {
   if (!actx) return;
   stopSource();
@@ -436,28 +332,15 @@ function stopSource() {
   srcNode.disconnect();
   srcNode = null;
 }
-// ↻ pluck restarts the note, and there's only a note to restart in guitar mode —
-// the sine is a continuous oscillator with no beginning to go back to. It used to
-// sit here greyed out on every other view of the page, which is a control
-// advertising a capability the page doesn't have: a disabled button says "not
-// yet", and this one means "not here". Gone instead.
-//
-// This line is why the button sits in the INPUT deck next to the source segment
-// rather than on the tray next to play: what it's hidden by is srcMode, so the
-// control that governs it is the one it now stands beside. play has no such line
-// and never disappears.
+// ↻ pluck restarts the note, and only guitar has a note to restart (sine is a
+// continuous oscillator). Hidden, not disabled, on sine — and it sits in the INPUT
+// deck by the source segment because srcMode is what governs it.
 function showReplay() {
   document.getElementById("replay").hidden = srcMode !== "guitar";
 }
 
-// One crossfade, where there were two independent levels. See index.html for why
-// two numbers were the wrong shape for one question; here it just means the pair
-// can't drift, because there's only one of them: dry is whatever wet isn't.
-//
-// Nothing to echo back: the slider is labelled `dry ——— wet` at its ends and has
-// no readout, so the handle's position is the whole display. Every other knob in
-// the rail writes a number next to itself; this one doesn't, because a crossfade
-// is set by ear and 0.50 was never a figure anyone read.
+// one crossfade, so dry is whatever wet isn't and the pair can't drift. No readout —
+// a crossfade is set by ear (see index.html)
 const blendS = () => document.getElementById("blend");
 function setBlend() {
   const b = +blendS().value;
@@ -482,9 +365,8 @@ function ensureAudio() {
   master.connect(actx.destination);
   connectView();
 }
-// Build the mounted view's wet chain onto the standing dry/wet/master graph, and
-// (re)connect the two paths into it. Called on first play and again after a
-// family swap, which leaves the context and the outer graph alone.
+// build the view's wet chain onto the standing dry/wet/master graph and connect
+// both paths; called on first play and after a family swap
 function connectView() {
   audio = view.buildAudio(actx, inGain, H);
   audio.wetOut.connect(wetGain).connect(master); // wet path
@@ -493,8 +375,8 @@ function connectView() {
   setBlend();
   startSource();
 }
-// Drop the mounted view's wet chain. inGain feeds both the view's input and the
-// dry tap, so it's cut wholesale here and the dry tap is remade by connectView.
+// drop the view's wet chain. inGain feeds both the view's input and the dry tap, so
+// it's cut wholesale here and connectView remakes the dry tap
 function disconnectView() {
   stopSource();
   inGain.disconnect();
@@ -536,11 +418,7 @@ function wireTransport() {
 }
 
 // ---- lesson section ---------------------------------------------------------
-// What the mounted family says about itself in words: the prose block below the
-// rig, with an optional second column for a deeper aside. It used to also own a
-// band up in the lede — the family's own row, in the catalog's three columns —
-// which is now a link in the bench row instead (see index.html for why, and
-// pedals.html for where the band still stands).
+// the family's prose below the rig, with an optional second-column aside
 function renderLesson() {
   const lesson = view.lesson;
   const section = document.getElementById("lesson");
@@ -562,11 +440,10 @@ function renderLesson() {
 }
 
 // ---- mount -----------------------------------------------------------------
-// Everything a view owns is torn down here, so mount() can hand the page to a
-// different family without a reload: its wet chain, its knobs, and the live
-// values keyed by knob id (a stale `time` from delay must not reach tremolo).
-// What survives a swap is what isn't the view's: the AudioContext and its outer
-// graph, the guitar buffer, the source mode, and the once-wired listeners.
+// Tear down everything a view owns so mount() can swap families without a reload:
+// its wet chain, its knobs, and the live values keyed by knob id (a stale `time`
+// from delay must not reach tremolo). The context, outer graph, guitar buffer,
+// source mode and once-wired listeners survive.
 function unmount() {
   if (raf) cancelAnimationFrame(raf);
   raf = 0;
@@ -577,9 +454,9 @@ function unmount() {
   lastMatch = 1;
 }
 
-// Move to another pedal in the family that's already up. Deliberately not a
-// mount(): the family hasn't changed, so its audio chain and knobs are left
-// standing rather than torn down and rebuilt under a note that's still sounding.
+// Move to another pedal in the family already up. Not a mount(): the family is
+// unchanged, so its audio chain and knobs stay standing rather than rebuild under a
+// sounding note.
 export function selectPedal(id) {
   setPedal(id);
 }
@@ -591,21 +468,12 @@ export function mount(v, opts = {}) {
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
-  // The family's band — the generic row the pedal row below it fills in, and the
-  // one thing on this page that says the site's whole argument by geometry rather
-  // than in prose: y[n] = f(x[n]) sits directly over tanh(drive·x + bias), and
-  // "it flattens the peaks" directly over "harmonics roll off gently". The bench
-  // spent a long time without it, with a FAMILY column in its place naming what
-  // the band is here.
-  //
-  // Here and not in setPedal(): it's the family's, and the family only changes on
-  // a mount. Its name is also the way out to the catalog, which is why the href is
-  // built here — the view is the only thing that knows its own id.
-  //
-  // Inserted as the pedal row's own previous sibling, not into a host of its own:
-  // the band is a ROW of this table, and the stylesheet reads the gap under it off
-  // that adjacency (.famhead + .catrow). Cleared by hand first, since a remount
-  // means a new family and there's no host to wipe.
+  // The family's band — the generic row the pedal row fills in. Here, not in
+  // setPedal(): it's the family's, and the family only changes on a mount; its name
+  // is the way out to the catalog, so the href is built here (the view knows its
+  // own id). Inserted as the pedal row's previous sibling, not a host of its own —
+  // the stylesheet reads the gap under it off that adjacency (.famhead + .catrow);
+  // cleared by hand since a remount has no host to wipe.
   const table = document.getElementById("ledetable");
   const row = table.querySelector(".catrow");
   table.querySelector(".famhead")?.remove();
@@ -613,30 +481,12 @@ export function mount(v, opts = {}) {
     famRow(view, { href: `./pedals.html#${encodeURIComponent(view.id)}` }),
     row,
   );
-  // The family's word about its charts, beside the table rather than in it (see
-  // index.html) and no longer on the tray above them. Plain text now: it used to
-  // bold the two chart names in a "So:" clause, and both the clause and its bold
-  // are gone — the panels say what they are themselves.
+  // the family's word about its charts, beside the table (see index.html)
   document.getElementById("whytxt").textContent = view.why;
   document.getElementById("blend").value = view.blendDefault;
-  // headlines the view owns. Two aren't here: the centre bar's names the pedal,
-  // and the spectrum's may — so setPedal() writes both at the end of this
-  // function, where they'll be rewritten on every pick.
-  // What the two output panels ARE. Neither word is the page's to hardcode — it
-  // did, for all three families, and both lines went quietly wrong the moment a
-  // family drew something else. The top defaults to "waveform" because the
-  // harness's own dry-vs-wet plot is what it draws unless a view says otherwise.
-  //
-  // "waveform", where this said "time" for as long as the word was the head of a
-  // 10px spec line — "time · in vs out" — and "time" is fine there, because a
-  // spec line is read as a list of axes and that IS the x axis. It's the chart's
-  // NAME now (see .ctype), and a name has to be the kind of noun the reader is
-  // asking for: they want to know what they're looking at, and the answer is a
-  // waveform, an envelope, a spectrum. None of those is "time". The connector
-  // caption between the panels already used the chart-type word on every family,
-  // so this was the vocabulary the page had — it just wasn't the one the loud
-  // label was using. That caption is gone now (see `why` in the contract) and
-  // these two chips are the only place the words live.
+  // What the two output panels ARE — the view's words, not hardcoded (a family may
+  // draw something else). Top defaults to "waveform", the harness's own plot; the
+  // pedal- and spectrum-title headlines are written by setPedal() below.
   document.getElementById("timetech").textContent = view.timeTech ?? "waveform";
   document.getElementById("spectech").textContent = view.spectrumTech;
   document.getElementById("specunit").textContent = view.spectrumUnit
@@ -652,11 +502,8 @@ export function mount(v, opts = {}) {
 
   if (!wired) {
     wired = true;
-    // The bench row's column names. Not the view's — they're the same words
-    // whatever is mounted, and they come from rows.js so that this page and the
-    // catalog name their shared columns once, together. Three, and no fourth: this
-    // page's used to be the way out to the family (the band's name now), and the
-    // family's sentence sits beside the table rather than in a track of its own.
+    // the bench row's column names, from rows.js so this page and the catalog name
+    // their shared columns once, together
     document.getElementById("ledehead").appendChild(headRow());
     wireSourceToggle();
     wireTransport();
@@ -667,8 +514,7 @@ export function mount(v, opts = {}) {
   render();
 }
 
-// The real note, straight from the WAV (no AudioContext needed here). Fetched
-// once for the page, not per family.
+// the real note from the WAV, fetched once for the page (no AudioContext needed here)
 function loadGuitar() {
   const gbtn = () => document.querySelector('.srcbtn[data-src="guitar"]');
   fetch("guitar_clean.wav")

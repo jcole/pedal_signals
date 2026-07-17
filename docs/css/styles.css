@@ -1,15 +1,8 @@
-/* Two faces, on purpose. Monospace is the instrument: switchers, control values,
-   axis labels, formulas — anything that reads as a machine's own lettering, or
-   that has to align in a column. Everything the page says in English gets the
-   proportional face, because prose is what monospace is worst at. Reach for
-   var(--mono) deliberately; the default is sans. */
-/* Two surfaces, on purpose — the same split as the two faces above. The rig is a
-   device: its panels, its charts and the knobs under them stay dark, because a
-   scope screen is dark and the traces have to glow. The page around it is a page
-   about the device, and it's lit: prose, headings, the pedal picker and the
-   hints are ink on white. The seam between them is the panel edge. When you add
-   a surface, decide which side of that seam it's on and take the vars from there;
-   don't stretch one across both. */
+/* Two faces: var(--mono) is the instrument (switchers, values, axis labels,
+   formulas, anything that aligns in a column); the default sans is prose. */
+/* Two surfaces: the rig is a dark device (panels, charts, knobs); the page
+   around it is lit, ink on white. The seam is the panel edge — pick a side for
+   any new surface, don't stretch vars across both. */
 :root {
 	--sans:
 		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial,
@@ -23,63 +16,30 @@
 	--ink-lo: #5e6555; /* captions, hints */
 	--rule: #dfe3d7;
 	--sunk: #f2f4ee; /* inset blocks on the page: the op box, <code> */
-	/* The bench the rig sits on. Its whole job is to be a middle value: #191c15
-	   panels landing straight on #fff cut hard at every panel edge, and this gives
-	   the eye a step down instead. Lighten it much further and it stops doing that
-	   job; darken it and the page stops reading as lit. */
+	/* a middle value: #191c15 panels on #fff cut hard, this steps the eye down */
 	--tray: #e9ece2;
 
-	/* The dark instrument, and it's a ladder of three materials, not one dark.
-	   --inst is the glass: the charts, and only the charts. --inst-head is the
-	   caption bar sitting on that glass. --inst-grp is chassis — the label bar over
-	   each column and the knob deck under it, so a column reads chassis / screen /
-	   chassis. The decks were --inst once, which made each column one tall panel
-	   with traces at the top and sliders at the bottom.
-
-	   --inst-head has almost no room to lighten and the reason isn't taste: --wet
-	   is 4.65:1 on it, and --wet is the "out" legend word in every panel header.
-	   Past about #242a1e that word fails AA — and it can't be lightened to
-	   compensate, because it's the trace color too (harness.js reads it off :root),
-	   so the word and the line it names would stop being the same orange. If you
-	   want these bars lighter than this, that's the thing you have to solve first. */
+	/* Three materials: --inst is the glass (charts only), --inst-head the caption
+	   bar on it, --inst-grp the chassis (column label bars and knob decks), so a
+	   column reads chassis / screen / chassis. --inst-head can't lighten past
+	   ~#242a1e: --wet is the "out" legend word on it and its own trace colour
+	   (harness.js reads it off :root), and both must stay one value and clear AA. */
 	--inst: #191c15;
 	--inst-head: #232820;
 	--inst-grp: #3a4230;
 	--inst-ink: #dfe5d6;
-	/* the .ctl labels, and lightened with the deck under them: at #a2aa94 they were
-	   4.35:1 on the chassis and under AA */
+	/* the .ctl labels; #adb59e clears AA on the chassis, #a2aa94 didn't */
 	--inst-ink-lo: #adb59e;
 	--inst-edge: #0f110c;
 
-	/* Signal colors. These are the source of truth for the charts too — harness.js
-	   reads --dry/--wet/--grid/--zero/--accent-lo off :root at load, so a trace and
-	   the legend word naming it in a panel header are literally one value and can't
-	   drift. Rename one and you must rename it there.
-
-	   The wet orange needs two values, not one, for the same reason everything else
-	   here splits: --wet is tuned to carry on the dark panels (4.9:1 on the header,
-	   where the old #c0522f managed 3.4:1 and failed AA), and that same orange only
-	   reaches 3.2:1 on white. So the page gets --wet-ink, darker, for any <b>. No
-	   single orange clears 4.5:1 on both.
-
-	   Orange means OUT, and only out — the panel headers paint the literal word in
-	   it off --wet, so the word and the trace it names are one value. Green
-	   (--accent) means the pedal's own math: every family's centre curve is drawn
-	   in it (draw.js), and so are the formulas that curve is a picture of (.catop,
-	   .famop). Grey means in. Reach for one of the three by what a thing IS, not by
-	   how it should look; that's the whole reason they're named after signals.
-
-	   One formula is not green — the rail deck's (.deckop) — so the rule has an
-	   exception, and it's here rather than only down there because this is where
-	   you'd read the rule and go "fix" it. Both greens are tuned for a material
-	   that deck isn't made of: --accent for white, --accent-lo for the glass.
-	   Neither clears AA as TEXT on --inst-grp, the chassis. Keeping it green meant
-	   giving that one row a black --inst background, and a black slot cut across a
-	   column that alternates chassis and screen for real reasons announces itself
-	   as a fourth material when it's a caption. So it takes --inst-ink. What the
-	   green buys elsewhere — a formula and the curve it draws being one value —
-	   is bought there by adjacency instead: the curve is the next element down.
-	   Where a formula is NOT touching its own drawing, it stays green. */
+	/* Signal colours, and the source of truth for the charts: harness.js reads
+	   --dry/--wet/--grid/--zero/--accent-lo off :root at load, so a trace and the
+	   legend word naming it are one value — rename one, rename it there too.
+	   Orange means OUT (panel headers paint the literal word off --wet); green
+	   (--accent / --accent-lo) means the pedal's own math, drawn and written;
+	   grey means IN. --wet needs a darker --wet-ink for <b> on white, where the
+	   glow orange only reaches 3.2:1. The one non-green formula is .deckop — see
+	   it for why. */
 	--dry: #9aa0a6;
 	--wet: #dd7048;
 	--wet-ink: #c0522f;
@@ -94,29 +54,16 @@ body {
 	color: var(--ink);
 	font: 15px var(--sans);
 }
-/* <b> is the page's "this is a signal term" mark. An element default, so it sits
-   with the other defaults and ahead of anything that overrides it (#lesson .op b
-   does, on the sunk block where this orange would be shouting). */
+/* the page's "signal term" mark; an element default so overrides win */
 b {
 	color: var(--wet-ink);
 }
-/* full-bleed on purpose: the bench runs edge to edge, so the rig reads as one
-   band across the page rather than a card floating in it.
-
-   A rail and the charts. There's no INPUT → PEDAL → OUTPUT chain here, because
-   every chart the rig draws is already the output against the input: the two
-   things that aren't — the input alone, and the pedal's own internals — are
-   respectively a trace the output panels carry in grey, and a curve the output
-   panels measure. Both are glyphs in the rail instead. See drawRail in harness.js.
-
-   #grid is placed, not flowed: it comes first in the markup because the charts
-   are the point and a reader who never reaches the rail has still seen them, but
-   left to source order it would take the rail's 240px track. */
-/* The tracks are centred rather than the box: 240 + 24 + 1096 is the same 1360 the
-   grid was capped at, but spent inside a full-bleed element. max-width here would
-   have been the easier way to the same measure and would have cost the band —
-   the tray would stop at 1360px and the rig would be the card the note above says
-   it isn't. */
+/* Full-bleed so the bench reads as one band, not a card. Left track is the rail
+   (glyphs — the input trace and the pedal's own curve, both measured by the
+   charts; see drawRail), right track the charts. The tracks are centred
+   (240 + 24 + 1096 = 1360) rather than the box max-width'd — a max-width would
+   stop the tray at 1360 and make the rig a card. #grid is placed (grid-column 2)
+   so it can come first in the markup without taking the rail's track. */
 #rig {
 	background: var(--tray);
 	border-top: 1px solid var(--rule);
@@ -133,15 +80,8 @@ b {
 	grid-column: 2;
 	grid-row: 1;
 }
-/* Charts only, one column, full width of its track — a 1365 ms envelope and a
-   120 Hz spectrum both want width far more than they want height. #rig places it;
-   this only has to say how tall the stack is.
-
-   One row now. There were two: the .why paragraph took what it needed and the
-   charts took the rest. The sentence is the band's fourth cell up in the lede, so
-   what's left in here is the rig itself — which is what the tray was always for.
-   The charts keep their minmax and the two-to-three lines the paragraph was
-   spending go back to the fold. */
+/* Charts only, full width — an envelope and a spectrum both want width. #rig
+   places it; this sets the stack height. */
 #grid {
 	display: grid;
 	grid-template-columns: 1fr;
@@ -154,12 +94,8 @@ b {
 	height: 200px;
 	touch-action: none;
 }
-/* Where uppercase-with-letterspacing is allowed to shout: the rig naming its own
-   objects. The rail's deck bars are two of them (INPUT, and whatever pedal you
-   picked); the charts' .ctype chips are the other two. Same lettering because
-   it's the same job — the reader is asking "what is this thing", and these four
-   are the only labels answering that rather than describing it. Everything
-   below them nests quieter. */
+/* Uppercase letterspaced — the rig naming its own objects (deck bars, .ctype
+   chips): the "what is this" labels, loud where everything nested is quiet. */
 .grp {
 	background: var(--inst-grp);
 	padding: 9px 10px;
@@ -170,17 +106,12 @@ b {
 	text-transform: uppercase;
 	color: var(--inst-ink);
 }
-/* ---- switchers ------------------------------------------------------------
-   Two things pick on this page now, and they're different in kind. The segment
-   (below) is a toggle: two or three options, all of them visible, no state to
-   discover — the sine/guitar switcher is the last of them. The pedal picker
-   (further down) is a lookup: a catalog too long to lay out flat, so it hides
-   until asked. When you add a control, that's the question — can the reader see
-   every option at once? Segment. Otherwise it belongs in the picker. */
-/* The border and the buttons inside it are darker than the deck they sit on, not
-   lighter: the deck is chassis now (--inst-grp), and this used to outline itself
-   in #2c3125 — a hair off the chassis's own #2f3626, so on the new fill it drew
-   nothing at all. A switch cut INTO the chassis is the honest reading anyway. */
+/* ---- switchers ----
+   A .seg is a toggle (every option visible, e.g. sine/guitar); the pedal picker
+   is a lookup (too long to lay flat). New control: can you see every option at
+   once? Segment, else picker. */
+/* border and buttons darker than the chassis deck, not lighter — a switch cut
+   INTO the chassis */
 .seg {
 	display: inline-flex;
 	border: 1px solid var(--inst-edge);
@@ -221,22 +152,9 @@ b {
 	min-height: 0;
 	height: auto;
 }
-/* The whole header is one line: name, sentence, legend. It was two — the sentence
-   over a 10px spec line — and 45.2px tall; it's 32 now. Each canvas went 250.8px
-   to 274 across the two changes, since .stack > .panel > canvas is flex:1 and
-   takes back anything above it stops using. Only 13.2 of that per panel is this
-   rule, though: the other 20 is the connector caption between the panels going
-   away with its two 8px gaps. Worth knowing which change paid, if either is ever
-   reconsidered.
-
-   It reads better than it measures, and that's the actual reason. "WAVEFORM | the
-   peaks get clipped" on one line is a label and its reading — the chip punctuates
-   the sentence rather than standing above it — so the two things a reader wants
-   first arrive together instead of in sequence. The longest sentence any pedal has
-   is "new energy either side of the note — not up in the harmonics" (~420px),
-   which clears the 1096px track with the chip and the legend on it and room to
-   spare; under ~620px of track it wraps and the row just gets taller, which is why
-   .nar is the only item here allowed to shrink. */
+/* One-line header: name, sentence, legend on one row, so the label and its
+   reading arrive together. .nar is the only item allowed to shrink and wrap
+   (the chip and legend are fixed phrases that would only break badly). */
 .panel h3 {
 	margin: 0;
 	padding: 6px 8px;
@@ -246,16 +164,9 @@ b {
 	align-items: baseline;
 	gap: 10px;
 }
-/* The chart's NAME, in the lettering the rig names things with (see .grp). It
-   used to be the first word of the .tech line — "envelope · in vs out", 10px and
-   dim — which is where a name goes when nobody has decided it is one: a spec
-   line is skimmed, and the reader who most needs the word "envelope" is the one
-   skimming. Loud, and first in the header.
-
-   A chip and not a full-width bar like the rail's decks, because .grp is chassis
-   and these panels are glass: a bar across the top of a chart claims the chart
-   is a deck. A chip is the chassis label screwed to the glass, which is what it
-   is. */
+/* The chart's NAME, in the rig's object lettering (see .grp). A chip, not a
+   full bar like the decks: .grp is chassis and these panels are glass, so a chip
+   is the chassis label screwed to the glass. */
 .panel h3 .ctype {
 	flex: none;
 	background: var(--inst-grp);
@@ -269,18 +180,15 @@ b {
 	color: var(--inst-ink);
 	white-space: nowrap;
 }
-/* The unit, inside the name — "SPECTRUM (dB)". Out of the uppercase and the
-   letterspacing, because it's a unit and not a word: "(DB)" is neither. */
+/* the unit inside the name — out of uppercase/letterspacing; "(dB)" is not a word */
 .panel h3 .cunit {
 	text-transform: none;
 	letter-spacing: 0.02em;
 	font-weight: 400;
 	color: var(--inst-ink-lo);
 }
-/* The teaching voice — a sentence, so it's set like one, right after the chip
-   that names the chart it's about. The only thing in this row allowed to shrink
-   and to wrap: the chip and the legend are both fixed phrases that would only
-   break badly, and the sentence is the one that can afford a second line. */
+/* the teaching sentence, set like one, after the chip it's about; the only
+   header item that shrinks and wraps */
 .panel h3 .nar {
 	flex: 1;
 	min-width: 0;
@@ -291,26 +199,21 @@ b {
 	color: var(--inst-ink);
 	line-height: 1.3;
 }
-/* Which trace is which, in the instrument's lettering. Just the key now — the
-   word for what's plotted moved up into .ctype, and what's left is the one thing
-   this line was always actually good at: painting "in" and "out" the colour of
-   the lines they name. Last in the row, and .nar's flex:1 is what pushes it to
-   the right edge. */
+/* the trace key, in the instrument's lettering: "in" and "out" painted the
+   colour of the lines they name. Last in the row, pushed right by .nar's flex:1. */
 .panel h3 .tech {
 	flex: none;
 	font-family: var(--mono);
 	font-size: 10px;
-	/* lightened with the header bar under it — at #858d78 it was 4.35:1 on the new
-	   --inst-head and under AA, which a 10px caption can least afford */
+	/* lightened with the header bar under it; #858d78 was 4.35:1 and under AA */
 	color: #8d9580;
 	font-weight: 400;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
 	white-space: nowrap;
 }
-/* These two words are a key: each is painted the color of the trace it names, so
-   they take the same vars the canvas reads. Don't retune one for legibility on
-   its own — it stops matching the line it points at. */
+/* a key: each word is the colour of the trace it names, taking the var the
+   canvas reads — don't retune for legibility alone or it stops matching the line */
 .panel h3 .dry {
 	color: var(--dry);
 }
@@ -318,20 +221,11 @@ b {
 	color: var(--wet);
 	font-weight: 700;
 }
-/* One column, so the decks stack down the rail in signal order: what's going in,
-   then what the pedal is doing to it. Placed into the rail's track by #rig.
-
-   Both of these say the same thing twice, because auto-minimums hide in two
-   places and the rail is a fixed 240px track that neither respects by default.
-   `min-width: 0` is this element as an item of #rig: a grid item won't shrink
-   below its own min-content and silently overflows its track instead.
-   `minmax(0, 1fr)` is the column INSIDE it: a bare `1fr` means `minmax(auto,
-   1fr)`, and that auto floor is the widest item's min-content, so the track
-   inflates even when the box around it doesn't. Miss either and delay's
-   `feedback` row — the widest thing in any rail — pushes every deck on that
-   family to 254px while clipping and modulation sit at 240. Which is a rail that
-   changes width when you switch family, and a gap to the charts that changes
-   with it. The knobs shrink instead — see the range rule below. */
+/* One column, decks stacked in signal order; placed into the rail track by #rig.
+   Both zero-minimums are needed on the fixed 240px track: `min-width: 0` stops
+   this grid item overflowing its track, `minmax(0, 1fr)` stops the column
+   inflating to the widest item (delay's `feedback` row). Miss either and the
+   rail changes width by family. The knobs shrink instead — see the range rule. */
 #controls {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
@@ -340,19 +234,14 @@ b {
 	gap: 14px;
 	min-width: 0;
 }
-/* The knob deck, and it is NOT the screen. Both were --inst, which made a column
-   read as one tall dark panel with charts at the top and sliders at the bottom —
-   but a trace and a knob are different kinds of thing and a scope doesn't build
-   them out of the same material. The deck takes --inst-grp, which is what the
-   label bar over each column is already made of: chassis on top, screen in the
-   middle, chassis under it. The dark is the glass, and only the glass. */
+/* the knob deck — chassis (--inst-grp), not glass: a column reads chassis /
+   screen / chassis, and the dark is only the glass */
 .ctlcol {
 	display: flex;
 	flex-direction: column;
 	background: var(--inst-grp);
 }
-/* Knobs are instrument chrome: mono keeps the labels and their readouts on a
-   fixed grid, so a value doesn't shuffle its own row while you drag. */
+/* knob chrome; mono keeps labels and readouts on a fixed grid while dragging */
 .ctl {
 	padding: 8px;
 	border-top: 1px solid var(--inst-edge);
@@ -363,34 +252,20 @@ b {
 	font-size: 12px;
 	color: var(--inst-ink-lo);
 }
-/* No `.ctl:first-child { border-top: 0 }` here any more. It was right when a deck
-   opened with a knob — the column's own top edge was already the boundary, and a
-   rule there drew a line against nothing. Every deck opens with its .grp caption
-   bar now, so the first .ctl's border is the line UNDER the caption, which is a
-   line worth having: the bar and the deck share --inst-grp, and without it the
-   caption floats on the knobs with no seam. The rule went rather than moved. */
+/* No .ctl:first-child border reset: every deck now opens with its .grp bar, so
+   the first .ctl's top border is the seam under that bar. */
 
-/* ---- the tray, and the rail's glyphs ---------------------------------------
-   Play and the blend sit on the tray, not on a deck: they're the controls that
-   change nothing on a chart AND are true of every view. render() reads the source
-   and the knobs and has never read either of them — they reach the AudioContext
-   and stop. Inside the INPUT deck they read as a property of the source rather
-   than of the whole rig. ↻ pluck is the third that changes no chart, and it went
-   the other way, down to that deck: it IS a property of the source. */
+/* ---- the tray, and the rail's glyphs ----
+   Play and blend sit on the tray, not a deck: they change nothing on a chart and
+   are true of every view (render() never reads them). ↻ pluck went to the INPUT
+   deck instead — it IS a property of the source. */
 #railtop {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	padding: 0 2px 8px;
 }
-/* One line now, and no wrap to allow. It used to take a line of its own with
-   `flex: 1 0 100%`, and the note here said why: a 60px button, a ↻ pluck and a
-   labelled slider are not 240px. Two of those three are gone — pluck moved to the
-   INPUT deck, and the caption and readout came off the slider — so what's left is
-   a button and a track, which fit. The row was never full anyway: pluck is hidden
-   on sine, so on half the page's states this held 60px of button and 170px of
-   nothing, and `margin-left: auto` put the hole in the middle on the other half.
-   The slider is what fills it. */
+/* one line: a button and the blend track, which fit the 240px; the slider fills it */
 .blendctl {
 	flex: 1;
 	min-width: 0;
@@ -406,41 +281,20 @@ b {
 	min-width: 0; /* same reason as .ctl's slider, a few rules down */
 	accent-color: var(--accent-lo);
 }
-/* The pedal deck's formula, under its OPERATION bar and over the curve that draws
-   it. This is the one formula on the site that ISN'T green, and the exception is
-   recorded up at the signal colors where the rule is stated — read that first.
-
-   Short version: green here costs a black strip, and the strip was worse than the
-   exception. --accent-lo on --inst-grp is 3.73:1, under AA for text this size (the
-   curve below gets away with the same value as a graphic at 3:1; a string of
-   characters doesn't), and no size fixes it — WCAG's large-text exemption starts
-   at 18.66px bold, which a 240px rail can't hold. The only way to keep the green
-   was to put the row on --inst, where it's 6.13:1. That worked and it read as a
-   black slot cut across the deck: chassis, screen, chassis, in a column that
-   already alternates those materials for real reasons, so it announced itself as a
-   fourth kind of thing when it's just a caption. --inst-ink on the chassis is
-   8.15:1 and looks like what it is.
-
-   What the green was FOR still has to happen, and here it's done by position
-   instead: this sits directly above the curve, and the curve is the drawing of it.
-   The page-side formulas keep the green because they have no such adjacency —
-   .catop is in a table cell with its shape a column away.
-
-   Brighter than the knob labels under it (--inst-ink, not --inst-ink-lo) because
-   it's the deck's statement, not one of its parts.
-
-   Not letter-spaced and not uppercased — see index.html for what .grp would have
-   done to `tanh`. .ctl is a flex row for a label and a slider; this is a block of
-   text, so it opts out and wraps instead, which modulation's 35 characters need on
-   a 240px rail. */
+/* The pedal deck's formula, over the curve that draws it. The one non-green
+   formula on the site: --accent-lo is 3.73:1 on the chassis, under AA as text,
+   and the fix (a black --inst strip) read as a fourth material — so --inst-ink,
+   and adjacency to the curve below does what the green does elsewhere. Brighter
+   than the knob labels (--inst-ink) — it's the deck's statement. Not
+   letterspaced/uppercased: .grp would wreck `tanh`, and this wraps (modulation's
+   35 chars on a 240px rail). */
 .deckop {
 	display: block;
 	color: var(--inst-ink);
 	overflow-wrap: anywhere;
 }
-/* #centerctls is the pedal deck's knobs, but the deck is the bar AND the canvas
-   AND the knobs, so the element stops being the deck and its children become it.
-   It exists at all because buildControls() wipes it — see index.html. */
+/* the pedal deck's knobs; display:contents so its children ARE the deck (the bar,
+   canvas and knobs). Exists because buildControls() wipes it — see index.html. */
 #pedalcol > #centerctls {
 	display: contents;
 }
@@ -450,16 +304,13 @@ b {
 	height: 46px;
 	touch-action: none;
 }
-/* Not taller: modulation's LFO only ever uses the gain axis from 1−depth up to
-   1, so the bottom of that plot is empty by construction and every pixel of
-   height spends 40% of itself drawing the gap under the trough. */
+/* not taller: modulation's LFO only uses gain 1−depth..1, so lower pixels draw
+   empty gap */
 .glyph--curve {
 	height: 96px;
 }
-/* Clipping's curve is read against a y = x that has to actually sit at 45°, so
-   its box is square and centred. Square here rather than via marginsFor's
-   right-hand slack — see drawRail for why that rule is the catalog's and not
-   this one's. */
+/* clipping's curve reads against y=x at a true 45°, so square and centred (not
+   via marginsFor — see drawRail) */
 .glyph--curve.glyph--square {
 	width: 96px;
 	margin-inline: auto;
@@ -468,11 +319,8 @@ b {
 	display: block;
 	padding: 6px 8px;
 }
-/* min-width: 0, or the slider doesn't shrink. A range input carries an intrinsic
-   min-content width (~139px in Chromium) that flex: 1 will grow but never shrink
-   past, so on a 240px rail the widest knob label — delay's `feedback` — pushed
-   its whole row, its deck, and the rail out to 254. The track is fixed; the
-   slider is the part that's meant to give. */
+/* min-width: 0 or the slider won't shrink below its intrinsic ~139px and pushes
+   the fixed rail wider (delay's `feedback` row). The slider is what gives. */
 .ctl input[type="range"] {
 	flex: 1;
 	min-width: 0;
@@ -487,46 +335,31 @@ b {
 	display: inline-block;
 	min-width: 3em;
 }
-/* The whole header under the masthead: one row of the catalog's three columns,
-   under their names. It was three bands — a picker row, the family's, the
-   pedal's — and the fold could not pay for all of them. No top padding:
-   #masthead's own bottom gap is the separation, and paying for it twice is what
-   pushed the lesson through the fold. */
+/* the header under the masthead: one row of the catalog's three columns under
+   their names. No top padding — the masthead's own bottom gap is the separation,
+   and paying for it twice pushed the lesson through the fold. */
 #bar {
 	max-width: 1360px;
 	margin: 0 auto;
-	/* The top padding is the gap under the masthead, and it's the one place in
-	   this header worth spending height on. The column names are 10px mono caps
-	   and the lede above them is prose: set them close and PEDAL / OPERATION /
-	   WHAT CHANGES / FAMILY reads as a subtitle of the sentence. They label the
-	   row, so they have to be nearer to it than to the title — which is bought
-	   back below, where the gap under them is nearly closed. */
+	/* close to the column names below so they read as the row's subtitle, not the
+	   title's */
 	padding: 18px 8px 8px;
-	/* And the rule is what stops that going too far. Gap alone left two blocks of
-	   left-aligned text on the same white with nothing between them, so the lede
-	   ("A guitar pedal is a piece of math on a signal") and the row under it read
-	   as one run of prose — when the row is not prose at all, it's one line of the
-	   catalog's table standing on the bench. The hairline says table: it's the
-	   same rule the catalog draws under its own .cathead, at the same 1360 the
-	   masthead is bounded by, so the two edges line up. */
+	/* the hairline says "table" — the same rule the catalog draws under .cathead,
+	   at the same 1360 — so the row doesn't read as more lede prose */
 	border-top: 1px solid var(--rule);
 }
 .hint {
 	font-size: 12px;
 	color: var(--ink-lo);
 }
-/* the hint lines under the controls: each spans the full width, since both are
-   about controls sitting in more than one column */
+/* hint lines under the controls; full width — both are about controls in more
+   than one column */
 .ctlhint {
 	grid-column: 1 / -1;
 	margin: 2px 0 0;
 }
-/* the panel green is a glow color — it's built to sit on #191c15 and washes out
-   on the lit side, so links here get a darkened version of it. Darker than a
-   link on --page would need: these hints sit on the tray, not the white. The
-   weight is doing as much work as the color — at 12px the antialiasing on thin
-   strokes averages the tray back into the letters, and the link renders lighter
-   than it's set. Drop the weight and it goes washed again, whatever the hex. */
+/* darkened panel-green for the tray; the weight matters as much as the hex — at
+   12px thin strokes average the tray back in and a lighter weight washes out */
 .ctlhint a {
 	color: #35501f;
 	font-weight: 600;
@@ -535,62 +368,25 @@ b {
 .ctlhint a:hover {
 	text-decoration: underline;
 }
-/* The site's own line, above everything the site does. Title and lede share one
-   row and align on their baselines, so the two read as a sentence with a name in
-   front of it rather than as a heading with a paragraph filed under it — and so
-   the whole introduction costs the page one row instead of two.
-
-   One row is the budget, not a preference. Everything above the rig is spending
-   the lesson's fold: at 1440x900 the masthead is 40px and the pedal row under it
-   is 98, so the lesson starts at y=789 and about 111px of it — its headings and
-   the first lines of both columns — is what tells a first-time reader there's
-   anything below the rig at all. A header that stacks, or a lede that wraps to
-   two lines on a desktop, eats straight into that. (It has happened twice: this
-   comment claimed a 30px clearance while the real number was −2, because the
-   family band landed between the two and nobody re-measured — and it then said
-   84/776/125px until a measurement caught it at 98/789/111, the pedal row having
-   grown a line while this paragraph went on quoting the old one. Both times the
-   prose was fine and the arithmetic was fiction. If you change anything above
-   #rig, re-measure and put the number back.)
-
-   The masthead's own height is the title's: 21px of text plus the 14px above it.
-   .sitesrc is 18px and centred, so it rides inside that and the row is 40px with
-   or without it — measured both ways, identical. Anything taller than the title
-   put up here is not free, whatever the flex box makes it look like.
-
-   Hence no max-width, where every other block of prose on this site has one. A
-   measure is for reading DOWN a column, and there's no column here — the whole
-   lede is one line, and its job is to fit on one. It needs about 101ch of the
-   1233 the title leaves it, so the room is there; capping it at any ch value
-   would only manufacture the second line this rule exists to prevent. Any cap
-   would be a guess anyway: --sans is system-ui, so the same string is a
-   different width on every OS, and the number that fits here would wrap on
-   someone else's machine. If you add a word, put the page back at 1440x900 and
-   check that #lesson still starts above 900. Below ~700px the lede's min-width can't
-   be paid and it drops under the title — that's a phone, where the rig has
-   given up the fold anyway and nothing is riding on this.
-
-   The title is sized deliberately under the catalog page's h1: that page's title
-   is the name of the page, and this one is the name of the site sitting above a
-   control the eye needs to reach first. Making it big enough to win that contest
-   would be making the wrong thing the first thing you look at. */
+/* The site's line: title and lede share one baseline row, so the intro costs one
+   row, not two. One row is a hard budget — everything above #rig eats the
+   lesson's fold (at 1440x900 #lesson must start above y=900; re-measure if you
+   change anything up here). No max-width: the lede is one line and must fit as
+   one — a ch cap would only manufacture a second line, and system-ui makes any
+   cap OS-dependent. Title sized under the catalog h1 on purpose: it sits above
+   the control the eye needs first. */
 #masthead {
 	max-width: 1360px;
 	margin: 0 auto;
-	/* The bottom is the masthead's own air under the lede, and it exists because
-	   the rule on #bar does: with 0 there the hairline sat in the lede's
-	   descenders and read as an underline on the sentence rather than the top
-	   edge of the table below it. A rule needs room on BOTH sides to be a seam —
-	   #bar pays for the underside, this pays for the top. */
+	/* room under the lede so #bar's rule reads as a seam, not an underline on the
+	   descenders */
 	padding: 14px 8px 13px;
 	display: flex;
 	align-items: baseline;
 	flex-wrap: wrap;
 	gap: 4px 18px;
 }
-/* Classed rather than reached for as "#masthead h1", so it's named the way
-   .sitelede beside it is — and so the two h1 rules on this site don't sort
-   themselves by specificity across the file. */
+/* classed, not "#masthead h1", so the two h1 rules don't sort by specificity */
 .sitetitle {
 	font-size: 21px;
 	font-weight: 650;
@@ -607,47 +403,25 @@ b {
 	line-height: 1.5;
 	color: var(--ink-lo);
 }
-/* The way out to the source. A mark rather than a word, and not a .catlink: that
-   class is a word with a border under it, and a rule drawn under a picture is a
-   rule under nothing. The mark can be wordless because it's GitHub's own — the
-   same glyph sits on every repo page — and the masthead is one row that the
-   lesson's fold is paying for, so a label would spend that height saying what
-   the picture already says.
-
-   flex, so the anchor is exactly the icon: an inline <svg> sits on the text
-   baseline and carries a descender's worth of line-height under it, which would
-   push this box taller than the mark and hand the row height nobody asked for.
-   Centred rather than baselined for the same reason — a picture has no baseline
-   worth aligning to, and the eye wants it level with the title beside it.
-
-   Colour rides currentColor in the <path>, so the hover is one property here and
-   the mark tracks the same ink-lo → accent move every other link on the page
-   makes. */
+/* the way out to source: a wordless mark (GitHub's own), not a .catlink — a
+   border under a picture rules nothing, and the masthead row can't spend height
+   on a label. flex so the box is exactly the icon (an inline <svg> carries a
+   descender's line-height); centred, no baseline worth aligning. Colour rides
+   currentColor so hover is one property. */
 .sitesrc {
 	display: flex;
 	align-self: center;
 	color: var(--ink-lo);
-	/* On top of the row's 18px gap, because the neighbour is "compare pedals" and
-	   the row's gap was sized for words sitting beside words. Two links landing
-	   that close read as one control with a label — and the two go to opposite
-	   ends of the internet. The extra air is the only thing saying they're
-	   separate, since a bare mark can't say it with a border the way the pill
-	   beside it does. */
+	/* extra air past the row gap: the neighbour is "compare pedals", and a bare
+	   mark can't say "separate" with a border the way that pill can */
 	margin-left: 10px;
 }
 .sitesrc:hover {
 	color: var(--accent);
 }
-/* The centre panel's header bar: what the chart is, on the left, and the
-   transport on the right. Every other .panel h3 stacks its lines, so this is
-   scoped rather than set on h3 — it's the one header with a control in it. */
-/* Big, and permanently. This button has two jobs at once and used to have two
-   sizes for them: an 88px slab lifted out over the centre chart, which found it
-   for you on a page nobody had pressed yet, retiring on the first press into a
-   28px disc in that chart's caption bar. There is no centre chart to lift a slab
-   over now and no caption bar to retire into — it's the first thing on the tray,
-   at the head of the rail, which is what the slab was buying. So: one size, and
-   60px is what the only control on the tray is worth. */
+/* the centre header: what the chart is, plus the transport; scoped because it's
+   the one header with a control in it */
+/* one size, permanently — 60px, the first control on the tray at the head of the rail */
 #play {
 	width: 60px;
 	height: 60px;
@@ -669,19 +443,14 @@ b {
 	fill: #fff;
 	display: block;
 }
-/* Instrument-side, so it takes the glow orange rather than the ink one. This was
-   --wet-ink back when the button lived up in the white header, and that darker
-   orange goes muddy against #191c15 — which is the seam doing exactly what the
-   note at the top of this file says it does: move a thing across it and its
-   colors come from the other side. */
+/* glow orange, not ink orange: --wet-ink goes muddy on the dark rig — the seam
+   again, colours come from whichever side a thing is on */
 #play.playing {
 	background: var(--wet);
 }
-/* ---- the pedal picker -----------------------------------------------------
-   The one picker living on the page instead of on the rig — the source switcher
-   sits in a control column, which is dark. So this alone takes page colors; left
-   dark it read as a black slab floating above a white header. Green still marks
-   what's chosen, which is what ties it back to the switcher below. */
+/* ---- the pedal picker ----
+   The one picker on the page (lit) rather than the rig; left dark it read as a
+   black slab on the white header. Green still marks what's chosen. */
 .pick {
 	position: relative;
 }
@@ -703,9 +472,8 @@ b {
 	background: var(--sunk);
 	border-color: var(--accent);
 }
-/* The pedal you picked, and the whole of what the button says. The family used to
-   ride beside it as a gloss; it's the band over the row now (see famRow), which
-   says the same word and goes somewhere with it. */
+/* the picked pedal, the whole button label; the family rides in the band over
+   the row now (see famRow) */
 .pickped {
 	font-weight: 700;
 }
@@ -740,9 +508,8 @@ b {
 	outline: 2px solid var(--accent);
 	outline-offset: -1px;
 }
-/* Capped at roughly eight rows: enough that the list reads as a list and you can
-   see a family boundary without scrolling, short enough that it can't run off a
-   laptop screen once the catalog gets past three families. */
+/* ~8 rows: long enough to read as a list and see a family boundary, short enough
+   not to run off a laptop */
 .picklist {
 	list-style: none;
 	margin: 6px 0 0;
@@ -750,14 +517,9 @@ b {
 	max-height: 264px;
 	overflow-y: auto;
 }
-/* The family headings are the reason this is a grouped list and not a flat one:
-   find "reverb", learn it's a delay. Styled like the rig's own .grp labels —
-   same mono caps — because they name the same thing those labels do.
-
-   Each family is a .pickgroup wrapping its own options, so the heading's spacing
-   hangs off the group and not off its position in one flat list — which is why
-   the rule below matches the heading inside the first .pickgroup, rather than
-   asking whether the heading itself happens to come first. */
+/* family headings (find "reverb", learn it's a delay), styled like the rig's
+   .grp caps. Each family wraps its own .pickgroup so the heading's spacing hangs
+   off the group — hence the :first-child rule below, not a positional one. */
 .pickgrp {
 	font-family: var(--mono);
 	font-size: 10px;
@@ -777,8 +539,7 @@ b {
 	border-radius: 3px;
 	cursor: pointer;
 }
-/* Cursor (hover/arrow keys) and chosen are different states and have to look it:
-   one is where you're pointing, the other is where you are. */
+/* cursor vs chosen are different states: where you point vs where you are */
 .pickopt.cursor {
 	background: var(--sunk);
 	color: var(--ink-hi);
@@ -797,29 +558,10 @@ b {
 	opacity: 0.5;
 	cursor: default;
 }
-/* On the chassis, not recessed into it — the one thing this button must not look
-   like is the segment it now stands beside. It used to be --inst with no border,
-   which is .srcbtn's own colouring, and that was fine while it lived out on the
-   tray with nothing to be confused with. Next to .seg it made the row read
-   `sine | guitar | ↻ pluck`: three dark wells in a line, the first greyed, the
-   second green, the third apparently a source you could pick. Dark-and-recessed
-   is this deck's word for "a slot you choose from", and pluck isn't a choice,
-   it's a thing you do.
-
-   So: no fill, and the chassis shows through. An outline on --inst-grp is the
-   opposite of a well cut into it, which is the distinction doing the work — the
-   colors stay the deck's either way, it's the direction that changed. Secondary
-   to the segment on purpose; picking the source is the question here, and pluck
-   only answers a follow-up.
-
-   The border also squares the heights. .seg is a 1px border around 4px padding;
-   this was 4px padding and no border, so it sat 2px shorter than the thing it's
-   aligned with and only align-items hid it.
-
-   No `margin-left: auto`. On the tray it pushed pluck to the far edge and left a
-   gap between it and play, which is the hole this whole change is about. Here the
-   .ctl's 8px gap is the point: pluck sits against the guitar button because that
-   button is what decides whether pluck exists at all. */
+/* ↻ pluck: outlined on the chassis, not recessed — a filled/recessed button
+   beside .seg reads as a third source you could pick, and pluck is an action, not
+   a choice. The border also squares its height with .seg's. No margin-left:auto:
+   pluck sits against the guitar button that decides whether it exists. */
 #replay {
 	font: 14px var(--mono);
 	background: transparent;
@@ -833,59 +575,29 @@ b {
 	opacity: 0.4;
 	cursor: default;
 }
-/* The picked pedal's row, under the catalog page's column names. Everything that
-   sets it is that page's — .cathead, .catrow and the cells inside them, all
-   shared — so these rules own only what's different about standing on the bench.
-
-   The width, first. #bar is 1360px, sized for the rig below it, and the
-   catalog's tracks are fractions: let them have the whole bar and the three
-   columns drift so far apart that reading across one row needs a head turn.
-   1000px is that page's own measure, so the columns land at the proportions they
-   were spaced for. Left-aligned rather than centred: the row hangs off the
-   masthead above it, which starts at the page edge.
-
-   So the TABLE is 1000 — and the block around it is the bar's full 1360, because
-   the extra 360 is where the family's sentence goes. Not a fourth column: the
-   table is three columns and ends, and the sentence sits beside it in room the row
-   was wasting anyway (the .catwhat track ran out of prose around x=1100 and the
-   rest was white). Two tenants have been through that space — a FAMILY link, then
-   a why-these-charts column — and both were the same mistake, which was thinking
-   the slack wanted a column in it. It wanted an aside, which is what was sitting
-   on the tray above the charts costing them two lines.
-
-   flex and not a grid: a grid track here would line the sentence up with the
-   columns, and lining it up with the columns is how it gets read as one. */
+/* The picked pedal's row, under the catalog page's column names — .cathead,
+   .catrow and their cells are all that page's; these rules own only what's
+   different on the bench. The table is 1000px (the catalog's own measure, so the
+   three columns keep their proportions); the block is the bar's 1360, and the
+   family's sentence sits beside the table in the slack. flex not grid — a grid
+   track would line the sentence up with the columns and it'd read as one. */
 #lede {
 	max-width: 1360px;
 	display: flex;
 	align-items: flex-start;
 	gap: 32px;
 }
-/* The table takes the catalog's own measure and no more; the sentence takes what's
-   left. Basis rather than a width so a narrow window shrinks the table before it
-   strands the prose in a 4-character column. */
+/* the table takes the catalog's measure and no more; basis not width so a narrow
+   window shrinks the table before stranding the prose */
 #ledetable {
 	flex: 0 1 1000px;
 	min-width: 0;
 }
-/* The PEDAL cell: the toy pedal, then the picker. The picture is out of flow, and
-   that is not a layout preference — it's what lets it exist at all.
-
-   This row aligns its three columns on a shared baseline, deliberately and at
-   length (see #lede .catrow below). A flex box takes its baseline from its first
-   item, and an <svg> hasn't got one, so a picture in flow would hand this cell a
-   synthesized baseline at the bottom of the image — about 20px under the picker's
-   text — and every other column in the row would drop to meet it. The row is the
-   fold's biggest tenant; 20px there is 20px off the lesson.
-
-   Absolute, none of that happens: the cell's baseline is the picker's, exactly as
-   it was when the cell held nothing else — a picture that must not set a height.
-
-   The padding is the picture's own slot, so the picker starts clear of it: 40px
-   of art plus the 9px gap. Reserved by the cell rather than by the image, which
-   is what keeps the picker in ONE place across every pick — the whole point of
-   the rule under this one. Every pedal declares art today, but a pedal that
-   didn't would leave a hole here rather than sliding the picker left. */
+/* the PEDAL cell: toy pedal (out of flow) then picker. Absolute-positioned art
+   because an <svg> has no baseline: in flow it would hand the cell a baseline
+   below the image and drop every other column ~20px — off the fold. The padding
+   reserves the picture's slot (40px + 9px gap) so the picker stays in one place
+   across picks. */
 .pedalcell {
 	position: relative;
 	padding-left: 49px;
@@ -893,47 +605,30 @@ b {
 .pedalart {
 	position: absolute;
 	left: 0;
-	/* Top-aligned with the picker, and NOT centred on it. Centring is the obvious
-	   move and it's wrong here: the picker is 28px, the picture is 40, so centring
-	   hangs 6px of pedal above the cell and straight through the PEDAL column name
-	   sitting right there (measured — it clipped the word by 4px). Pinned to the
-	   top it runs 40px down into a row whose content box is 42, which is the space
-	   the two-line OPERATION cell already opened. So it hangs below the picker
-	   rather than above it, and below is where the room is. */
+	/* top-aligned, not centred: centring hangs 6px of pedal up through the PEDAL
+	   name above; pinned to top it runs down into the row's two-line slack */
 	top: 0;
 	display: flex;
 	pointer-events: none;
 }
-/* 40px is the measurement, not a taste: the row's content box is 42px (the
-   OPERATION cell's two lines), so this is the tallest a picture can be here and
-   still be free. Bigger and it stops riding in the row's slack and starts buying
-   its own, out of the lesson's fold. Re-measure if you change it — the note above
-   #masthead explains what breaks and has the numbers.
-
-   Scoped to #lede only to clear the linter: #play svg sits a few rules above and
-   these two never meet — one is the transport's icon on the rig, this is a
-   picture on the page — but a bare `.pedalart svg` after it is a lower
-   specificity on the same element, which is the shape of a real bug often enough
-   that the rule is worth keeping. The ID is true (this cell only exists in the
-   bench row), so it costs nothing to say it. */
+/* 40px is the measurement: the row's content box is 42px (the two-line OPERATION
+   cell), so this is the tallest a free picture fits — bigger buys its own height
+   off the fold (re-measure, see #masthead). Scoped to #lede to clear the linter
+   against #play svg above, which never meets this. */
 #lede .pedalart svg {
 	height: 40px;
 	width: auto;
 	display: block;
 }
-/* The picker fills its cell rather than its content, which is why it looks roomy
-   around a word like "fuzz". Sizing it to the name would be worse than roomy:
-   the labels run from "fuzz" to "tube screamer", so the button would resize on
-   every pick — and this is a control you use repeatedly, one pick after another,
-   comparing. It has to be in the same place each time you come back to it. */
+/* the picker fills its cell, not its content — sizing to the name would resize
+   the button on every pick, and it's a control you return to repeatedly */
 #lede .pickbtn {
 	width: 100%;
 	min-width: 0;
 	overflow: hidden;
 }
-/* Everything else the bench overrides on the shared rows isn't here: those rules
-   have to sit after the .cathead/.catrow/.catlink rules they override, so they
-   live together at the foot of the catalog section. */
+/* the bench's other row overrides live at the foot of the catalog section — they
+   must follow the rules they override */
 /* no rule of its own: the tray's bottom edge is the line this sits under */
 #lesson {
 	max-width: 1360px;
@@ -945,9 +640,8 @@ b {
 	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 	gap: 8px 44px;
 }
-/* ch is the width of a "0", so a proportional face fits more characters per ch
-   than a mono one did — this is narrower than the old 68ch on purpose, to land
-   near the same ~70-character line. */
+/* narrower than 68ch mono: a proportional face fits more chars per ch, landing
+   near the same ~70-char line */
 .lesson-cols .col {
 	max-width: 58ch;
 }
@@ -964,8 +658,7 @@ b {
 	color: var(--ink-hi);
 	font-weight: 600;
 }
-/* Sentence case: the source already writes these as sentences, and at this size
-   the weight alone is enough to head a column. */
+/* sentence case; at this size the weight alone heads a column */
 #lesson h3 {
 	font-size: 16px;
 	font-weight: 650;
@@ -991,19 +684,13 @@ b {
 	padding: 1px 4px;
 }
 
-/* ---- the catalog page (pedals.html) ---------------------------------------
-   All lit side. There's no rig on that page — nothing plays, nothing is a
-   scope — so none of the instrument vars belong here, and the whole thing is
-   ink on white like the prose it sits next to. The one borrowed piece is the
-   mono face, which does the same job it does everywhere else: it's on the
-   formulas and the machine's own lettering, never on the English. */
+/* ---- the catalog page (pedals.html) ----
+   All lit side — no rig, no scope — so no instrument vars; ink on white. Only
+   the mono face carries over, on formulas and machine lettering. */
 #cat {
-	/* 1360, which is the width of every other page on this site (the masthead,
-	   the bar, the rig, the lesson). It was 1000, from back when this page was
-	   three columns of text; the SHAPE column made it a table, and a table wants
-	   the room. The row's tracks are all fr, so they take the extra themselves —
-	   the four cells go 235/270/106/306 at 1000 and 327/377/147/426 here, which
-	   is what stops WHAT CHANGES breaking mid-phrase on the longer entries. */
+	/* 1360 like every other page; the SHAPE column made this a table and a table
+	   wants the room. Tracks are all fr, so they absorb the extra and WHAT CHANGES
+	   stops breaking mid-phrase. */
 	max-width: 1360px;
 	margin: 0 auto;
 	padding: 28px 16px 60px;
@@ -1015,12 +702,8 @@ b {
 	color: var(--ink-hi);
 	margin: 0 0 8px;
 }
-/* The measure is still a measure — this is prose and it wraps, so it can't just
-   run the table's full 1360. But 62ch was tuned against a 1000px page and read
-   as a narrow ribbon hanging off the left of a wide one: three lines, the last
-   of them an orphan, over a table nearly twice its width. 88ch is two lines that
-   reach far enough across the table to look like its header rather than a column
-   that lost an argument with it. */
+/* 88ch: wide enough to read as the table's header rather than a narrow ribbon
+   hanging off a table nearly twice its width */
 .catlede {
 	margin: 0;
 	max-width: 88ch;
@@ -1031,15 +714,11 @@ b {
 .fam {
 	margin: 40px 0 0;
 }
-/* The three things that lay out in columns — the column names, a family, a
-   pedal — are one geometry, declared once. Each lays out its OWN three columns
-   rather than the page laying one grid over all of them, because a row is an <a>
-   and a grid item can't also be the grid its cells sit in without subgrid; a
-   link that isn't one box is a link you can't reliably click. Fixed fraction
-   tracks are what keeps them lined up regardless. The 3px left border is
-   transparent here and green only on a family band — every one of these boxes
-   has to reserve it, or the band's columns would sit 3px off from the rows'.
-   Change a track, a gap or a padding and you change all three. */
+/* Column names, a family, a pedal — one geometry, declared once, so they line up.
+   Each lays out its own three columns (a row is an <a> and can't also be a grid
+   without subgrid). The 3px left border is transparent here, green on a band;
+   every box reserves it or the band's columns sit 3px off. Change a track, gap or
+   padding here and you change all three. */
 .cathead,
 .famhead,
 .catrow {
@@ -1053,10 +732,8 @@ b {
 	padding: 11px 10px;
 	border-left: 3px solid transparent;
 }
-/* Spaced to belong to the table below it, not to the prose above it: a column
-   name touching the lede and floating 40px clear of the rows is labelling the
-   paragraph. So the air goes above — the same gap that separates the families
-   from each other — and only the 7px stays below. */
+/* air above (the families' own gap), not below, so the names belong to the table
+   under them and not the lede above */
 .cathead {
 	font-family: var(--mono);
 	font-size: 10px;
@@ -1067,25 +744,13 @@ b {
 	padding-top: 0;
 	padding-bottom: 7px;
 }
-/* The first family owns no gap — the header row already opened it, and .fam's
-   own 40px is what holds the families apart further down. */
+/* first family owns no gap — the header row already opened it */
 .cathead + .fam {
 	margin-top: 0;
 }
-/* A band, because the rig marks its column names with one (.grp) and this row
-   does that same job here — it's the name the pedals under it hang off. It can't
-   BE that slab, though: .grp is instrument-dark and this page has no rig on it,
-   so the band takes --tray, the lit page's own step down from white. The band is
-   what separates the families for real: at 40px apart with a hairline under each
-   name, the eye read the page as one long table with some stray labels in it,
-   which loses the grouping that IS the page.
-
-   --tray and not --sunk, even though an inset block is what --sunk is for,
-   because --sunk is already spoken for two rules down: it's what a hovered row
-   wears, the same as a pointed-at option in the picker. A band painted the color
-   of the hover state is a family that looks like it's under the cursor — which
-   is exactly how it read. Structure and state can't share a fill, so the band
-   takes the heavier of the two and hover keeps the site's word for hover. */
+/* A band naming the pedals under it (the .grp job) but lit: --tray, not
+   instrument-dark .grp, and not --sunk — .sunk is the hover state, and a band in
+   the hover colour reads as hovered. The band is what separates the families. */
 .famhead {
 	margin: 0 0 2px;
 	background: var(--tray);
@@ -1093,23 +758,17 @@ b {
 	font-weight: 400;
 	font-size: inherit;
 }
-/* Each cell is its value over its gloss — a family's name over its class, its
-   formula over the note reading that formula back in English — and the rows
-   below are the same shape cell for cell: .catped is a pedal's name over its
-   aliases, .catcell its formula over its own note. Which is what lets a family
-   read as the generic case of the row rather than as a different kind of thing:
-   every line in the band has a line under it doing the same job one altitude
-   down. One rule for all three, because the day they drift is the day the
-   columns stop lining up. */
+/* value over gloss (name over class, formula over its English note); the same
+   shape as the rows below, so a family reads as the generic case of a row. One
+   rule for all, or the columns drift. */
 .famcell,
 .catcell {
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
 }
-/* The family name gets the rig's uppercase-mono treatment: on this page the
-   families ARE the column names — the three headings the whole list hangs off —
-   which is the job .grp does over on the bench. */
+/* the family name gets the rig's uppercase mono: here the families ARE the column
+   names (the .grp job on the bench) */
 .famname {
 	font-family: var(--mono);
 	font-size: 13px;
@@ -1118,16 +777,8 @@ b {
 	text-transform: uppercase;
 	color: var(--ink-hi);
 }
-/* "family", riding after the name inside it (see famRow) and undoing everything
-   the name does to a word: the caps, the tracking and the weight are what make
-   CLIPPING read as a heading, and this is the small quiet noun telling you what
-   kind of heading. Set like the glosses rather than like the name — same 11.5px
-   and --ink-lo as the class under it — because that's what it is, and a "family"
-   in the band's own caps would just be a second word shouting.
-
-   No margin: the gap is the space in front of the word (famRow explains why it's
-   text and not CSS), which lands at ~7px here, plus the tracking the name leaves
-   trailing its last letter. */
+/* "family" after the name (see famRow), set like the glosses — the small quiet
+   noun saying what kind of heading. No margin: the gap is text (famRow says why). */
 .famnoun {
 	font-size: 11.5px;
 	font-weight: 400;
@@ -1135,20 +786,16 @@ b {
 	text-transform: none;
 	color: var(--ink-lo);
 }
-/* The general form of the column it heads, so it takes that column's color, and
-   these ARE the same term at two altitudes. Which means it must be said here:
-   this is a <b>, so without a color of its own it takes the orange the element
-   default gives every other <b> on the site, and .catop moved to green. Two
-   altitudes of one formula in two colors is the one thing this pairing exists to
-   prevent. */
+/* the general form of the column below it, so it takes that column's green —
+   without it a <b> takes the default orange and the two altitudes of one formula
+   split into two colours */
 .famop {
 	font-family: var(--mono);
 	font-size: 12.5px;
 	font-weight: 400;
 	color: var(--accent);
 }
-/* The two glosses: the class under the family's name, the note under its
-   formula. Same size and color as .catalias, the gloss in the rows below. */
+/* the two glosses; same size/colour as .catalias in the rows */
 .famklass,
 .famnote {
 	font-size: 11.5px;
@@ -1168,11 +815,8 @@ b {
 	border-top: 1px solid var(--rule);
 	border-radius: 3px;
 }
-/* Hover and focus are answers to "you can click this", so they're scoped to the
-   rows that can be: on the catalog page every row is an <a> into the demo, on
-   the bench the single row is a <div> describing the pedal already mounted.
-   Unscoped, that row lit up under the cursor and promised a click that has
-   nowhere to go. */
+/* hover/focus mean "clickable", so scoped to a.catrow: the catalog's rows are
+   links, the bench's single row is a <div> and must not promise a click */
 a.catrow:hover {
 	background: var(--sunk);
 }
@@ -1180,14 +824,8 @@ a.catrow:focus-visible {
 	outline: 2px solid var(--accent);
 	outline-offset: -2px;
 }
-/* Indented, because nothing else here says "these belong to the family above
-   them". A band and a row share three columns on purpose — that's what makes the
-   formula column read general → instance — but sharing them also flattens the
-   two into one long list where CLIPPING is just another name in the PEDAL
-   column. Nesting is the oldest fix for that and it costs no words.
-   Deliberately only this cell: indent the whole row and the operation column
-   goes with it, which would break the alignment the layout exists for. So the
-   names make a tree and the formulas stay a column. */
+/* indented so the pedals read as belonging to the family band; only this cell,
+   not the row — indent the row and the formula column drifts out of alignment */
 .catped {
 	display: flex;
 	flex-direction: column;
@@ -1203,37 +841,22 @@ a.catrow:focus-visible {
 a.catrow:hover .catlabel {
 	color: var(--accent);
 }
-/* The two glosses on a pedal's row: the aliases under its name, the formula read
-   back in English under the formula. Same size and color as .famnote/.famklass,
-   the glosses in the band above — the gloss is one thing on this page, not a
-   family's thing and a pedal's thing.
-
-   Not mono, unlike the .catop it sits under: it's prose about the notation, and
-   setting it in the notation's own face would make it read as more notation. */
+/* the pedal's two glosses; same as .famnote/.famklass above. Not mono though —
+   it's prose about the notation, and the notation's face would read as more of it */
 .catalias,
 .catnote {
 	font-size: 11.5px;
 	line-height: 1.45;
 	color: var(--ink-lo);
 }
-/* A pedal with nothing to gloss leaves the note empty rather than absent — the
-   bench's row is standing markup and its cells get filled, not built. Empty, the
-   span still takes the cell's 3px gap, so the formula would sit 3px higher on
-   the families that have a note than on the ones that don't. */
+/* the bench's row is filled, not built; an empty note still takes the cell gap,
+   so hide it or the formula sits 3px high on families with no note */
 .catnote:empty {
 	display: none;
 }
-/* Green, because green is what the pedal's own math is drawn in everywhere else:
-   draw.js hands every family's drawCenter the ACCENT for its curve, and the rail
-   plots THIS FORMULA in it. The two were one object in two colors — the operation
-   column said x[n]·(1 − d/2 + …) in orange while the deck beside it drew that
-   exact equation in green.
-   Orange had to go because orange is not a mood here, it's a referent: the panel
-   headers paint the literal word "out" in it, off the same custom property the
-   trace is stroked with, so that the word and the line can't drift. A formula
-   wearing it says the formula is the output. It's the operation that makes one.
-   Free, as it happens — 4.60:1 on white against --wet-ink's 4.68:1, so the swap
-   is semantic and costs no contrast. */
+/* green, like every drawing of the pedal's math (the rail plots this formula in
+   --accent). Not orange — orange is the referent for "out" (panel headers paint
+   the word off --wet), and a formula isn't the output, the operation is. */
 .catop {
 	font-family: var(--mono);
 	font-size: 12px;
@@ -1244,16 +867,10 @@ a.catrow:hover .catlabel {
 	font-size: 13px;
 	line-height: 1.5;
 }
-/* The SHAPE column: a fourth track on the catalog page's rows, holding each
-   pedal's own curve. It has to be added in all three places at once — .cathead is
-   .catrow's grid rule, so a track added to one is a track added to both or the
-   names stop sitting over what they name. .famhead takes the track too and leaves
-   it empty, which is honest: the band is the general case, and the general case of
-   a curve is not a curve.
-
-   Scoped to #cat rather than left loose on .catrow, because .catrow is also the
-   bench's row, and over there this column doesn't exist: the fourth track is the
-   one thing the two pages' tables don't share. */
+/* the SHAPE column: a fourth track, added to all three (.cathead is .catrow's
+   grid rule) or the names stop sitting over what they name. .famhead leaves it
+   empty (a family has no one curve). Scoped to #cat — the bench shares this rule
+   but not this column. */
 #cat .cathead,
 #cat .famhead,
 #cat .catrow {
@@ -1261,30 +878,17 @@ a.catrow:hover .catlabel {
 		minmax(9rem, 1fr) minmax(11rem, 1.15fr) minmax(84px, 0.45fr)
 		minmax(11rem, 1.3fr);
 }
-/* Sized to the row rather than the row to it: two lines of small text already
-   stand ~42px, so the curve very nearly rides in height the row was spending
-   anyway — the same bargain the bench's toy pedal strikes in .pedalcell, and the
-   reason the whole page didn't get half again as tall for this. The 56 over the
-   42 is the clipping family's fault and worth it: those thumbnails are square (a
-   transfer curve's axes are the same unit — see thumb.js), so height is the only
-   thing that makes them bigger, and at 44 the knee everything else on the row is
-   describing was 40px across.
-
-   No border and no fill. It's a drawing on the lit page, not a panel: the rig's
-   dark slabs are where the instrument is, and nine little instrument panels in a
-   catalog would read as nine things to operate. What's left is the ink. */
+/* sized to the row (two lines ≈ 42px) so the curve rides height the row already
+   spends; 56 over 42 is the square clipping thumbnails (see thumb.js). No
+   border/fill — a drawing on the page, not another instrument panel. */
 .catthumb {
 	width: 100%;
 	height: 56px;
-	/* Centred, not on the shared baseline the rest of the row sits on: a drawing
-	   has no baseline to share — the bottom of this box is an axis, not a line of
-	   text, and hanging it off the row's would sink it under everything it's
-	   drawn beside. */
+	/* centred, not baselined: a drawing's bottom is an axis, not a text line */
 	align-self: center;
 }
-/* Under ~640px the three columns stop being columns — the formulas are the
-   widest thing on the page and they'd wrap to nothing. So the row stacks and
-   the header, which only names columns that no longer exist, goes away. */
+/* under ~640px the formulas would wrap to nothing, so rows stack and the header
+   (naming columns that no longer exist) goes */
 @media (max-width: 640px) {
 	.catrow,
 	.famhead {
@@ -1301,75 +905,40 @@ a.catrow:hover .catlabel {
 	.famhead > *:first-child {
 		margin-top: 0;
 	}
-	/* Stacking the row flattens the cells that were flex columns, and their
-	   contents are spans — left inline they'd set a pedal's name and its aliases
-	   as one run of text. */
+	/* the flex-column cells flatten to inline spans when stacked; block them apart */
 	.catped > *,
 	.catcell > *,
 	.famcell > * {
 		display: block;
 	}
 }
-/* The bench borrows this section's rows wholesale (see #lede, up with the rest
-   of the bar) and changes exactly one thing about them: the head row carries the
-   40px of air that separates one family from the next on this page, and up there
-   there's only ever one band, already sitting under the picker's own gap.
-
-   It lives down here, away from the rest of #lede, because it can't lead the
-   rules it overrides — a plain .cathead appearing after it reads as a rule that
-   loses to an ID it never mentions, which is exactly what the linter's
-   descending-specificity warning is for. The cascade doesn't care (the ID wins
-   from anywhere); a person reading .cathead top-to-bottom does. */
+/* the bench borrows these rows and changes one thing: no 40px family gap (only
+   one band here, under the picker's own gap). Down here, after the rules it
+   overrides — a plain .cathead following it would read as losing to an ID (the
+   linter's descending-specificity warning). */
 #lede .cathead {
 	margin-top: 0;
-	/* and the 7px below them goes too — over there the names head a table and can
-	   stand off it; here they head one row and are the only thing that says what
-	   its cells are, so they sit right on it */
+	/* and no gap below — here the names head one row and sit right on it */
 	padding-bottom: 2px;
 }
-/* No track override, and that's the point: the bench's three columns ARE the
-   catalog's three columns, so the shared .cathead/.famhead/.catrow rule is the
-   whole table on both pages. This page kept a fourth track for a long time — first
-   the FAMILY link, briefly the family's sentence — and it has neither now. The one
-   thing the two tables don't share is the catalog's SHAPE column (see #cat). */
-/* The band on the bench. The catalog's .famhead is a heading in a long list of
-   them, spaced to hold the families apart; here there's exactly one and the row
-   it belongs to is directly under it, so the margin goes and the two read as the
-   single two-line object they are. */
+/* No track override: the bench's three columns ARE the catalog's three. The one
+   thing the two tables don't share is #cat's SHAPE column. */
+/* the band on the bench: one family, its row directly under it, so drop the
+   catalog's between-families margin and the two read as one object */
 #lede .famhead {
 	margin: 0;
 	padding-bottom: 4px;
 }
 #lede .famhead + .catrow {
-	/* The 2px that used to be here was measured against the column names, which are
-	   10px of ink-lo with nothing behind them — a row can sit right on those. The
-	   band is a filled block with a rule down its edge, and the two things directly
-	   under it are the only pictures in the row (the toy pedal, and a bordered
-	   control): both have hard top edges, and 2px reads as them touching the band's
-	   underside rather than hanging below it. */
+	/* 12px, not the 2px used under bare column names: the band is a filled block
+	   with a rule down its edge, and the pictures directly under it (toy pedal,
+	   bordered picker) would read as touching its underside at 2px */
 	padding-top: 12px;
 }
-/* The family's word about its two charts, beside the table (see index.html for
-   why beside and not in). The only prose on this page that isn't a heading, a
-   label or a cell: every other thing in the lede is the instrument or the table
-   naming itself, and this is the page talking to a reader — so no mono, no
-   uppercase, no letterspacing.
-
-   It was a paragraph on the tray above the charts for a long time, at 14px/86ch.
-   Both numbers were the tray's: 14 to hold its own against the panels it sat on,
-   86ch to keep a sentence run across 1096px readable. Neither is true up here. 13
-   is the lede's prose size (.catwhat, .famwhat — the two things it's level with),
-   and the measure is the flex track at ~40 characters, which needs no max-width
-   because a column can't run long.
-
-   Top-aligned with the table's column names rather than centred on the two rows:
-   it's about what's below the whole lede, not about either row, and a sentence
-   floating at the vertical middle of a table reads as a note on the row it
-   happens to be level with.
-
-   --ink-lo, where the rows it sits beside are --ink: those are the page's claims
-   about the pedal and this is the page's aside about its own layout. Quieter is
-   what an aside is. */
+/* the family's word about its two charts, beside the table (see index.html for
+   why beside, not in). The one bit of prose on the page — so no mono, no caps.
+   13px (the lede's prose size) and top-aligned; --ink-lo because it's the page's
+   aside about its own layout, quieter than the rows' claims about the pedal. */
 .why {
 	margin: 0;
 	padding-top: 11px;
@@ -1378,11 +947,9 @@ a.catrow:hover .catlabel {
 	color: var(--ink-lo);
 	max-width: 42ch;
 }
-/* The band's name is the way out on this page (see famRow), which makes it the
-   one .famname that's an <a>. It keeps the mono caps and loses everything a link
-   would otherwise bring: the underline would draw a rule under a heading, and the
-   colour is what the hover is for. The arrow rides in .famnoun, so the quiet ink
-   is already saying "this goes somewhere" — see rows.js. */
+/* on this page the band's name is the way out (see famRow), the one .famname
+   that's an <a>: mono caps kept, underline dropped (it'd rule under a heading);
+   the arrow rides in .famnoun and hover carries the colour */
 #lede a.famname {
 	text-decoration: none;
 }
@@ -1391,28 +958,11 @@ a.catrow:hover .catlabel {
 	color: var(--accent);
 }
 #lede .catrow {
-	/* No align-items here on purpose: it takes the shared baseline, same as every
-	   row on the catalog page. It used to centre, because a bordered control's
-	   text sits 6px below its own top edge and this row was otherwise one line
-	   tall — so the picker was the tallest thing in it, and on a baseline the flat
-	   text hung off the picker's and opened a gap under the column names.
-	   The operation cell is two lines now (a formula over its note), which is
-	   taller than the picker and makes the row's height its own. That took the
-	   reason away and left the damage: centring a two-line cell against one-line
-	   ones pushes every other column's text down to meet the middle of it, so
-	   WHAT CHANGES sat lower than the formula it's the consequence of. Three
-	   columns at three sizes (14px picker, 12px formula, 13px prose) have no
-	   shared top edge to align on — a baseline is the line all three actually
-	   share, and it's the one the eye reads across, here and in the band above. */
-	/* No padding-top here: what's above this row is the band, not the column names,
-	   and the rule that spaces the two is `.famhead + .catrow` above — where it can
-	   say in the selector that it's about the pair. This used to be 2px, "closed up
-	   under the column names", from when the names were what it sat under.
-
-	   No rule above it either. On the catalog that border is what separates one
-	   pedal from the next in a long list; here there is no next — one row, hanging
-	   off the band the way a catalog row hangs off its own. A divider between a
-	   thing and nothing is just a line. */
+	/* No align-items: takes the shared baseline like every catalog row — the three
+	   cells at three sizes have no shared top edge, only a baseline. No padding-top:
+	   the band above spaces it (see `.famhead + .catrow`). No border-top: on the
+	   catalog it separates one pedal from the next; here there's one row and
+	   nothing to separate it from. */
 	border-top: 0;
 }
 /* the way back to the bench, and the way out to the catalog: one small mono
@@ -1430,22 +980,10 @@ a.catrow:hover .catlabel {
 	color: var(--accent);
 	border-bottom-color: var(--accent);
 }
-/* Upper right, level with the h1, because that's the corner the bench keeps
-   "compare pedals" in: one nav corner across both pages, so it's a place you
-   learn once rather than a thing you re-find. It sat above the h1 on the left,
-   which is the standard back-link spot and was fine when this page was 1000px
-   wide and had no opposite number to agree with.
-
-   Still a bare word where the bench's is a pill, and that's not an oversight:
-   that link has to interrupt someone who never asked about a catalog, this one
-   is read by someone who came FROM the bench and is looking for the way back.
-   Same corner, different volume, because the audiences aren't the same.
-
-   Grid rather than a float or an absolute: the link is first in the DOM (it's
-   the way out — a keyboard lands on it before the page, which is where a back
-   link belongs) but it belongs beside the h1, and a grid can place it there
-   without the source order lying about it. The lede spans both tracks and keeps
-   its own measure. */
+/* upper right, level with the h1 — the same nav corner the bench keeps "compare
+   pedals" in. Grid so the link can be first in the DOM (keyboard hits the way-out
+   before the page) but sit beside the h1 without source order lying. Still a bare
+   word, not the bench's pill: this reader came looking for the way back. */
 .cathdr {
 	display: grid;
 	grid-template-columns: 1fr auto;
@@ -1461,18 +999,10 @@ a.catrow:hover .catlabel {
 .catlede {
 	grid-column: 1 / -1;
 }
-/* The one .catlink that has to advertise. The other two are read by someone who
-   already went looking: "← back to the bench" has a captive audience (you came
-   from the bench), and the band's name is answering a question the reader is
-   already inside. This one is unsolicited — it's the only thing on the bench that
-   says the catalog exists at all — so a 12px rule-under-a-word in ink-lo loses to
-   every chart on the page and gets read by nobody.
-
-   A box, not a bigger word: the masthead's height is the lede's, and this sits
-   inside it either way. Accent ink and a border are what make it read as a
-   destination — the same move .seg makes for the source switcher, which is the
-   page's other "this is a thing you press". Centred rather than baselined for
-   .sitesrc's reason: a padded box has no baseline worth sharing. */
+/* the one .catlink that must advertise: the only thing on the bench that says the
+   catalog exists, so a box (accent ink + border) where the other two are bare
+   words — the same "this is a thing you press" move .seg makes. Centred, no
+   baseline worth sharing on a padded box. */
 #masthead .catlink {
 	align-self: center;
 	color: var(--accent);

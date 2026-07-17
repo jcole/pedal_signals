@@ -1,10 +1,8 @@
-// Delay-family VIEW (echo / slapback / ambient): only the UI. What a delay pedal
-// IS — the feedback difference equation y[n] = x[n] + fb·y[n−D], its transient
-// pluck input, its longer analysis buffer — lives on the DelayPedal instances in
-// pedals/. This module renders them: the tap-train center panel, the wet-vs-dry
-// envelope panel, the time/feedback controls, and the live DelayNode feedback
-// loop. The envelope follower comes from dsp.js; the tap train + the burst both
-// sources are cut to come from pedals/ (they're the delay's own DSP).
+// Delay-family VIEW (echo / slapback / ambient): only the UI. The pedal model
+// (feedback equation y[n] = x[n] + fb·y[n−D], pluck input, analysis buffer) lives
+// on DelayPedal in pedals/; this module renders the tap-train panel, the
+// wet-vs-dry envelope panel, the time/feedback controls, and the live DelayNode
+// feedback loop. Envelope follower from dsp.js; tap train + burst from pedals/.
 import { envelope, SR } from "../dsp.js";
 import {
   DELAYS,
@@ -16,74 +14,46 @@ import {
   TAP_FLOOR,
 } from "../pedals/index.js";
 
-// The knobs' limits, named once here: the controls below declare them, and the
-// pluck loop sizes itself from them. Two copies of a limit is how the loop and
-// the sliders drift apart.
+// Knob limits, named once here: the controls declare them and the pluck loop
+// sizes itself from them.
 const TIME_MAX = 400, // ms
   FB_MAX = 0.85;
-// The shortest rest that still reads as one hit rather than a stutter. Slapback's
-// echoes are gone 250 ms in, but re-plucking four times a second is a machine gun,
-// not a demo of a doubling — so the gap answers to the ear's spacing as well as to
-// the decay, and takes whichever is longer.
+// Shortest rest that still reads as one hit, not a stutter: the gap answers to the
+// ear's spacing as well as the decay, and takes whichever is longer.
 const MIN_GAP_MS = 800; // ~75 bpm: a slow deliberate strum
 
-// How long one hit's echoes need: repeats fade by fb a pass, so the last one still
-// above the tap panel's "too quiet to matter" floor is the log(floor)/log(fb)-th,
-// each `time` after the one before — and then it takes the pluck's own decay to
-// ring out. Same count impulseResponse stops drawing at, so the tail ends where the
-// panel's last stem does.
+// How long one hit's echoes need: repeats fade by fb each pass, so the last one
+// above the tap panel's floor is the log(floor)/log(fb)-th, each `time` apart, plus
+// the pluck's own decay. Same count impulseResponse stops at, so the tail ends
+// where the panel's last stem does.
 const tailMs = (time, fb) =>
   (fb > 0 ? Math.floor(Math.log(TAP_FLOOR) / Math.log(fb)) * time : 0) + PLUCK_MS;
 const gapMs = (time, fb) => Math.max(tailMs(time, fb), MIN_GAP_MS);
-// The longest gap the sliders can ask for — the buffer has to hold it, since the
-// buffer is allocated once and the knobs move afterwards.
+// Longest gap the sliders can ask for — the buffer, allocated once while the knobs
+// move afterwards, has to hold it.
 const GAP_MAX_MS = gapMs(TIME_MAX, FB_MAX);
 
-// Where the loop currently turns over, in seconds. update() writes it as the
-// knobs move and buildSource reads it, so whichever runs first, the two agree.
+// Where the loop currently turns over, in seconds. update() writes it, buildSource
+// reads it, so whichever runs first the two agree.
 let loopEnd = GAP_MAX_MS / 1000,
   srcNode = null;
 
 export default {
   id: "delay",
   navLabel: "delay",
-  // The third of the three, and the only one whose second clause is a zoom rather
-  // than a spectrum — which is the rule working, not being bent: this family's
-  // whatChanges says "no new frequencies", so it doesn't get a frequency panel.
-  //
-  // WRITTEN TO TODAY'S PANELS, AND IT SHOWS — this family's top slot is still
-  // owed a chart, and the sentence is where the debt shows up as words. The other
-  // two families' cells are one clause: the thing their pedal doesn't touch, which
-  // is why they draw what they draw. This one has a second sentence, and it isn't
-  // a why — it's a legend.
-  //
-  // The reason is §1c of the working notes. Both panels here draw the same train:
-  // the top is the harness's default waveform over 683 ms, at 1.6 px a carrier
-  // cycle, so it can only draw its own envelope outline — the chart underneath,
-  // worse. So the honest thing a reader gets from the bottom panel today is the
-  // DASHED dry — the one fact the top panel can't show, since only 63 of its 1096
-  // columns carry any grey at all. Nothing on the rig says what that dash is, so
-  // this does, from a cell headed WHY THESE CHARTS. It is a caption doing a
-  // panel's job, and it's in the wrong cell to boot.
-  //
-  // When the carrier zoom lands (the burst and one repeat side by side — the one
-  // thing about a delay neither panel shows, and where "no new frequencies" stops
-  // being a sentence and becomes a picture), the second sentence goes: the panels
-  // will finally differ, the dash will be legible in a chart that has room for it,
-  // and this cell will be one clause like its siblings. That's the test for 1c —
-  // if this reads as a why and nothing else, 1c is done. Today it doesn't, and
-  // this is what's left when you refuse to pretend.
+  // This family's whatChanges says "no new frequencies", so it gets no frequency
+  // panel. The second sentence is a legend for the dashed dry, which nothing else
+  // on the rig names.
   why: `This pedal doesn't change your note at all; it hands it back to you, late
     and quieter. The dashed line is your note, stopping while the pedal carries
     on.`,
-  // Half. This family's wet chain carries ONLY the repeats — the dry tap is
-  // where your note itself comes from — so a full-wet delay is echoes of a note
-  // you never hear.
+  // Half. The wet chain carries ONLY the repeats — your note comes from the dry
+  // tap — so a full-wet delay is echoes of a note you never hear.
   blendDefault: 0.5,
   pedals: DELAYS,
   spectrumTitle: "each repeat is quieter — feedback sets the decay",
-  // Not a spectrum: drawSpec draws peak-follower envelopes against time, on a
-  // 0..1 level axis. Nothing here takes an FFT or a logarithm.
+  // Not a spectrum: drawSpec draws peak-follower envelopes against time on a 0..1
+  // level axis.
   spectrumTech: "envelope",
 
   lesson: {
@@ -167,15 +137,11 @@ export default {
     H.titles(g, F, "tap level", "time (ms)");
   },
 
-  // bottom panel: the wet envelope (orange) over the dry envelope (grey) — the
-  // decaying row of humps, one per repeat, that the ear hears as the echo.
+  // bottom panel: the wet envelope (orange) over the dry (grey) — the decaying row
+  // of humps, one per repeat, that the ear hears as the echo.
   //
-  // One follower, both sources. This panel used to pick by src — envelope()'s
-  // coast for the pluck, envelopeHeld() for the guitar — because the guitar rang
-  // for the whole 683 ms and a coasting follower can't draw a sustained signal
-  // without rippling between the carrier's peaks. That was the follower being
-  // patched for a fact about the INPUT: both sources are transients now (see
-  // genInput), so both want the coast, and the hold was only ever the symptom.
+  // One follower, both sources: both are transients now (see genInput), so both
+  // want envelope()'s coast.
   drawSpec(F, inp, out, _pedal, _src, H) {
     const { g, L, R, T, B } = F;
     const { DRY, WET } = H.colors;
@@ -186,19 +152,14 @@ export default {
       we = envelope(out);
     const xs = new Array(span);
     for (let i = 0; i < span; i++) xs[i] = i;
-    // Dry LAST and dashed, which is this panel's alone and not the harness's
-    // habit. Everywhere else the two traces differ and painting order is a
-    // detail; here the output CONTAINS the input — out[i] === inp[i] until the
-    // first repeat lands — so a solid dry goes under a solid wet in exactly the
-    // place it matters and is never seen again. Dashed and on top, it rides the
-    // first hump instead of hiding beneath it, and the eye gets the page's whole
-    // argument for free: your note is the dashed one, it stopped there, and
-    // every hump after it is the pedal's.
+    // Dry LAST and dashed: the output CONTAINS the input — out[i] === inp[i] until
+    // the first repeat lands — so a solid dry would hide under the wet exactly
+    // where it matters. Dashed and on top, it rides the first hump: your note
+    // stopped there, every hump after is the pedal's.
     //
-    // Dashes only work here because these are smooth curves. The waveform panel
-    // above can't have this: a canvas dash walks PATH length, and a trace that
-    // swings ±1 at 222 Hz spends ~500px of path in every 3px of width, so the
-    // pattern chops the verticals into stipple rather than drawing a dashed line.
+    // Dashes only work here because these are smooth curves. A canvas dash walks
+    // PATH length, so the waveform panel above (swinging ±1 at 222 Hz) would
+    // stipple its verticals rather than dash them.
     H.line(g, xs, we, sx, sy, WET, 2);
     g.setLineDash([6, 4]);
     H.line(g, xs, de, sx, sy, DRY, 1.5);
@@ -210,19 +171,15 @@ export default {
     H.titles(g, F, "level", "time (ms)");
   },
 
-  // Live source, for BOTH src modes — the same burst genInput draws, so the panel
-  // and the speaker are the same signal. Neither of the harness's defaults works
-  // here: a delayed copy of a continuous tone just overlaps the original, and so
-  // does the looped raw note, which rings for 683 ms. Either way you'd see a hit
-  // and hear no repeat. Loop one burst followed by silence instead, so each hit's
+  // Live source for BOTH src modes — the same burst genInput draws, so panel and
+  // speaker are the same signal. Loop one burst followed by silence, so each hit's
   // echoes ring out in the gap before the next.
   //
-  // The buffer holds the worst-case gap, because it's allocated once at mount and
-  // the knobs move afterwards. The loop point doesn't have to sit at its end,
-  // though: only the first PLUCK_MS carries the hit and the rest is silence, so
-  // update() below turns the loop over wherever *this* setting's echoes have
-  // finished. Moving loopEnd is silence-to-silence — no reallocation mid-drag,
-  // and nothing to click.
+  // The buffer holds the worst-case gap, allocated once at mount while the knobs
+  // move afterwards. The loop point needn't sit at its end: only the first
+  // PLUCK_MS carries the hit, so update() below turns the loop over wherever this
+  // setting's echoes finish. Moving loopEnd is silence-to-silence — no
+  // reallocation mid-drag, nothing to click.
   buildSource(actx, { srcMode, guitar }) {
     const len = Math.round((GAP_MAX_MS / 1000) * SR);
     const hit =
@@ -254,8 +211,7 @@ export default {
         fb.gain.value = params.feedback;
         wet.gain.value = 1;
         // Re-space the plucks for the tail these knobs just asked for. Shortening
-        // the gap while the playhead is out in the silence past the new turnover
-        // wraps it there and then, which is only the next hit arriving early.
+        // the gap past the playhead just wraps it — the next hit arrives early.
         loopEnd = gapMs(params.time, params.feedback) / 1000;
         if (srcNode) srcNode.loopEnd = loopEnd;
       },

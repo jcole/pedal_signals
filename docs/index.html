@@ -1,69 +1,31 @@
 <!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- The tab says this only until a pedal is set — setPedal() in harness.js then
-     names the picked pedal here, since that's what the URL names too. This is
-     what's left when that never happens: a crawler that doesn't run the script,
-     or the moment before it does. So it says the one thing true of every pedal
-     the bench can show, in the same "site — what you're looking at" shape the
-     script writes and pedals.html uses. -->
+<!-- setPedal() overwrites this with the picked pedal's name; this is the fallback
+     before the script runs (or for a crawler that never runs it). -->
 <title>Pedal signals — see what a guitar pedal does to a signal</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./css/styles.css">
 
-<!-- The one thing on the page that says what the page IS. Everything below it
-     answers a question you only have once you know that — which pedal, which
-     knob, what the trace is doing — and none of it introduces itself, because
-     the rig is a rig: it shows, it doesn't explain. So this row explains, once,
-     and then gets out of the way. It stays ONE row (the lede sits beside the
-     title, not under it) for the same reason the family's line below does: the
-     header's height is what decides whether the lesson under the charts breaks
-     the fold, and a masthead that stacks costs the lesson its first line. -->
+<!-- The one thing on the page that says what the page IS; the rig below only
+     shows. Stays one row (lede beside the title, not under it) — a masthead that
+     stacks costs the lesson its first line under the fold. -->
 <header id="masthead">
   <h1 class="sitetitle">Pedal signals</h1>
-  <!-- Where to look, and it has to be re-aimed whenever the rig moves: this said
-       "in the middle panel, and in the note on the right" back when the rig was
-       three columns with the transfer curve in the middle. There is no middle
-       panel now — the pedal's math is a glyph in the rail, and the charts to the
-       right are the only thing that was ever the answer. -->
+  <!-- Where to look; re-aim it if the rig's layout moves. -->
   <p class="sitelede">A guitar pedal is a piece of math on a signal. Pick one, press
   play, and watch it work — the math on the left, what it does to your note on the
   right.</p>
   <!-- The way out to the catalog, opposite pedals.html's "← back to the bench":
-       same .catlink, same corner of the same header, so the two pages point at
-       each other from the same place. The bar below has a link to that page too,
-       but it's the family band's own name — it says "MODULATION family →", which
-       is what the pedal on the bench is an instance of and not an offer to see
-       the rest. Nothing on the bench said the rest existed.
-
-       "compare", not "every pedal", because of who reads it: someone who just
-       opened the picker, saw nine names, and closed it. To them a list of ALL
-       the names is the dropdown again, only longer. It isn't — it's every
-       family's rows in the same columns, which is the thing the picker can't do.
-       The picker finds you a pedal you can already name; comparing is how you
-       find one you can't.
-
-       No arrow, where the other two .catlinks have one. Theirs point across a
-       page at nothing in particular; this one had the GitHub mark 18px off its
-       right edge and pointed straight at it, which made the whole thing read as
-       a caption for the mark — "compare pedals →⃝". The arrow was there to say
-       "this goes somewhere" back when the link was a bare word, and the box says
-       that now. -->
+       same .catlink, same header corner. "compare", not "every pedal" — the
+       picker already lists the names; comparing is the thing it can't do. No
+       arrow: it would point straight at the GitHub mark 18px to its right and
+       read as a caption for it. -->
   <a class="catlink" href="./pedals.html">compare pedals</a>
-  <!-- Rides the slack at the end of the masthead's row: the lede is flex:1 and
-       asks for ~101ch of the 1233 the title leaves it, so this is spent out of
-       room that was already going empty.
-
-       New tab. Every other link on this site is somewhere else on this site;
-       this is the one that leaves, and leaving is not free here — the bench may
-       be mid-note, and navigating the tab away tears down the audio graph and
-       the pedal you'd set up to hear. Reading the source is a thing you do
-       alongside the demo, not instead of it.
-
-       The mark carries no text, so the name lives in aria-label (for a screen
-       reader, which has nothing else to announce) and title (for a pointer,
-       which gets no tooltip otherwise). The <svg> is hidden from both: it would
-       only make the link say its name twice. -->
+  <!-- New tab: it's the one link that leaves the site, and navigating away would
+       tear down the audio graph mid-note. The mark has no text, so its name lives
+       in aria-label and title; the <svg> is hidden from both to avoid saying it
+       twice. -->
   <a class="sitesrc" href="https://github.com/jcole/pedal_signals"
      target="_blank" rel="noopener"
      aria-label="Source on GitHub" title="Source on GitHub">
@@ -74,65 +36,30 @@
 </header>
 
 <!-- The picked pedal's row, in the catalog page's three columns and under the
-     same column names — but the PEDAL cell is the picker itself rather than a
-     printed name. The bench used to say "warble" twice: once in a picker on its
-     own row, and again in the row below describing what you'd picked. They were
-     one fact and one question, so they're one thing now — the row you're reading
-     is the row you change. The catalog page spends that same cell on a link INTO
-     here; this page spends it on the control that makes the choice. Same column,
-     same question, the instrument each page can answer it with.
-
-     What went with it: the family's band, which sat above this row so the
-     operation column could be read general → instance (y[n] = x[n]·m(t), then
-     this pedal's own). That reading is worth 59px on the catalog page, where
-     every family has one and the whole point is the comparison. Here it was a
-     preview of prose the lesson already writes out ("Like clipping, this pedal
-     has no memory…") — and it cost the lesson the fold to say it early. So the
-     family is a link now, one line, pointing at the page where its band still
-     stands. Which also, finally, says the word: MODULATION under a column headed
-     PEDAL never once told you it was a family. -->
+     same names — but the PEDAL cell is the picker itself: the row you're reading
+     is the row you change. The catalog page spends that cell on a link into here
+     instead. -->
 <div id="bar">
   <div id="lede">
-    <!-- The table: column names, the family, the pedal. Three columns, the same
-         three the catalog page has, and it ends here — what's beside it is not a
-         fourth one. -->
+    <!-- The table: three columns, the same the catalog page has; it ends here,
+         and what's beside it (.why) is not a fourth column. -->
     <div id="ledetable">
     <div id="ledehead"></div>
-    <!-- The family's band goes here, inserted by harness.js from the mounted view:
-         the same generic row the catalog page hangs each family's pedals off, in
-         the same columns, one altitude up. It's what makes the row below it read
-         as an instance rather than as a fact on its own — the formula over the
-         formula it's a case of, the family's one-liner over this pedal's answer to
-         it.
-
-         No empty host element for it, and that's not a saving: a wrapper would
-         make the band its child rather than this row's sibling, and the stylesheet
-         reaches for it as `.famhead + .catrow` — the air under the band is a fact
-         about these two being adjacent. Wrap it and the rule silently stops
-         matching, which is exactly what it did for an hour. -->
+    <!-- The family's band, inserted by harness.js from the mounted view — the
+         catalog's generic family row, one altitude up, so the row below reads as
+         an instance. No wrapper element: the stylesheet reaches for it as
+         `.famhead + .catrow`, so it must be this row's sibling, not a child. -->
     <div class="catrow">
-      <!-- The PEDAL cell: a toy pedal, and the picker. This row is two lines of
-           small text tall, which is the whole reason the play button isn't in it
-           — a 44px control sets the height of everything beside it, and the
-           lesson below the rig was paying for that. The second line arrived with
-           the note under the formula and cost about 12px; a button costs 44 and
-           buys the row nothing it doesn't already say.
-
-           The picture gets in on that rule rather than breaking it: it's 40px in
-           a row that's already 42, and it's absolutely positioned, so it sets the
-           height of nothing and the row costs exactly what it cost before. See
-           .pedalcell in the stylesheet for why out-of-flow isn't optional here,
-           and js/ui/art.js for why the thing is a toy and its knobs are dead.
-
-           Two elements, because mountPicker() owns #pedalpick and clears it —
-           the picture can't live inside the thing that wipes its own host. -->
+      <!-- The PEDAL cell: a toy pedal and the picker. Two elements because
+           mountPicker() owns #pedalpick and clears it, so the picture can't live
+           inside it. The art is absolutely positioned (see .pedalcell) so it adds
+           no height; js/ui/art.js says why it's a toy with dead knobs. -->
       <div class="pedalcell">
         <span id="pedalart" class="pedalart"></span>
         <div id="pedalpick"></div>
       </div>
-      <!-- The formula over its plain-English reading, the same stack the catalog
-           page's rows build (see pedalRow). The second line is what stops this
-           cell being addressed to people who already read tanh. -->
+      <!-- the formula over its plain-English reading, the catalog rows' stack (see
+           pedalRow) -->
       <span class="catcell">
         <code class="catop" id="benchop"></code>
         <span class="catnote" id="benchnote"></span>
@@ -140,49 +67,22 @@
       <span class="catwhat" id="benchwhat"></span>
     </div>
     </div>
-    <!-- Beside the table, and deliberately not in it. This is the family's word
-         about the pair of charts below — what the pedal leaves alone, which is
-         why the rig draws what it draws and not the panel you'd expect. It was a
-         column for about an hour and the column was wrong twice over: a sentence
-         has no general case and no instance, so it can't be a cell in a row whose
-         whole job is to be one or the other; and the name over it had to ask a
-         question ("why these charts") to make prose look like an answer. It's an
-         aside. Asides sit beside things.
-
-         It was also a paragraph on the tray above the charts before that, where
-         its two lines were two lines off the fold. Here it's in slack the row was
-         already wasting — see the stylesheet. Filled by harness.js from the
-         mounted family. -->
+    <!-- Beside the table, not in it: the family's word about the two charts below
+         — an aside, not a cell, and it sits in slack the row was already wasting
+         (see the stylesheet). Filled by harness.js from the mounted family. -->
     <p class="why" id="whytxt"></p>
   </div>
 </div>
 
-<!-- The rig — charts and the knobs under them — is one object, so it gets one
-     surface. The tray is what keeps the dark panels from butting straight up
-     against the white page; it also draws the line the lesson prose sits below. -->
+<!-- The rig (charts and the knobs under them) is one object on one surface; the
+     tray steps the dark panels off the white page. -->
 <div id="rig">
 <div id="grid">
-  <!-- No sentence here any more. "Why there are two charts, and why THESE two"
-       was a paragraph in this slot for a long time, and it was the one thing on
-       the rig addressed to a reader who can't read the charts yet — which is
-       exactly why it left. It's the band's fourth cell now, under a column name
-       that asks the question it answers (WHY THESE CHARTS), where it's read with
-       the rest of the row on the way down to the rig rather than in the tray the
-       charts are paying for by the pixel. The rig is instruments again, and the
-       page does the talking above it. -->
   <div class="stack">
-    <!-- Neither output panel is the same chart on every page, so neither one's
-         name is this file's to write: harness.js fills both from the mounted
-         family. This one is the waveform on clipping, where 13.5 ms of a 222 Hz
-         carrier is a wave you can read; the families whose span is sized for
-         something slower than the carrier draw the envelope here instead,
-         because at their zoom a waveform is a solid band.
-
-         The name comes FIRST in the header, ahead of the sentence, which is the
-         other half of the same fix as the .why above: a reader who doesn't know
-         what the chart is can't use a sentence about what it shows. So the panel
-         introduces itself, then speaks — on one line, because that's a label and
-         its reading rather than two stacked captions. -->
+    <!-- Neither output panel is the same chart on every page — harness.js fills
+         both names from the mounted family (waveform or envelope here, depending
+         on the family's zoom). Name first in the header, then the sentence: you
+         can't use a sentence about a chart you can't yet name. -->
     <div class="panel">
       <h3>
         <span class="ctype" id="timetech"></span>
@@ -191,20 +91,10 @@
       </h3>
       <canvas data-c="time"></canvas>
     </div>
-    <!-- Nothing between the panels. There was a caption here — "⇅ same signal —
-         envelope above, spectrum below" — from back when it was the only thing
-         on the rig explaining why there were two of these. The .why above is
-         that now, in a sentence, and the panels each name themselves in letters
-         you can't miss, so the caption had been reduced to reading those two
-         names back to you from the gap between them. What it uniquely said, "same
-         signal", the sentence says better by deriving the pair from one pedal.
-
-         The bottom panel isn't a spectrum on every page — only clipping's is.
-         So what it is, and the unit it plots in, are the view's words, not this
-         file's: harness.js fills both from the mounted family. The unit rides
-         inside the name rather than after the legend, where it used to read
-         "in vs out (dB)" and hang the unit off "out" — which is a trace, not an
-         axis. "SPECTRUM (dB)" attaches it to the thing it measures. -->
+    <!-- The bottom panel isn't a spectrum on every page (only clipping's is), so
+         its name and unit come from the view — harness.js fills both. The unit
+         rides inside the name ("SPECTRUM (dB)") so it attaches to the chart, not
+         to the "out" trace in the legend. -->
     <div class="panel">
       <h3>
         <span class="ctype"><span id="spectech"></span><span class="cunit" id="specunit"></span></span>
@@ -217,82 +107,39 @@
 </div>
 
 <div id="controls">
-  <!-- The transport, and the line under it is sharper than "these are buttons":
-       these are the only controls on the page that change nothing on a chart.
-       render() reads the source and the knobs; it has never read play, ↻ pluck,
-       or the blend — those three reach the AudioContext and stop. So they aren't
-       a stage of the chain, they're how you listen to it, and the decks below are
-       the model. Which is also why there's no OUTPUT deck: the only thing that
-       was ever in it was a level, and a level is this row's business.
-
-       That line holds for all three, but it doesn't make them one row. ↻ pluck
-       went down to the INPUT deck: of the three it's the only one that's a
-       property of the SOURCE rather than of the rig, which the code has always
-       said by hiding it on sine while play stays put. What's left up here is the
-       two that are true of every view — start it, and how much pedal you hear. -->
+  <!-- The transport: the controls that change nothing on a chart. render() reads
+       the source and the knobs, never play/blend — those reach the AudioContext
+       and stop, so they're how you listen, not a stage of the chain (hence no
+       OUTPUT deck). ↻ pluck went to the INPUT deck instead — it's the one that's
+       a property of the source, not the rig. -->
   <div id="railtop">
-    <!-- First, because it starts everything else, and big (60px — see the styles)
-         because it has two jobs at once. It used to have two sizes for them: an
-         88px slab lifted out over the centre chart to find it for you the first
-         time, which then retired into a 28px disc in that chart's caption bar.
-         There is no centre chart to lift a slab over now, and no caption bar to
-         retire into. One button, at the head of the rail, at a size that doesn't
-         need a slab to advertise it. -->
+    <!-- first, because it starts everything; big (60px) because it's the only
+         control on the tray -->
     <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
-    <!-- One knob where there were two. They were a dry level and a wet level,
-         which is a blend written as two numbers that are free to disagree:
-         nothing made them sum to anything, so moving between "hear the pedal"
-         and "hear your note" changed the LOUDNESS as well as the tone — the one
-         thing an A/B must not do. A crossfade can't: dry is whatever wet isn't.
-         dry/wet because that is what the knob is called on the box this page is
-         about.
-
-         The ends are the label, and there's no readout. `dry/wet 0.50` spent two
-         pieces of chrome to say less than `dry ——— wet` does: neither the caption
-         nor the number told you which way the handle goes, and 0.50 is a figure
-         you'd never read off or reproduce — it's a crossfade you set by ear, not
-         a delay time. Naming the ends says the direction, which is the only thing
-         about this control there was ever anything to say, and it buys the track
-         the width the caption and the number were holding. -->
+    <!-- A crossfade, one knob: a dry level and a wet level free to disagree would
+         change loudness across an A/B, the one thing it must not do. Ends as the
+         label, no readout — the direction is the only thing worth saying about a
+         blend you set by ear. -->
     <label class="blendctl">
       <span>dry</span>
       <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="dry/wet blend" title="0 is your note alone, 1 is the pedal alone">
       <span>wet</span>
     </label>
   </div>
-  <!-- The rail's decks are the chain, turned ninety degrees: what's going in,
-       what the pedal does to it, and — reading on into the charts to the right —
-       what comes out. The bars that used to label three columns caption the two
-       decks instead. No arrow between them: across a row of three it said the
-       columns were a sequence and not a set, which nothing else on that line
-       said; stacked, reading order says it for free.
-
-       Both bars are standing text, and INPUT / OPERATION is the parallel the
-       chain reading above depends on — two roles, neither of them a name. This
-       used to note that only this one was standing while #pedalgrp beside it was
-       rewritten by setPedal() on every pick; the bar over there stopped naming the
-       pedal, so there's no asymmetry left to explain and no id on it to explain
-       it with. Nothing selects this one either — it's here for the reader. -->
+  <!-- The rail's decks are the chain turned ninety degrees: input, operation, and
+       (reading on into the charts) output. Both bars are standing text — INPUT /
+       OPERATION are roles, not names, and nothing selects them. No arrow between
+       them: stacked, reading order already says "sequence". -->
   <div class="ctlcol">
     <div class="grp" id="ingrp">Input</div>
-    <!-- What's going in, at three carrier periods and with no axes on it. Not the
-         old input panel shrunk — that panel plotted spanSamples, which on
-         modulation is 1365 ms of a 222 Hz carrier and can only draw as a solid
-         band. This is a glyph: it says "a steady tone" or "a plucked note" and
-         claims nothing about how long. The axes are what made the old panel a lie
-         (a hardcoded 3 cycles under a 0–1365 ms label); take them away and
-         there's no span left to be wrong about.
-
-         On top, because that's where the pedal deck's curve is and where both
-         output panels put their trace: every deck in the rail reads picture
-         first, then the controls that shape it. -->
+    <!-- A glyph of what's going in — "a steady tone" or "a plucked note", three
+         carrier periods, no axes. Not the source panel shrunk: with a real span
+         label it was a lie (hardcoded 3 cycles under a 0–1365 ms axis). On top,
+         like the curve on the deck below — picture first, then its controls. -->
     <div class="ctl"><canvas class="glyph" data-c="srcglyph" aria-hidden="true"></canvas></div>
-    <!-- Everything about the signal going in: which source it is, and — when it's
-         the one source that has a beginning — the way back to that beginning.
-         play/stop is NOT the rest of that: it asks "is the rig running", which is
-         true of every view, so it stays on the tray with the blend. ↻ pluck can't
-         ask that, because half the time there's nothing for it to ask it about.
-         It sits beside the button that decides whether it exists at all. -->
+    <!-- The source and (for the source that has a beginning) the way back to it.
+         play/stop stays on the tray — it asks "is the rig running", true of every
+         view; ↻ pluck sits by the button that decides whether it exists. -->
     <div class="ctl">
       <span class="seg">
         <button class="srcbtn active" data-src="sine">sine</button>
@@ -301,50 +148,20 @@
       <button id="replay" hidden title="restart the note from the pluck">↻ pluck</button>
     </div>
   </div>
-  <!-- The rail's second deck is the pedal: what it does to the signal, and the
-       knobs that shape it. The canvas is the same drawCenter the catalog's
-       thumbnails call — the family's own curve, minus the axis labels, live on
-       the knobs directly under it.
-
-       The bar used to name the pedal — OVERDRIVE — and the argument was that INPUT
-       above is the generic thing that's always true, so this is the one with a
-       name to give. But the name was already given: the picker says it and the
-       PEDAL cell says it, both a few hundred pixels up, and this was the only bar
-       on the page repeating a word already on screen while adding nothing. What
-       the deck HOLDS is a formula, the curve that formula draws, and the terms
-       that shape it — which is an operation, not an identity. OPERATION also
-       restores the parallel the decks are built on (in, operation, and the charts
-       for what comes out), and it's the page's own word for this: the bench row
-       and the catalog both head this column with it. So the bar is standing text
-       now, like #ingrp — there's no pick that changes it.
-
-       The formula under it is the reinforcement the bar stopped giving: the deck
-       reads operation → the picture of it → its terms, which is the order rows.js
-       already argues for, and on the clipping family `drive` and `bias` are then
-       literally the knobs beneath. It's a line of its own and not part of the bar
-       because .grp is uppercase and letter-spaced, which would render this
-       `TANH(DRIVE·X + BIAS)` — a different string, since tanh isn't TANH and x
-       carries what X doesn't — and because modulation's is 35 characters and no
-       240px bar holds it.
-
-       Worth knowing what it does NOT do, so it isn't mistaken for broken: the
-       delay family's three pedals share one tech string, so this line doesn't move
-       when you pick across them (see rows.js, which says the same of the bench
-       cell). Its terms are also weakest there — `D` sits above a knob called time.
-
-       #centerctls stays its own element because buildControls() wipes it, and the
-       bar and the canvas can't live inside the thing that clears its own host. -->
+  <!-- The pedal deck: the operation, the curve it draws (the same drawCenter the
+       catalog thumbnails call), and the knobs that shape it. The bar is standing
+       text — OPERATION, a role, the page's own column head — not the pedal's name,
+       which the picker and PEDAL cell already give. The formula is a line of its
+       own, not part of the bar, because .grp's uppercase would render `tanh` as
+       `TANH` and no 240px bar holds modulation's 35 chars. #centerctls is its own
+       element because buildControls() wipes it. -->
   <div class="ctlcol" id="pedalcol">
     <div class="grp">Operation</div>
     <code class="ctl deckop" id="pedalop"></code>
     <div class="ctl"><canvas class="glyph glyph--curve" data-c="curve" aria-hidden="true"></canvas></div>
     <div id="centerctls"></div>
   </div>
-  <!-- Spans the columns; it's about the guitar button in the first. It used to
-       have a companion — "the vol sliders blend in vs out" — which was a caption
-       for two sliders that are now captioned by the decks they sit in: one under
-       INPUT, one under OUTPUT. The hint existed because in a row of three columns
-       both of them just said "vol" and only their position said which. -->
+  <!-- Spans the columns; it's about the guitar button in the first. -->
   <p class="hint ctlhint" id="gcredit" style="display:none">
     guitar input: a clean Stratocaster A3 (bridge pickup) from
     <a href="https://egfxset.github.io/">EGFxSet</a> — Pedroza, Meza &amp; Roman,
@@ -372,25 +189,18 @@
   import delay from "./js/ui/delay.js";
   import modulation from "./js/ui/modulation.js";
 
-  // Every pedal family's view, keyed by its `id` — the heading it gets in the
-  // picker. Add a new family here and it shows up in the picker and becomes
-  // linkable, no other page changes needed.
+  // Add a family here and it shows up in the picker and becomes linkable.
   const EFFECTS = [clipping, delay, modulation];
 
-  // The URL names a pedal and nothing else. Pedal ids are unique across the whole
-  // catalog (that's what PEDALS in pedals/index.js keys on), so a pedal names its
-  // own family — and since the picker is one list over that catalog, picking a
-  // family without a pedal isn't a place you can be. May be absent or wrong: an id
-  // nobody recognizes falls back rather than failing.
+  // The URL names a pedal, whose id is unique across the catalog, so it names its
+  // own family. May be absent or wrong — an unrecognized id falls back.
   const asked = () => new URLSearchParams(location.search).get("pedal");
   const urlFor = (pedal) => `?pedal=${pedal}`;
   const viewFor = (pedal) =>
     EFFECTS.find((v) => v.pedals.some((p) => p.id === pedal)) ?? EFFECTS[0];
 
-  // A pick pushes, so back undoes it. Landing on a family that's already up (back
-  // across a pedal pick, or a pick within the family) moves the labels and knobs
-  // only — remounting would rebuild the family's audio chain under a note that's
-  // still playing, to arrive at the same place.
+  // A pick pushes, so back undoes it. If the family is already up, move labels and
+  // knobs only — remounting would rebuild the audio chain under a playing note.
   let current = null;
   function show(v, pedalId) {
     const p = v.pedals.find((x) => x.id === pedalId) ?? v.pedals[0];

@@ -1,43 +1,33 @@
-// Modulation-family VIEW (tremolo / chop / warble): only the UI. What a
-// modulation pedal IS — the LFO multiplier m(t) = 1 − d/2 + d/2·shape(2π·rate·t),
-// and how it processes a buffer — lives on the ModulationPedal instances in
-// pedals/. This module renders them: the LFO-curve center panel, the wet-vs-dry
-// envelope panel, the sideband spectrum, the rate/depth controls, and the live
-// gain-modulation audio graph. The held-peak envelope and the FFT come from
-// dsp.js; the LFO curve comes from the pedal's own curve(params) (that one's the
-// modulation family's own DSP).
+// Modulation-family VIEW (tremolo / chop / warble): only the UI. The pedal model
+// (LFO multiplier m(t) = 1 − d/2 + d/2·shape(2π·rate·t), buffer processing) lives
+// on ModulationPedal in pedals/; this module renders the LFO-curve panel, the
+// wet-vs-dry envelope panel, the sideband spectrum, the rate/depth controls, and
+// the live gain-modulation graph. Held-peak envelope + FFT from dsp.js; LFO curve
+// from the pedal's own curve(params).
 import { envelopeHeld, F0, SR, specDb, windowed } from "../dsp.js";
 import { MODULATIONS, NMOD, SPANMS_MOD } from "../pedals/index.js";
 
-// drawCenter plots the LFO from its formula (like the clipping family's transfer
-// curve) rather than from the analysis buffer — a fixed window is easier to read
-// than one sized for the slowest rate on the slider.
+// drawCenter plots the LFO from its formula, not the analysis buffer — a fixed
+// window reads easier than one sized for the slowest rate on the slider.
 const CURVE_SPAN_MS = 600;
 
-// The spectrum panel's half-width, in hertz either side of the carrier. Clipping
-// plots 0–3600 Hz because that's where clipping puts things — 2f₀, 3f₀, 4f₀. This
-// family puts them at f₀ ± rate, which on that axis is one pixel wide, indexed
-// under the carrier and invisible. So the zoom isn't a drawing detail here, it's
-// the lesson the aside has always been making in words: a few hertz either side
-// of the note, not up in the harmonics. 60 Hz is wide enough for chop's odd
-// sidebands (rate, 3·rate, 5·rate…) to spread out at the rates it starts at, and
-// tight enough that tremolo's ±4 Hz pair still reads as a pair.
+// Spectrum half-width, in hertz either side of the carrier. This family puts
+// energy at f₀ ± rate, one pixel wide under the carrier on clipping's 0–3600 Hz
+// axis, so it needs a zoom. 60 Hz is wide enough for chop's odd sidebands (rate,
+// 3·rate, 5·rate…) to spread out and tight enough that tremolo's ±4 Hz pair still
+// reads as a pair.
 const FSPAN_HZ = 60;
 
 export default {
   id: "modulation",
   navLabel: "modulation",
-  // The mirror of clipping's, deliberately: same sentence shape, opposite claim.
-  // That's the pair being a lesson rather than a layout — these two families are
-  // each exactly what the other isn't (shape vs level, one sample vs one clock),
-  // and read one after the other the two cells say it before either lesson does.
-  // Which is a thing the column can do and the paragraph couldn't: these are the
-  // same cell on two mounts, so switching families swaps one sentence in place
-  // against a row that's otherwise identical.
+  // The mirror of clipping's why: same sentence shape, opposite claim (shape vs
+  // level). Same cell on two mounts, so switching families swaps one sentence in
+  // place against an otherwise identical row.
   why: `This pedal leaves the shape of a cycle alone; it changes how loud the note
     is, over seconds.`,
-  // Half, which on this family is a real pedal's mix knob: the dry path is
-  // unmodulated, so blending it back in is what shallows the pulse.
+  // Half — a real pedal's mix knob: the dry path is unmodulated, so blending it
+  // back shallows the pulse.
   blendDefault: 0.5,
   pedals: MODULATIONS,
   // The top panel is the envelope, not the harness's waveform — see drawTime.
@@ -120,26 +110,23 @@ export default {
     H.titles(g, F, "gain", "time (ms)");
   },
 
-  // Output TOP panel: the wet envelope (orange) tracing the chop over the dry one
+  // Output TOP panel: the wet envelope (orange) tracing the chop over the dry
   // (grey) — the row of pulses the LFO carves into the tone. On the sine source
   // the dry envelope is flat, so the pulses are the only thing moving; on the
-  // guitar it decays, and the chop rides that decay.
+  // guitar it decays and the chop rides that decay.
   //
-  // This overrides the harness's dry-vs-wet waveform rather than sitting under it
-  // (where it used to, one panel down). That waveform plots spanSamples — 65536
-  // here, because the buffer is sized for the LFO — into ~400 px, which is 166
-  // samples a pixel against a carrier period of 215. At 1.3 px a cycle a polyline
-  // isn't a wave, it's a filled band, and the only thing legible about it was its
-  // outline: this curve, drawn badly, in the panel above the one drawing it well.
+  // Overrides the harness's dry-vs-wet waveform: at 65536 samples into ~400 px
+  // (166 samples/px against a 215-sample carrier period) a polyline is a filled
+  // band, not a wave.
   drawTime(F, inp, out, _pedal, _src, H) {
     const { g, L, R, T, B } = F;
     const { DRY, WET } = H.colors;
     const span = out.length;
     const sx = (i) => L + (i / span) * (R - L),
       sy = (v) => B - Math.min(1, v) * (B - T - 4);
-    // Held, not released: the carrier under this family is a sustained tone, and
-    // a follower that coasts between its peaks draws its own 18% ripple over
-    // every LFO curve here. See dsp.js — the delay page wants the other one.
+    // Held, not released: the carrier is a sustained tone, and a follower that
+    // coasts between its peaks draws its own 18% ripple over every LFO curve here.
+    // See dsp.js — the delay page wants the other one.
     const de = envelopeHeld(inp),
       we = envelopeHeld(out);
     const xs = new Array(span);
@@ -154,20 +141,15 @@ export default {
   },
 
   // Output BOTTOM panel: the carrier and the sidebands multiplication puts either
-  // side of it, dry (grey) against wet (orange). The page has been promising this
-  // chart in prose since the lesson was written — the aside's "the spectrum panel
-  // shows the line smearing into a little cluster", tremolo's "sidebands at
-  // f ± rate" — and there has never been a spectrum panel to look at. This is it.
+  // side of it, dry (grey) against wet (orange).
   //
-  // Windowed, unlike the carrier's own maths would need: the sine sits at exactly
-  // 304 cycles in NMOD so it lands dead on a bin, but the OUTPUT is only periodic
-  // in the buffer when rate·NMOD/SR is a whole number, and at 4 Hz that's 5.46.
-  // Raw, the leak from that would bury the sidebands it's meant to show.
+  // Windowed: the OUTPUT is only bin-periodic when rate·NMOD/SR is whole, and at
+  // 4 Hz that's 5.46 — raw, the leak would bury the sidebands it's meant to show.
   //
-  // Each spectrum is normalized to its own peak (specDb), as clipping's is, so
-  // both carriers sit at 0 dB and the gap between the traces is only ever the new
-  // energy. What that costs is the 3 dB the carrier itself gives up at depth 0.6
-  // — real, and the panel above is already the one reporting level.
+  // Each spectrum normalized to its own peak (specDb), as clipping's is, so both
+  // carriers sit at 0 dB and the gap between traces is only the new energy — at
+  // the cost of the 3 dB the carrier gives up at depth 0.6 (the panel above is
+  // already the one reporting level).
   drawSpec(F, inp, out, _pedal, _src, H) {
     const { g, L, R, T, B } = F;
     const { DRY, WET, GRID } = H.colors;
@@ -178,8 +160,8 @@ export default {
       wet = specDb(windowed(out));
     const sx = (f) => L + ((f - F0 + FSPAN_HZ) / (2 * FSPAN_HZ)) * (R - L),
       sy = (db) => T + ((5 - Math.max(-80, db)) / 85) * (B - T);
-    // The carrier's own gridline. Everything on this panel is read as an offset
-    // from it, and it's the one frequency here that isn't the pedal's doing.
+    // The carrier's own gridline — everything here is read as an offset from it,
+    // and it's the one frequency that isn't the pedal's doing.
     g.strokeStyle = GRID;
     g.lineWidth = 1;
     g.beginPath();
@@ -205,10 +187,9 @@ export default {
     H.titles(g, F, "dB", "hertz from the carrier");
   },
 
-  // live audio: an LFO oscillator drives a gain node's .gain AudioParam directly
-  // (lfoGain scales it to depth/2, offset re-centers it to 1−depth/2) — the same
-  // 1 − d/2 + d/2·shape(t) equation the analysis side runs, just computed by the
-  // audio graph's own clock instead of sampled once per render.
+  // live audio: an LFO drives a gain node's .gain AudioParam (lfoGain scales it to
+  // depth/2, offset re-centers to 1−depth/2) — the same 1 − d/2 + d/2·shape(t)
+  // equation, computed by the audio clock instead of sampled once per render.
   buildAudio(actx, inGain, _H) {
     const trem = actx.createGain(),
       lfo = actx.createOscillator(),
@@ -227,8 +208,8 @@ export default {
         lfoGain.gain.value = params.depth / 2;
         offset.offset.value = 1 - params.depth / 2;
       },
-      // both are started above, so both must be stopped when the family is
-      // swapped out — a disconnected oscillator still runs.
+      // both started above, so both must be stopped on swap-out — a disconnected
+      // oscillator still runs.
       dispose() {
         lfo.stop();
         offset.stop();

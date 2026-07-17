@@ -1,21 +1,14 @@
 // ---- modulation family (tremolo / chop / warble) ----------------------------
-// The first LTV pedal: still memoryless like clipping (no y[n-D] feedback), but
-// the multiplier now depends on TIME, not on the sample it's touching:
-// y[n] = x[n]·m(t), m(t) = (1 − depth/2) + (depth/2)·shape(2π·rate·t). shape is
-// bipolar (sine/square/triangle, each in [-1, 1]) so m rides between 1−depth
-// (deepest cut) and 1 (untouched) — the same range a native LFO oscillator
-// produces, which is what the live audio graph drives directly. Tremolo, chop,
-// and warble are three PEDALS built from this one mechanism — the same
-// relationship ClippingPedal has to overdrive/distortion/fuzz — differing only
-// in LFO shape and where rate/depth start.
+// The first LTV pedal: memoryless like clipping, but the multiplier depends on
+// TIME, not the sample: y[n] = x[n]·m(t), m(t) = (1 − depth/2) + (depth/2)·
+// shape(2π·rate·t). shape is bipolar (sine/square/triangle, each in [-1, 1]) so m
+// rides between 1−depth (deepest cut) and 1 (untouched) — the range a native LFO
+// oscillator produces. Three pedals, differing only in LFO shape and knob starts.
 import { F0, GOFF, SR } from "../dsp.js";
 import { Pedal } from "./base.js";
 
-// ~1.37 s of 48 kHz audio (power of two, though nothing here needs the FFT — the
-// modulation family's output panel draws envelopes, not a spectrum). Long enough
-// to show several cycles at the rates these pedals start at; wind the rate slider
-// down to its slowest and it holds under one, which the envelope panel shows
-// honestly as a single slow swell.
+// ~1.37 s of 48 kHz audio (power of two). Long enough to show several cycles at
+// the rates these pedals start at, down to under one at the slowest rate.
 export const NMOD = 65536;
 export const SPANMS_MOD = (NMOD / SR) * 1000;
 
@@ -29,10 +22,9 @@ export class ModulationPedal extends Pedal {
     Object.assign(this, { fn, waveType });
   }
 
-  // A steady tone, at a fixed pitch regardless of buffer length (unlike the base
-  // sine, which packs an exact cycle count into n — here n is sized for the LFO,
-  // not the carrier, so the carrier's own frequency must stay put). Guitar mode
-  // takes a mid-note slice long enough to carry the same LFO cycles.
+  // A steady tone at fixed pitch regardless of buffer length: n is sized for the
+  // LFO, not the carrier, so the carrier frequency must stay put (unlike the base
+  // sine, which packs an exact cycle count into n). Guitar mode takes a mid-note slice.
   genInput({ srcMode, guitar, n }) {
     const inp = new Float64Array(n);
     const guitarOn = srcMode === "guitar" && guitar;
@@ -54,8 +46,8 @@ export class ModulationPedal extends Pedal {
     };
   }
 
-  // out = x[n]·m(n/SR); no peak-match (match=1) — the whole point is that the
-  // volume itself visibly rises and falls, not that it gets normalized away.
+  // out = x[n]·m(n/SR); no peak-match (match=1) — the volume must visibly rise
+  // and fall, not be normalized away.
   process(inp, params) {
     const n = inp.length,
       out = new Float64Array(n),
@@ -66,19 +58,16 @@ export class ModulationPedal extends Pedal {
 }
 
 // ---- the modulation family's LFO shapes -------------------------------------
-// Each bipolar in [-1, 1], same convention a native OscillatorNode outputs, so
-// the live audio graph's `lfo.type` can match the pedal's own shape by name.
+// Each bipolar in [-1, 1], matching OscillatorNode so `lfo.type` can match by name.
 export const sineShape = (phase) => Math.sin(phase);
 export const squareShape = (phase) => Math.sign(Math.sin(phase)) || 1;
-// a triangle wave built from a folded sine — smoother ramps than the square,
-// slower-feeling than the sine's rounded top.
+// triangle from a folded sine
 export const triangleShape = (phase) =>
   (2 / Math.PI) * Math.asin(Math.sin(phase));
 
-// Same equation throughout (y[n] = x[n]·m(t)); these differ in LFO shape and
-// where rate/depth start. Tremolo leads with the classic sine chop; chop pushes
-// rate and depth hard for an on/off gate; warble is slow and shallow, closer to
-// a wobble than a cut.
+// Same equation throughout; these differ in LFO shape and knob starts. Tremolo =
+// classic sine; chop pushes rate/depth hard for an on/off gate; warble is slow
+// and shallow.
 export const MODULATIONS = [
   new ModulationPedal({
     id: "tremolo",
@@ -105,8 +94,7 @@ export const MODULATIONS = [
     depth: 0.95,
     fn: squareShape,
     waveType: "square",
-    // No real box to suggest — chop is a square-wave tremolo, which is a setting,
-    // not a product. Same chassis, its own colour.
+    // No real box — chop is a square-wave tremolo, a setting not a product.
     art: { shape: "box", hue: "#54507e", knobs: 3 },
   }),
   new ModulationPedal({
@@ -120,8 +108,7 @@ export const MODULATIONS = [
     depth: 0.35,
     fn: triangleShape,
     waveType: "triangle",
-    // The Boss VB-2 vibrato, which is the pedal a player looking for "warble"
-    // would actually pick up: pale blue, three knobs.
+    // The Boss VB-2 vibrato: pale blue, three knobs.
     art: { shape: "box", hue: "#6f9ec9", knobs: 3 },
   }),
 ];

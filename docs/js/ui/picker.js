@@ -1,18 +1,6 @@
-// One picker for the whole catalog. It replaces the two switchers that used to
-// split this job — a family nav in the header, a pedal segment in the PEDAL
-// label — because they answered the wrong question. A visitor arrives wanting a
-// pedal ("show me chorus"), not a math class, and the two-step forced them to
-// already know which family their pedal lived in before they could look for it.
-//
-// The families don't disappear, they become the list's headings. That's the
-// point rather than the decoration: someone who searches "reverb" and lands on
-// ambient under DELAY has been taught the page's actual thesis — that the pedal
-// you know is an instance of a mechanism — without reading a word of prose. The
-// taxonomy teaches on the way to the answer.
-//
-// Order is never ranked, only filtered: the catalog's own order is the teaching
-// order (see each family's file), so a search narrows the list without ever
-// reshuffling it out of the sequence the lesson intends.
+// One picker for the whole catalog. Families become the list's headings, so a
+// search surfaces the family a pedal belongs to. Order is never ranked, only
+// filtered: the catalog's own order is the teaching order.
 //
 // mountPicker(host, {families, onPick}) -> {select(pedalId)}
 // `families` are the view modules ({id, navLabel, pedals}); onPick(pedalId)
@@ -20,8 +8,8 @@
 // other way (a cold load, a back/forward) and deliberately does NOT call back.
 
 export function mountPicker(host, { families, onPick }) {
-  // Every pedal on the page, each still knowing its family. This is the list
-  // the picker searches; `families` order == catalog order == lesson order.
+  // Every pedal on the page, each still knowing its family; `families` order ==
+  // catalog order == lesson order.
   const entries = families.flatMap((f) => f.pedals.map((p) => ({ p, f })));
 
   host.innerHTML = "";
@@ -30,12 +18,7 @@ export function mountPicker(host, { families, onPick }) {
   btn.type = "button";
   btn.setAttribute("aria-haspopup", "listbox");
   btn.setAttribute("aria-expanded", "false");
-  // The pedal's name and nothing else. The button used to gloss it with the
-  // family too ("overdrive clipping"), from back when this row was the only
-  // place either fact appeared. The row it now sits in has a FAMILY column
-  // saying "clipping →" a few inches to the right, so the gloss was the same
-  // word twice — and the column is the better half of the pair, because it's
-  // named, and because it goes to what the word means.
+  // The pedal's name and nothing else — the row's FAMILY column names the family.
   const btnPed = mk("span", "pickped");
   const caret = mk("span", "pickcar");
   caret.textContent = "▾";
@@ -62,9 +45,8 @@ export function mountPicker(host, { families, onPick }) {
   let current = entries[0];
   let active = null; // keyboard cursor; an entry, or null when nothing matches
 
-  // The haystack: the label, the id, the family's name, and the aliases the
-  // pedal answers to. Family included on purpose — "delay" should surface the
-  // whole delay family, not just the pedals with "delay" in their alias list.
+  // The haystack: label, id, family name, aliases. Family included so "delay"
+  // surfaces the whole delay family, not just pedals with it in their aliases.
   const hay = ({ p, f }) =>
     [p.label, p.id, f.navLabel, ...(p.search ?? [])].join(" ").toLowerCase();
   const matches = (q) =>
@@ -80,16 +62,9 @@ export function mountPicker(host, { families, onPick }) {
     for (const f of families) {
       const mine = hits.filter((e) => e.f === f);
       if (!mine.length) continue; // a family with no hits sits this search out
-      // A real group wrapping its options, not a heading with loose options
-      // after it. The two look identical, but only one is legible to a screen
-      // reader, and the family is the payload here — search "vibrato", learn the
-      // pedal you wanted is a modulation. Left flat, that lesson was drawn on the
-      // screen and nowhere else: the options announced as "warble, 1 of 1" and
-      // the heading never came up at all.
-      //
-      // The group's aria-label carries the family name, so the visible heading is
-      // decoration and is marked as such — otherwise the name lands in the
-      // accessibility tree twice, once as the group and once as stray text.
+      // A real group (role=group + aria-label) wrapping its options, so a screen
+      // reader announces the family. The visible heading is aria-hidden
+      // decoration, or the name lands in the accessibility tree twice.
       const grp = mk("li", "pickgroup");
       grp.setAttribute("role", "group");
       grp.setAttribute("aria-label", f.navLabel);
@@ -116,9 +91,8 @@ export function mountPicker(host, { families, onPick }) {
       }
       list.appendChild(grp);
     }
-    // The empty state names the query. This page's catalog is a work in
-    // progress, so "we haven't built that one" is a real answer — and a truer
-    // one than an empty box, which reads as a broken search.
+    // The empty state names the query: this catalog is a work in progress, so
+    // "not built yet" is a real answer, truer than an empty box.
     empty.hidden = hits.length > 0;
     empty.textContent = `no pedal matches “${search.value.trim()}” — not built yet?`;
     search.setAttribute(
@@ -146,11 +120,9 @@ export function mountPicker(host, { families, onPick }) {
     btnPed.textContent = current.p.label;
   }
 
-  // `refocus` is for closes the user drove from the keyboard — Escape, or landing
-  // a pick — where focus has to come back to the button or it falls on the floor.
-  // A close caused by clicking elsewhere must NOT refocus: focus has already gone
-  // where the user pointed it, and pulling it back would yank them off the knob
-  // they just reached for.
+  // `refocus` is for keyboard-driven closes (Escape, landing a pick), where focus
+  // must return to the button. A close from clicking elsewhere must NOT refocus:
+  // focus already went where the user pointed it.
   function setOpen(v, refocus = false) {
     if (open === v) return;
     open = v;
@@ -184,18 +156,11 @@ export function mountPicker(host, { families, onPick }) {
     setActive(hits[(i + d + hits.length) % hits.length]);
   }
 
-  // Keep focus where it is, the same trick the options use above, and for the
-  // same reason: this button's click has to survive the blur that precedes it.
-  // Safari doesn't focus a button when you click it, so with the popup open the
-  // mousedown blurs the search field, focusout closes the popup, and the click
-  // then lands on an `open` that already reads false and reopens what the blur
-  // just shut — a button that visibly does nothing. Chrome and Firefox focus the
-  // button, so relatedTarget stays inside the host and none of it happens, which
-  // is why this needs webkit in the run to stay fixed.
-  //
-  // Nothing is lost by refusing the focus: setOpen() already places focus
-  // deliberately in both directions — the search field on open, the button on
-  // close — so it never depends on where the click would have put it.
+  // Keep focus where it is (same as the options above): Safari doesn't focus a
+  // button on click, so with the popup open the mousedown blurs the search,
+  // focusout closes the popup, and the click reopens what the blur just shut — a
+  // button that does nothing. setOpen() places focus deliberately in both
+  // directions, so refusing the focus here loses nothing.
   btn.onmousedown = (ev) => ev.preventDefault();
   btn.onclick = () => setOpen(!open, true);
   btn.onkeydown = (ev) => {
@@ -221,24 +186,19 @@ export function mountPicker(host, { families, onPick }) {
       setOpen(false, true);
     }
   };
-  // Clicking away is a dismissal, not a choice.
-  //
-  // Test the event's relatedTarget — where focus is GOING — and not
-  // document.activeElement. During focusout the new element hasn't taken focus
-  // yet, so activeElement reads as <body>, which is outside the host: opening the
-  // popup moves focus from the button to the search field, that move fires
-  // focusout, and the handler would close the popup it just opened. The bug looks
-  // like a dead button. relatedTarget is the only thing here that knows the
-  // difference between moving within the picker and leaving it.
+  // Clicking away is a dismissal, not a choice. Test relatedTarget (where focus is
+  // GOING), not document.activeElement: during focusout activeElement reads as
+  // <body> (outside the host), so opening the popup would fire focusout and close
+  // the popup it just opened.
   host.addEventListener("focusout", (ev) => {
     if (!host.contains(ev.relatedTarget)) setOpen(false);
   });
 
   label();
   return {
-    // Reflect state the page arrived at some other way — a cold ?pedal= load, or
-    // a back/forward. Silent by design: the URL is already right, and calling
-    // onPick here would push a duplicate entry onto the history it came from.
+    // Reflect state the page arrived at some other way (a cold ?pedal= load, or
+    // back/forward). Silent by design: the URL is already right, and onPick here
+    // would push a duplicate history entry.
     select(pedalId) {
       const hit = entries.find((e) => e.p.id === pedalId) ?? entries[0];
       current = hit;

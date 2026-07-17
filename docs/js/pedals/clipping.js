@@ -1,16 +1,13 @@
 // ---- clipping family (overdrive / distortion / fuzz) -----------------------
-// The transfer curve IS the pedal. Every instance shares the same two controls --
-// drive (gain into the knee -> harmonics) and bias (offset -> breaks the odd
-// symmetry, so even harmonics appear; bias=0 -> odd only) -- and differs only in
-// the knee SHAPE. Each fn is PURE: (x, drive, bias) -> y.
+// The transfer curve IS the pedal. Two controls: drive (gain into the knee ->
+// harmonics) and bias (offset -> breaks odd symmetry, so even harmonics appear;
+// bias=0 -> odd only). Instances differ only in knee SHAPE. Each fn is PURE.
 import { shapeSignal } from "../dsp.js";
 import { Pedal } from "./base.js";
 
 export class ClippingPedal extends Pedal {
-  // Each pedal starts the drive knob where its own knee reads clearest — a fuzz
-  // wants slamming, an overdrive wants to sit on the edge of breakup. bias is
-  // deliberately absent: it starts centred for every pedal, and moving it is the
-  // user's experiment, not the pedal's identity.
+  // Only drive is a default (each pedal starts it where its knee reads clearest);
+  // bias is deliberately absent, so it starts centred and moving it is the user's.
   constructor({ drive, fn, ...opts }) {
     super(opts);
     Object.assign(this, { drive, fn });
@@ -30,10 +27,8 @@ export class ClippingPedal extends Pedal {
   }
 }
 
-// Adding a pedal = one entry here. Same knee-shape lesson, three shapes: soft,
-// rounded knee (tanh) = overdrive; hard corner that flattens to the rails (clip)
-// = distortion, so the wave squares off; that same corner driven harder with
-// lopsided rails = fuzz (near-square, strong even + odd harmonics).
+// Three knee shapes: soft/rounded (tanh) = overdrive; hard corner to the rails
+// (clip) = distortion; that corner driven harder with lopsided rails = fuzz.
 export const CLIPPING = [
   new ClippingPedal({
     id: "overdrive",
@@ -44,9 +39,7 @@ export const CLIPPING = [
     whatChanges: "harmonics roll off gently",
     drive: 6,
     fn: (x, drive, bias) => Math.tanh(drive * x + bias),
-    // The Boss OD-1: mustard, and the rare famous pedal with only two knobs
-    // (level and overdrive, no tone). Two here is the real box's count, not a nod
-    // to drive/bias — see the `art` note in base.js.
+    // The Boss OD-1: mustard, two knobs (level, overdrive — no tone).
     art: { shape: "box", hue: "#d8a83c", knobs: 2 },
   }),
   new ClippingPedal({
@@ -62,9 +55,7 @@ export const CLIPPING = [
     art: { shape: "box", hue: "#e2622a", knobs: 3 },
   }),
   // Rails clip at different levels (+1 vs -0.6): asymmetry like a real transistor
-  // fuzz -> strong even AND odd harmonics, and a visibly lopsided curve. Its
-  // drive starts highest of the three, which slams it near-square on arrival.
-  // bias still slides it for even more.
+  // fuzz -> strong even AND odd harmonics. Highest drive of the three.
   new ClippingPedal({
     id: "fuzz",
     search: ["fuzz face", "big muff", "octavia"],
@@ -74,9 +65,7 @@ export const CLIPPING = [
     whatChanges: "strong even harmonics as well as odd",
     drive: 10,
     fn: (x, drive, bias) => Math.max(-0.6, Math.min(1, drive * x + bias)),
-    // The Fuzz Face, and the one pedal here that breaks the chassis: its
-    // enclosure is round, which makes it the only icon in the catalog you could
-    // name with the colour taken away.
+    // The Fuzz Face: round enclosure, the one pedal here that breaks the chassis.
     art: { shape: "round", hue: "#1f6ea8", knobs: 2 },
   }),
 ];

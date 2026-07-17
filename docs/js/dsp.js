@@ -1,9 +1,6 @@
 // Generic signal-analysis + IO core, shared by every effect module and the Node
-// tests. Nothing in here touches the DOM, canvas, or Web Audio — every function
-// is a plain data-in / data-out transform, so it runs identically in a browser
-// and under `node --test`. The per-pedal DSP each effect is built from lives in
-// pedals/; the UI/audio/canvas glue lives in ui/ — the harness (ui/harness.js)
-// and the per-family view modules (ui/clipping.js, ui/delay.js, …).
+// tests. Pure data-in/data-out transforms, no DOM/canvas/Web Audio, so it runs
+// identically in a browser and under `node --test`.
 
 // ---- constants -------------------------------------------------------------
 export const SR = 48000;
@@ -17,9 +14,8 @@ export const GOFF = Math.round(0.1 * SR); // analysis slice: 0.1 s in — past t
 export const MSMAX = (CYCLES / F0) * 1000; // width of the time panels, in ms
 
 // ---- WAV parsing / normalization -------------------------------------------
-// A real EGFxSet clean note (Stratocaster, bridge pickup, A3 ≈ 220 Hz). Parsed
-// straight from the WAV so the analysis panels have true 48 kHz samples without
-// needing an AudioContext (which only exists after the user hits "start audio").
+// A real EGFxSet clean note (Stratocaster, bridge pickup, A3 ≈ 220 Hz), parsed
+// straight from the WAV so panels get true 48 kHz samples without an AudioContext.
 export function parseWav(buf) {
   const dv = new DataView(buf);
   let i = 12,
@@ -62,9 +58,8 @@ export function parseWav(buf) {
   return out;
 }
 
-// Peak-normalize to just under full scale so the recorded note hits the pedal's
-// transfer curve at the same amplitude as the sine (which is generated at 1.0).
-// Scales the whole buffer by one factor -> preserves the note's own dynamics.
+// Peak-normalize to just under full scale so the recorded note hits the transfer
+// curve at the same amplitude as the sine. One factor -> preserves note dynamics.
 export function normalize(sig, target = 0.98) {
   let pk = 0;
   for (let i = 0; i < sig.length; i++) {
@@ -79,12 +74,9 @@ export function normalize(sig, target = 0.98) {
 }
 
 // ---- waveshaping engine ----------------------------------------------------
-// Apply a bound per-sample transfer curve `fn` (x -> y) to an input buffer, then
-// condition the output as the demo does: remove the DC offset a bias introduces
-// (a coupling cap), then compute the gain that peak-matches the wet output to the
-// input, so at equal volumes only timbre changes, not level. Generic — `fn` is
-// any curve, so this runs any waveshaping pedal; the curves live in pedals/.
-// Returns the centered output plus the two scalars the demo/audio graph need.
+// Apply per-sample transfer curve `fn` (x -> y), then remove the DC a bias
+// introduces (coupling cap) and peak-match wet output to input, so at equal
+// volume only timbre changes. Returns centered output plus outDc and outMatch.
 export function shapeSignal(inp, fn) {
   const len = inp.length,
     out = new Float64Array(len);
@@ -109,27 +101,14 @@ export function shapeSignal(inp, fn) {
 }
 
 // ---- envelope --------------------------------------------------------------
-// Two followers, because the two families that draw envelopes feed them opposite
-// signals and a follower can only be right about one of them.
-//
-// Both trace the top of |sig|, and the choice between them is the choice of what
-// to do BETWEEN the carrier's peaks — |sig| touches its true envelope only twice
-// a cycle (every ~2.2 ms at F0) and is below it the rest of the time. envelope()
-// coasts down from the last peak; envelopeHeld() holds it. Coasting is right when
-// the signal really is dying away and wrong when it isn't; holding is the reverse.
-// Pick by the signal, not by the panel: a transient wants envelope(), a sustained
-// tone wants envelopeHeld().
+// Two followers, because |sig| touches its true envelope only twice a cycle
+// (~2.2 ms at F0): envelope() coasts down between peaks, envelopeHeld() holds.
+// Transients want envelope(); a sustained tone wants envelopeHeld().
 
-// A peak-follower envelope: instant attack, exponential release. Traces the top
-// of |sig| so a train of separated echoes reads as a row of decaying humps even
-// when the raw waveform is a dense scribble. Pure, single pass, O(n).
-//
-// For TRANSIENTS — the delay family's plucks. The release has to be quick enough
-// to fall with the hit it's tracing (9 ms against the pluck's own 12 ms decay, so
-// the panel reports the pluck and not the follower: slow this to 25 ms and the
-// humps decay in 25 ms no matter what the pluck does, which would make the echo
-// page's whole subject an artifact of its drawing code). Quick release is also
-// exactly why this ripples ~18 % on a sustained tone — see envelopeHeld().
+// Peak-follower: instant attack, exponential release. Pure, single pass, O(n).
+// For TRANSIENTS — the delay family's plucks. Release (9 ms) must fall with the
+// pluck's own 12 ms decay, else the humps decay at the follower's rate, not the
+// pluck's. That quick release is why this ripples ~18 % on a sustained tone.
 export function envelope(sig, releaseMs = 9) {
   const n = sig.length,
     e = new Float64Array(n),
@@ -143,31 +122,19 @@ export function envelope(sig, releaseMs = 9) {
   return e;
 }
 
-// The peak over a trailing window: instant attack, and no release at all — a
-// level only leaves when it falls out the back of the window. Pure, O(n): each
-// sample is pushed and popped from `q` once.
-//
-// For SUSTAINED TONE — the modulation family, where the carrier runs flat and the
-// LFO is the only thing moving. envelope() can't draw that: coasting for the
-// ~2.2 ms between peaks costs it 18 % before the next peak snaps it back, so a
-// steady sine — whose envelope is FLAT 1 — comes out as an 18 % sawtooth band,
-// and every LFO curve wears the same fuzz. Holding instead is exact there: the
-// window always contains a peak, so the trace is flat to <0.1 %.
-//
-// The default window is one carrier period, which is two half-periods of |sig| —
-// i.e. twice the headroom it strictly needs, so it stays exact for anything down
-// to ~F0/2 (~111 Hz), well under the guitar's A3. It costs a lag of at most one
-// window (~4.5 ms) on the way DOWN, since a peak has to age out before the level
-// can drop. That's the trade: on a sustained tone there's nothing to lag behind,
-// which is why this is not the delay page's follower — there, 4.5 ms of hold on a
-// 12 ms decay is the whole hump.
+// Peak over a trailing window: instant attack, no release — a level only leaves
+// when it falls out the back. Pure, O(n): each sample pushed/popped from `q` once.
+// For SUSTAINED TONE — the modulation family; holds the envelope flat to <0.1 %
+// where envelope() would fuzz a flat sine into an 18 % sawtooth.
+// Default window is one carrier period, exact down to ~F0/2 (~111 Hz, under A3).
+// Costs up to one window (~4.5 ms) of lag on the way down, which is why this is
+// not the delay page's follower.
 export function envelopeHeld(sig, holdMs = 1000 / F0) {
   const n = sig.length,
     W = Math.max(1, Math.round((holdMs / 1000) * SR)),
     e = new Float64Array(n),
-    // indices into sig, |sig| descending: the front is the window's peak, and
-    // anything smaller behind it can never be (a bigger, younger sample outlives
-    // it), so it's dropped on arrival rather than compared with later.
+    // indices into sig, |sig| descending: front is the window's peak; a smaller
+    // sample behind it can never win, so it's dropped on arrival.
     q = new Int32Array(n);
   let head = 0,
     tail = 0;
@@ -236,8 +203,7 @@ export function specDb(sig) {
 }
 
 // Hann window before the FFT: a real note slice isn't periodic in N, so a raw
-// FFT would smear energy across bins (spectral leakage). The window tapers the
-// ends to zero, so the harmonic peaks stay sharp.
+// FFT would smear energy across bins (spectral leakage). Tapering keeps peaks sharp.
 export function windowed(sig) {
   const n = sig.length,
     w = new Float64Array(n);

@@ -1,26 +1,15 @@
-// The drawing primitives and the palette every canvas on this site is painted
-// with — the bundle an effect's draw hooks get handed as `H`.
+// The drawing primitives and palette every canvas on this site is painted with —
+// the bundle an effect's draw hooks get handed as `H`. Shared by the rig
+// (harness.js) and the catalog page (thumb.js) so both draw the same curves in
+// the same green.
 //
-// This lived in harness.js, which is where its only caller was: the rig mounts a
-// view, the view draws, and the harness owned both. The catalog page is what
-// pulled it out here. That page has no rig and mounts nothing, but it draws the
-// same pedals' curves at row size (see thumb.js), and it has to draw them with
-// the same line in the same green — a second copy of "the accent is --accent-lo"
-// is exactly the drift the palette note below refuses. So the primitives belong
-// to neither page now, and both import them.
-//
-// What did NOT come along: the plot margins. They're the one thing here that a
-// caller genuinely disagrees about — the rig reserves 40px on the left for axis
-// labels, and a 48px thumbnail has no axis labels and no 40px to give. So
-// `frame` takes them rather than knowing them.
+// The plot margins do NOT belong here: the rig reserves 40px on the left for axis
+// labels, a 48px thumbnail has none to give, so `frame` takes them as an argument.
 
 // ---- colors (shared palette; effects read ACCENT for their center curve) ----
-// styles.css owns these: the page paints the "in"/"out" legend words in a panel
-// header with the same --dry/--wet the canvas strokes its traces with, and two
-// copies of a color that must match is how they drift. So read them off :root
-// rather than restating them. The literals below are fallbacks for a missing or
-// unparsed stylesheet only — keep them equal to the CSS, and change the CSS when
-// you want a different color.
+// styles.css owns these; read them off :root so the canvas strokes and the
+// legend words in the panel headers can't drift. The literals are fallbacks for a
+// missing/unparsed stylesheet only — keep them equal to the CSS.
 const css = (name, fallback) =>
   getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
   fallback;
@@ -32,15 +21,14 @@ export const colors = {
   ZERO: css("--zero", "#3a4030"),
 };
 
-// Axis ink. Not in the palette above and not in the stylesheet: nothing outside
-// a canvas is painted either of these, so there's no second copy to drift from.
+// Axis ink. Not in the palette or stylesheet: nothing outside a canvas paints
+// either, so there's no second copy to drift from.
 const AXIS = "#6b7361",
   AXTITLE = "#525a4a";
 
-// Size a canvas to its CSS box, scale for the display, and hand back the plot
-// rect inside the margins `m` reserves. Margins are the caller's because they're
-// what the caller is for: the rig spends them on axis labels, a thumbnail spends
-// them on nothing.
+// Size a canvas to its CSS box, scale for the display, and return the plot rect
+// inside the margins `m`. Margins are the caller's: the rig spends them on axis
+// labels, a thumbnail on nothing.
 export function frame(cv, m) {
   const dpr = devicePixelRatio || 1,
     w = cv.clientWidth,
@@ -84,6 +72,6 @@ export function titles(g, F, ytitle, xtitle) {
   txt(g, xtitle, (F.L + F.R) / 2, F.B + 13, "center", "top", AXTITLE);
 }
 
-// The helper bundle handed to an effect's draw/audio hooks: the drawing
-// primitives and the shared palette. (DSP + constants come from dsp.js.)
+// The helper bundle handed to an effect's draw/audio hooks: drawing primitives +
+// shared palette. (DSP + constants come from dsp.js.)
 export const H = { line, txt, vtxt, titles, colors };
