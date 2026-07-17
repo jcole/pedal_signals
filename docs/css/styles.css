@@ -850,16 +850,22 @@ a.catrow:hover .catlabel {
 	font-size: 13px;
 	line-height: 1.5;
 }
-/* the SHAPE column: a fourth track, added to all three (.cathead is .catrow's
-   grid rule) or the names stop sitting over what they name. .famhead leaves it
-   empty (a family has no one curve). Scoped to #cat — the bench shares this rule
-   but not this column. */
+/* Five tracks — pedal, operation, SHAPE, then the bench's two claims (CHANGES,
+   YOU HEAR) — added to all three (.cathead is .catrow's grid rule) or the names
+   stop sitting over what they name. The band leaves SHAPE empty (a family has no
+   one curve) and spans its oneLiner across the two claim tracks (below). Scoped to
+   #cat — the bench shares the base rule but runs its own four columns. */
 #cat .cathead,
 #cat .famhead,
 #cat .catrow {
 	grid-template-columns:
-		minmax(9rem, 1fr) minmax(11rem, 1.15fr) minmax(84px, 0.45fr)
-		minmax(11rem, 1.3fr);
+		minmax(8rem, 0.85fr) minmax(9rem, 1fr) minmax(84px, 0.4fr)
+		minmax(9rem, 1.1fr) minmax(9rem, 1.1fr);
+}
+/* the family's oneLiner is one general claim, not a CHANGES/YOU HEAR pair, so it
+   runs across both claim tracks — the general case the pedals below split in two */
+#cat .famwhat {
+	grid-column: span 2;
 }
 /* sized to the row (two lines ≈ 42px) so the curve rides height the row already
    spends; 56 over 42 is the square clipping thumbnails (see thumb.js). No

@@ -6,12 +6,12 @@
 // mountCatalog(host, families) — `families` are the demo's view modules
 // ({id, navLabel, pedals, lesson}).
 
-import { famRow, headRow, mk, pedalRow } from "./rows.js";
+import { claims, famRow, headRow, mk, pedalRow } from "./rows.js";
 import { drawThumb, thumbCanvas } from "./thumb.js";
 
 export function mountCatalog(host, families) {
   host.innerHTML = "";
-  // The fourth column: every row's own curve (see thumb.js). "operation shape",
+  // The SHAPE column: every row's own curve (see thumb.js). "operation shape",
   // not "shape", because the PEDAL cell already holds a shape (the toy pedal) —
   // this names the column as the picture of the OPERATION beside it.
   host.appendChild(headRow("operation shape", 2));
@@ -51,7 +51,8 @@ function section(f, pending) {
     // the view knows how to draw the pedal, the pedal knows which one it is
     const cv = thumbCanvas();
     pending.push({ cv, view: f, pedal: p });
-    tbl.appendChild(pedalRow(p, `./?pedal=${encodeURIComponent(p.id)}`, cv));
+    const href = `./?pedal=${encodeURIComponent(p.id)}`;
+    tbl.appendChild(pedalRow(p, href, cv, claims(f, p)));
   }
   sec.appendChild(tbl);
   return sec;

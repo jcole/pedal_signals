@@ -60,6 +60,8 @@ import { pedalArt } from "./art.js";
 // drawing primitives and palette, shared with the catalog so both draw the same
 // curves in the same ink (see draw.js). `H` is the bundle handed to view hooks.
 import { frame as fit, H, line, titles, txt } from "./draw.js";
+// the band's two claims, resolved by the same code the catalog uses (see setPedal)
+import { claims } from "./rows.js";
 // the rail's curve glyph is the catalog's thumbnail, live. See drawRail.
 import { drawThumb } from "./thumb.js";
 
@@ -228,20 +230,14 @@ function setParam(id, v) {
 function setPedal(id) {
   pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
   document.getElementById("pedalart").innerHTML = pedalArt(pedal.art);
-  // The two chart narrations, resolved once: the top panel shows outnar, the bottom
-  // shows spectrumTitle (a family string, or fn(pedal)). The band shows these SAME
-  // two strings, so a claim and the chart it points at can't disagree.
-  const topNar = pedal.outnar ?? "";
-  const botNar =
-    typeof view.spectrumTitle === "function"
-      ? view.spectrumTitle(pedal)
-      : (view.spectrumTitle ?? "");
-  // CHANGES is the signal change, YOU HEAR the perceived one. Default maps signal to
-  // the top chart, perceived to the bottom (clipping, delay); bandSwap crosses them
-  // (modulation: the pulse you hear is the top chart, the sidebands it makes the
-  // bottom). Chips cross to match, in mount().
-  document.getElementById("benchchanges").textContent = view.bandSwap ? botNar : topNar;
-  document.getElementById("benchhear").textContent = view.bandSwap ? topNar : botNar;
+  // The band's two claims and the panel headlines, from one resolver shared with the
+  // catalog (rows.js) so a claim and the chart it points at can't disagree — nor the
+  // two pages with each other. CHANGES/YOU HEAR cross by bandSwap (modulation: the
+  // pulse you hear is the top chart, the sidebands it makes the bottom; chips cross to
+  // match, in mount()); the panels always show the raw top/bottom narration.
+  const { topNar, botNar, changes, youHear } = claims(view, pedal);
+  document.getElementById("benchchanges").textContent = changes;
+  document.getElementById("benchhear").textContent = youHear;
   if (topNar) document.getElementById("outnar").textContent = topNar;
   if (botNar) document.getElementById("specnar").textContent = botNar;
   // the deck's formula over a gloss of the curve's character (tech over techNote);

@@ -62,19 +62,21 @@ test("each family heads its pedals with its signal class and formula", async ({
   ]);
 });
 
-test("a row carries the pedal's operation and what it changes", async ({
+test("a row carries the pedal's operation and its two claims", async ({
   page,
 }) => {
   await page.goto("/pedals.html");
   const fuzz = rows(page).filter({ has: page.locator("text=fuzz") }).first();
   await expect(fuzz.locator(".catop")).toHaveText("clip(drive·x + bias) · asym");
-  // The operation, then the operation in English, then the consequence — three
-  // facts the row keeps apart on purpose. "asym" is the entire difference between
-  // this row and distortion's and the least readable thing on it, so the gloss is
-  // what makes the column say anything to a reader who doesn't have the notation;
-  // and what CHANGES is the harmonics, never the shape of fuzz's own curve.
+  // the operation, then the operation in English — "asym" is the entire difference
+  // between this row and distortion's and the least readable thing on it, so the
+  // gloss is what makes the column say anything to a reader without the notation
   await expect(fuzz.locator(".catnote")).toContainText("rails are uneven");
-  await expect(fuzz.locator(".catwhat")).toContainText("even harmonics");
+  // then the bench's two claims, in order: CHANGES (the waveform) then YOU HEAR
+  // (the harmonics) — what you hear is the harmonics, never the shape of the curve
+  const what = fuzz.locator(".catwhat");
+  await expect(what.nth(0)).toContainText("collapses to a square");
+  await expect(what.nth(1)).toContainText("even harmonics");
   // the aliases the picker only searches are printed here — they're what a
   // reader scanning for their pedal actually knows it by
   await expect(fuzz.locator(".catalias")).toContainText("big muff");

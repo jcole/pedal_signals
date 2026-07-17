@@ -13,11 +13,14 @@ export class Pedal {
   // Knobs to snap to when selected; a knob left out keeps the user's value.
   defaults = {};
 
-  // whatChanges: one-line "the signal does THIS"; `tech`: the operation. Both are
-  // columns a pedal fills under its family's (see ui/rows.js). Describes what the
-  // mechanism does to the signal, not the pedal's own maths (that's `techNote`).
-  // Signal class (NL/LTI/LTV) is deliberately NOT here — constant per family, so
-  // it belongs to the view's lesson.
+  // `tech`: the operation, the OPERATION column on both pages. `outnar`: the
+  // waveform claim, one of the bench's two (ui/rows.js resolves the pair). Signal
+  // class (NL/LTI/LTV) is deliberately NOT here — constant per family, so it belongs
+  // to the view's lesson.
+  //
+  // `whatChanges`: clipping-only — its per-pedal spectrum headline, which the family
+  // feeds to spectrumTitle (ui/clipping.js). Delay and modulation share one spectrum
+  // claim per family and set it on the view instead, so they leave this blank.
   //
   // `techNote` reads `tech` back in English, one altitude down from the formula.
   // Optional: present only where a family's pedals differ IN the formula (clipping,

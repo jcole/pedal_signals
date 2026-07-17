@@ -41,8 +41,8 @@ let loopEnd = GAP_MAX_MS / 1000,
 export default {
   id: "delay",
   navLabel: "delay",
-  // This family's whatChanges says "no new frequencies", so it gets no frequency
-  // panel.
+  // No frequency panel: delay adds no new frequencies, so the bottom chart is an
+  // envelope (drawSpec), not a spectrum.
   // Half. The wet chain carries ONLY the repeats — your note comes from the dry
   // tap — so a full-wet delay is echoes of a note you never hear.
   blendDefault: 0.5,

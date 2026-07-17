@@ -1,19 +1,30 @@
-// The three-column reading of the catalog (column names, a family, a pedal),
-// built here because both pages want it identical: same columns, same order, same
-// geometry (see .cathead/.famhead/.catrow, one rule for all three). A family has
-// a value for each column — navLabel, `formula` (the general form of its pedals'
-// `tech`), `oneLiner` (its `whatChanges`) — so the band IS the generic row and
-// every row under it is that row with the blanks filled in.
+// The catalog's row grammar: column names, a family band, a pedal. The bench builds
+// its own band by id (index.html + harness), so this file is the catalog's alone.
+// A family is the generic row — navLabel, `formula`, its `oneLiner` — and every
+// pedal under it is that row with the blanks filled in. Geometry is shared across
+// all three rows (.cathead/.famhead/.catrow, one grid rule).
 
-// `extra`/`at` are a fourth column only the catalog has: the pedal's own curve
-// (see thumb.js), at index 3, against the formula it draws so the row reads
-// operation → its picture → what it does to you. On the end instead, WHAT CHANGES
-// would wedge between the formula and its drawing — worst in the delay family,
-// where all three operations are the same string and the shapes are the only
-// thing telling echo from slapback.
-export function headRow(extra, at = 3) {
+// The bench's two claims for one pedal, resolved the same way here and in the
+// harness so the two pages can't disagree: `outnar` is the waveform claim,
+// `spectrumTitle` the spectrum's (a family string, or fn(pedal)). `bandSwap` crosses
+// which reads as CHANGES and which as YOU HEAR — modulation hears the pulse (top
+// chart) and shows the sidebands it makes (bottom), the reverse of clipping.
+export function claims(view, pedal) {
+  const topNar = pedal.outnar ?? "";
+  const st = view.spectrumTitle;
+  const botNar = typeof st === "function" ? st(pedal) : (st ?? "");
+  return view.bandSwap
+    ? { topNar, botNar, changes: botNar, youHear: topNar }
+    : { topNar, botNar, changes: topNar, youHear: botNar };
+}
+
+// Column names. Base four — pedal, operation, then the two claims — plus the
+// catalog's SHAPE track, spliced in at `at` so a row reads operation → its picture
+// → what it does. On the end instead, a claim would wedge between the formula and
+// the drawing of it.
+export function headRow(extra, at = 2) {
   const r = mk("div", "cathead");
-  const names = ["pedal", "operation", "what changes"];
+  const names = ["pedal", "operation", "changes", "you hear"];
   if (extra) names.splice(at, 0, extra);
   for (const t of names) {
     const c = mk("span");
@@ -23,18 +34,16 @@ export function headRow(extra, at = 3) {
   return r;
 }
 
-// A family, in the same three columns as its pedals.
+// A family, in the same columns as its pedals.
 //
-// `href` is the way out to the catalog — the bench's case, where this band is the
-// only thing naming the family, so the name IS the link. Withheld on the catalog,
-// which is the page the band would link to.
+// `href` is the way out to the catalog — the bench's case, where the band's name is
+// the only thing naming the family. Withheld on the catalog, the page it would link to.
 //
-// `extra`/`at` are the fourth column, as in headRow. The band holds its place in
-// that track without filling it (cells are auto-placed, so skipping it would print
-// the one-liner under SHAPE); empty on purpose, because there's no general case of
-// a curve — clipping's three pedals ARE three shapes, and what they share is the
-// formula two cells left.
-export function famRow(f, { href, extra, at = 3 } = {}) {
+// `extra`/`at` are the catalog's SHAPE track; the band reserves its place but leaves
+// it empty — there's no general case of a curve. `oneLiner` is the family's single
+// summary, spanning both claim columns (see #cat .famwhat): the general case the
+// pedals below split into CHANGES and YOU HEAR.
+export function famRow(f, { href, extra, at = 2 } = {}) {
   const head = mk("h2", "famhead");
 
   const who = mk("span", "famcell");
@@ -81,11 +90,11 @@ export function famRow(f, { href, extra, at = 3 } = {}) {
 }
 
 // A pedal. `href` decides the element: given one the whole row is the link (one
-// thing to read, one thing to click); withheld it's a plain div, the bench's case,
-// describing the pedal already mounted. `thumb` is the catalog's fourth cell —
-// the pedal's curve (thumb.js builds it; this only makes a hole for it) — withheld
-// on the bench, which has a live copy of the same drawing below.
-export function pedalRow(p, href, thumb) {
+// thing to read, one thing to click); withheld it's a plain div. `thumb` is the
+// SHAPE cell (thumb.js builds it; this only makes a hole for it). `changes`/`youHear`
+// are the two claims (see claims()), one cell each — the same pair the bench shows,
+// so a pedal reads the same on both pages.
+export function pedalRow(p, href, thumb, { changes, youHear }) {
   const a = mk(href ? "a" : "div", "catrow");
   if (href) {
     a.href = href;
@@ -119,12 +128,14 @@ export function pedalRow(p, href, thumb) {
     op.appendChild(note);
   }
 
-  const what = mk("span", "catwhat");
-  what.textContent = p.whatChanges;
+  const chg = mk("span", "catwhat");
+  chg.textContent = changes;
+  const you = mk("span", "catwhat");
+  you.textContent = youHear;
 
   // the thumbnail goes against the formula it draws (see headRow); DOM order is
   // column order, so this append IS the layout
-  a.append(ped, op, ...(thumb ? [thumb] : []), what);
+  a.append(ped, op, ...(thumb ? [thumb] : []), chg, you);
   return a;
 }
 

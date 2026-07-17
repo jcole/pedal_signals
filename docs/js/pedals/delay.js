@@ -101,7 +101,6 @@ export const DELAYS = [
     search: ["delay", "repeat", "tape echo"],
     tech: DELAY_TECH,
     outnar: "a fading train of repeats",
-    whatChanges: "envelope, seconds-wide; no new frequencies",
     time: 160,
     feedback: 0.45,
     // The Boss DM-2: dark green, three knobs.
@@ -112,7 +111,6 @@ export const DELAYS = [
     search: ["delay", "doubling", "rockabilly"],
     tech: DELAY_TECH,
     outnar: "one quick slap",
-    whatChanges: "one short repeat; reads as thickening, not echo",
     time: 90,
     feedback: 0.15,
     art: { shape: "box", hue: "#8d9aa8", knobs: 3 },
@@ -122,7 +120,6 @@ export const DELAYS = [
     search: ["reverb", "hall", "verb", "wash", "shimmer"],
     tech: DELAY_TECH,
     outnar: "a long, smeared tail",
-    whatChanges: "long tail near self-oscillation; repeats blur together",
     time: 240,
     feedback: 0.7,
     art: { shape: "box", hue: "#b9c2c8", knobs: 3 },
