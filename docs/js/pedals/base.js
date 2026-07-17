@@ -13,11 +13,6 @@ import { GOFF, KBIN, N, SPAN } from "../dsp.js";
 export class Pedal {
   sampleCount = N;
   spanSamples = SPAN;
-  // The input is a generated steady sine, so the view can redraw it analytically
-  // (smooth at any width). A pedal that generates its own buffer clears this and
-  // gets plotted sample-by-sample instead.
-  analytic = true;
-  srcTitles = { sine: "sine", guitar: "guitar · A3" };
   // Knobs to snap to when this pedal is selected; a knob left out keeps whatever
   // value the user left on it. Per-knob on purpose — a pedal usually wants to
   // place the knob that defines it (a fuzz's drive) and leave the one the user is

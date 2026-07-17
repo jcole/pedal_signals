@@ -9,9 +9,9 @@
 import { envelopeHeld, F0, SR, specDb, windowed } from "../dsp.js";
 import { MODULATIONS, NMOD, SPANMS_MOD } from "../pedals/index.js";
 
-// The center panel plots the LFO curve directly (analytic, like the clipping
-// family's transfer curve) rather than the full analysis buffer — a fixed
-// window is easier to read than one sized for the slowest rate on the slider.
+// drawCenter plots the LFO from its formula (like the clipping family's transfer
+// curve) rather than from the analysis buffer — a fixed window is easier to read
+// than one sized for the slowest rate on the slider.
 const CURVE_SPAN_MS = 600;
 
 // The spectrum panel's half-width, in hertz either side of the carrier. Clipping

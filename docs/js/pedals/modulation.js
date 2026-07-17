@@ -22,7 +22,6 @@ export const SPANMS_MOD = (NMOD / SR) * 1000;
 export class ModulationPedal extends Pedal {
   sampleCount = NMOD;
   spanSamples = NMOD;
-  srcTitles = { sine: "sine", guitar: "guitar · A3 (sustained)" };
 
   constructor({ rate, depth, fn, waveType, ...opts }) {
     super(opts);
