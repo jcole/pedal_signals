@@ -18,13 +18,13 @@ export function claims(view, pedal) {
     : { topNar, botNar, changes: topNar, youHear: botNar };
 }
 
-// Column names. Base four — pedal, operation, then the two claims — plus the
-// catalog's SHAPE track, spliced in at `at` so a row reads operation → its picture
+// Column names. Base four — pedal, transform, then the two claims — plus the
+// catalog's SHAPE track, spliced in at `at` so a row reads transform → its picture
 // → what it does. On the end instead, a claim would wedge between the formula and
 // the drawing of it.
 export function headRow(extra, at = 2) {
   const r = mk("div", "cathead");
-  const names = ["pedal", "operation", "changes", "you hear"];
+  const names = ["pedal", "transform", "changes", "you hear"];
   if (extra) names.splice(at, 0, extra);
   for (const t of names) {
     const c = mk("span");

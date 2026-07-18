@@ -240,7 +240,11 @@ function setParam(id, v) {
 // none of it can move to mount()).
 function setPedal(id) {
   pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
-  document.getElementById("pedalart").innerHTML = pedalArt(pedal.art);
+  // Both homes of the toy pedal: the lede (beside the picker) and the TRANSFORM
+  // deck's header bar, so the deck reads as the picked pedal.
+  const art = pedalArt(pedal.art);
+  document.getElementById("pedalart").innerHTML = art;
+  document.getElementById("pedalicon").innerHTML = art;
   // The band's two claims and the panel headlines, from one resolver shared with the
   // catalog (rows.js) so a claim and the chart it points at can't disagree — nor the
   // two pages with each other. CHANGES/YOU HEAR cross by bandSwap (modulation: the

@@ -128,16 +128,17 @@
 </div>
 
 <div id="controls">
-  <!-- The rail's decks, OPERATION first (the pedal's math), then INPUT (the source
-       you feed it), then the transport at the foot — set the operation and the
+  <!-- The rail's decks, TRANSFORM first (the pedal's math), then INPUT (the source
+       you feed it), then the transport at the foot — set the transform and the
        source, then press play. Both bars are standing text — roles, not names. No
        arrow: stacked, reading order says "sequence". -->
-  <!-- The pedal deck: the operation, the curve it draws (the same drawCenter the
+  <!-- The pedal deck: the transform, the curve it draws (the same drawCenter the
        catalog thumbnails call), and the knobs that shape it. The bar is standing
-       text — OPERATION, the page's own column head. #centerctls is its own element
-       because buildControls() wipes it. -->
+       text — TRANSFORM, the page's own column head — and wears the picked pedal's
+       toy icon (harness setPedal fills #pedalicon) so the deck reads as the pedal
+       itself. #centerctls is its own element because buildControls() wipes it. -->
   <div class="ctlcol" id="pedalcol">
-    <div class="grp">Operation</div>
+    <div class="grp grp--pedal"><span id="pedalicon" class="pedalart" aria-hidden="true"></span>Transform</div>
     <!-- the formula over a gloss of the curve's character (tech over techNote), a
          line of its own — .grp's uppercase would render `tanh` as `TANH`, and no
          240px bar holds modulation's 35 chars -->

@@ -113,6 +113,24 @@ b {
 	text-transform: uppercase;
 	color: var(--inst-ink);
 }
+/* The TRANSFORM bar wears the picked pedal's toy (harness fills #pedalicon) so the
+   deck reads as the pedal. flex to sit the icon on the label's baseline-ish centre;
+   the toy keeps its own colours against the chassis green. */
+.grp--pedal {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.grp--pedal .pedalart {
+	display: flex;
+	flex: none;
+	pointer-events: none;
+}
+.grp--pedal .pedalart svg {
+	height: 20px;
+	width: auto;
+	display: block;
+}
 /* ---- switchers ----
    A .seg is a toggle (every option visible, e.g. sine/guitar); the pedal picker
    is a lookup (too long to lay flat). New control: can you see every option at
@@ -614,7 +632,7 @@ b {
 	opacity: 0.4;
 	cursor: default;
 }
-/* The bench's top band: the four-column context row (pedal, family, operation,
+/* The bench's top band: the four-column context row (pedal, family, transform,
    what-changes) and, beside it, the reading-the-charts box. flex not grid — a grid
    track would line the box up with the columns and it'd read as a fifth one. */
 #lede {
@@ -858,7 +876,7 @@ a.catrow:hover .catlabel {
 }
 /* green, like every drawing of the pedal's math (the rail plots this formula in
    --accent). Not orange — orange is the referent for "out" (panel headers paint
-   the word off --wet), and a formula isn't the output, the operation is. */
+   the word off --wet), and a formula isn't the output, the transform is. */
 .catop {
 	font-family: var(--mono);
 	font-size: 12px;
@@ -869,7 +887,7 @@ a.catrow:hover .catlabel {
 	font-size: 13px;
 	line-height: 1.5;
 }
-/* Five tracks — pedal, operation, SHAPE, then the bench's two claims (CHANGES,
+/* Five tracks — pedal, transform, SHAPE, then the bench's two claims (CHANGES,
    YOU HEAR) — added to all three (.cathead is .catrow's grid rule) or the names
    stop sitting over what they name. The band leaves SHAPE empty (a family has no
    one curve) and spans its oneLiner across the two claim tracks (below). Scoped to

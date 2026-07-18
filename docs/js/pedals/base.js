@@ -13,7 +13,7 @@ export class Pedal {
   // Knobs to snap to when selected; a knob left out keeps the user's value.
   defaults = {};
 
-  // `tech`: the operation, the OPERATION column on both pages. `outnar`: the
+  // `tech`: the transform, the TRANSFORM column on both pages. `outnar`: the
   // waveform claim, one of the bench's two (ui/rows.js resolves the pair). Signal
   // class (NL/LTI/LTV) is deliberately NOT here — constant per family, so it belongs
   // to the view's lesson.

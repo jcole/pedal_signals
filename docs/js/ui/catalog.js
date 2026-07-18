@@ -11,10 +11,10 @@ import { drawThumb, thumbCanvas } from "./thumb.js";
 
 export function mountCatalog(host, families) {
   host.innerHTML = "";
-  // The SHAPE column: every row's own curve (see thumb.js). "operation shape",
+  // The SHAPE column: every row's own curve (see thumb.js). "transform shape",
   // not "shape", because the PEDAL cell already holds a shape (the toy pedal) —
-  // this names the column as the picture of the OPERATION beside it.
-  host.appendChild(headRow("operation shape", 2));
+  // this names the column as the picture of the TRANSFORM beside it.
+  host.appendChild(headRow("transform shape", 2));
   // Two passes, of necessity: a canvas can't be drawn into until its grid box has
   // been laid out. Pass one puts the rows in the document; pass two draws.
   const pending = [];
