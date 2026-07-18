@@ -58,8 +58,9 @@ export default {
     klass: "linear, time-invariant (LTI)",
     oneLiner: "it hands you back what you already played",
     body: `
-      <p><strong>What's actually going on:</strong> the pedal keeps a bucket of
-      the recent past — a delay line, D samples long. Every sample, it plays
+      <h2>What's actually going on</h2>
+      <p><strong>The pedal keeps a bucket of the recent past — a delay line, D
+      samples long.</strong> Every sample, it plays
       what you're feeding it right now plus whatever fell out of the far end of
       that bucket, and drops the result back in the near end. So a hit comes
       back D samples later, and that repeat gets fed in again to come back D

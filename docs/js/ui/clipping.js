@@ -35,15 +35,21 @@ export default {
     klass: "memoryless nonlinearity (NL)",
     oneLiner: "it flattens the peaks",
     body: `
-      <p><strong>What's actually going on:</strong> the pedal applies a fixed
-      input→output curve. Below some level the curve is a straight line and
-      nothing happens. Above it the curve bends over, so the tops of the wave
-      get squashed. A squashed sine isn't a sine any more, and the only way to
-      build a non-sine periodic wave is to add harmonics. So harmonics appear
-      — at 2f₀, 3f₀, 4f₀ and up. The pitch does not change; the
-      <em>period is identical</em>. Only the shape moved.</p>
+      <h2>What's actually going on</h2>
+      <p><strong>The pedal applies a fixed input→output curve.</strong> Below
+      some level the curve is a straight line and nothing happens. Above it the
+      curve bends over, so the tops of the wave get squashed. A squashed sine
+      isn't a sine any more, and the only way to build a non-sine periodic wave
+      is to add harmonics. So harmonics appear — at 2f₀, 3f₀, 4f₀ and up. The
+      pitch does not change; the <em>period is identical</em>. Only the shape
+      moved.</p>
       <p>Drive is just how hard you push the signal into the bend before the
-      curve. Everything else — germanium vs silicon, LED vs diode, op-amp vs
+      curve. A bend that rounds over gently is <em>soft clipping</em> — the
+      overdrive's knee; a curve that runs straight into a corner and flattens
+      against a rail is <em>hard clipping</em> — the distortion and the fuzz.
+      (Builders use those same two words for the circuit that makes the shape:
+      diodes to ground clip hard, diodes inside the op-amp's feedback loop clip
+      soft.) Everything else — germanium vs silicon, LED vs diode, op-amp vs
       tube — is an argument about the exact shape of that bend.</p>
     `,
     aside: {

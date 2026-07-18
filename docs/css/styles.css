@@ -634,6 +634,15 @@ b {
 .lesson-cols .col {
 	max-width: 58ch;
 }
+/* the lesson's own heading — a step above the aside's h3 so the reading column
+   outranks the column beside it */
+#lesson h2 {
+	font-size: 20px;
+	font-weight: 640;
+	letter-spacing: -0.01em;
+	color: var(--ink-hi);
+	margin: 0 0 12px;
+}
 /* sentence case; at this size the weight alone heads a column */
 #lesson h3 {
 	font-size: 16px;
@@ -649,9 +658,11 @@ b {
 	line-height: 1.65;
 	color: var(--ink);
 }
+/* the lead sentence — the lesson's one-line summary, carried heavier than body
+   emphasis so it reads as the takeaway under the heading */
 #lesson strong {
 	color: var(--ink-hi);
-	font-weight: 600;
+	font-weight: 680;
 }
 #lesson code {
 	font-family: var(--mono);

@@ -48,9 +48,10 @@ export default {
     klass: "linear, time-varying (LTV)",
     oneLiner: "it rides your volume knob for you",
     body: `
-      <p><strong>What's actually going on:</strong> a second oscillator — far
-      too slow to hear as a pitch, a few cycles per second — is turning your
-      volume up and down. That's the LFO, and its shape is the whole pedal:
+      <h2>What's actually going on</h2>
+      <p><strong>A second oscillator — far too slow to hear as a pitch, a few
+      cycles per second — is turning your volume up and down.</strong> That's
+      the LFO, and its shape is the whole pedal:
       a rounded sine gives tremolo's smooth pulse, a square slams the signal
       on and off, a triangle wobbles. Depth sets how far down the cut goes; at
       depth 1 the troughs reach silence, at depth 0 the multiplier is a flat 1
