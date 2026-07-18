@@ -67,6 +67,17 @@ import { drawThumb } from "./thumb.js";
 
 const { DRY, WET, ZERO } = H.colors;
 
+// The type-badge glyphs, keyed by chart word: a wave for any time trace
+// (waveform, envelope), analyzer bins for a spectrum. In the chip's own ink
+// (currentColor). The panels get whichever their family declares — the bottom is
+// a spectrum on clipping/modulation but an envelope on delay, so the shape has to
+// follow the word, not the slot.
+const WAVE_IC =
+  '<svg viewBox="0 0 20 12"><path d="M1 6 Q4 1 7 6 T13 6 T19 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+const BARS_IC =
+  '<svg viewBox="0 0 20 12" fill="currentColor"><rect x="2" y="1" width="2.4" height="10"/><rect x="6.8" y="3.5" width="2.4" height="7.5"/><rect x="11.6" y="5.5" width="2.4" height="5.5"/><rect x="16.4" y="7.5" width="2.4" height="3.5"/></svg>';
+const techIcon = (tech) => (tech === "spectrum" ? BARS_IC : WAVE_IC);
+
 // ---- module-level state ----------------------------------------------------
 let view = null; // the mounted page: pedals + UI hooks
 let pedal = null; // the currently selected Pedal instance
@@ -474,6 +485,8 @@ export function mount(v, opts = {}) {
   // pedal- and spectrum-title headlines are written by setPedal() below.
   document.getElementById("timetech").textContent = view.timeTech ?? "waveform";
   document.getElementById("spectech").textContent = view.spectrumTech;
+  document.getElementById("timeic").innerHTML = techIcon(view.timeTech ?? "waveform");
+  document.getElementById("specic").innerHTML = techIcon(view.spectrumTech);
   document.getElementById("specunit").textContent = view.spectrumUnit
     ? ` (${view.spectrumUnit})`
     : "";

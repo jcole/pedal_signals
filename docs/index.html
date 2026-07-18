@@ -98,7 +98,12 @@
          can't use a sentence about a chart you can't yet name. -->
     <div class="panel">
       <h3>
-        <span class="ctype" id="timetech"></span>
+        <span class="ctype">
+          <!-- glyph naming the chart by shape before the word is read; harness.js
+               fills it from the chart type (a wave trace or analyzer bins) -->
+          <span class="ctype-ic" id="timeic" aria-hidden="true"></span>
+          <span id="timetech"></span>
+        </span>
         <span class="nar" id="outnar"></span>
         <span class="tech"><span class="dry">in</span> vs <span class="wet">out</span></span>
       </h3>
@@ -110,7 +115,10 @@
          to the "out" trace in the legend. -->
     <div class="panel">
       <h3>
-        <span class="ctype"><span id="spectech"></span><span class="cunit" id="specunit"></span></span>
+        <span class="ctype">
+          <span class="ctype-ic" id="specic" aria-hidden="true"></span>
+          <span id="spectech"></span><span class="cunit" id="specunit"></span>
+        </span>
         <span class="nar" id="specnar"></span>
         <span class="tech"><span class="dry">in</span> vs <span class="wet">out</span></span>
       </h3>
