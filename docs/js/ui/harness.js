@@ -32,10 +32,10 @@
 //                             // and catalog thumbnail — see thumb.js's marginsFor.
 //     drawCenter(F, pedal, params, H),           // the family's own curve; the
 //                             // rail glyph and catalog thumbnail, off this one hook
-//     drawTime?(F, inp, out, pedal, src, H),     // the TOP panel. Omit and the
-//                             // harness draws dry-vs-wet waveform (drawTime below),
-//                             // right only for a span a few carrier cycles wide.
-//     drawSpec(F, inp, out, pedal, src, H),      // the BOTTOM panel
+//     drawTime?(F, inp, out, pedal, src, H, params), // the TOP panel. Omit and
+//                             // the harness draws dry-vs-wet waveform (drawTime
+//                             // below), right only for a span a few carrier cycles wide.
+//     drawSpec(F, inp, out, pedal, src, H, params),  // the BOTTOM panel
 //     buildAudio(actx, inGain, H) -> { wetOut, update(pedal, params, state, match), dispose?() },
 //     buildSource?(actx, {srcMode, guitar}) -> AudioNode,  // the view's own live
 //                             // source, for BOTH src modes. Default: looped guitar
@@ -109,9 +109,9 @@ function render() {
   lastMatch = r.match ?? 1;
 
   drawRail(inp);
-  if (view.drawTime) view.drawTime(frame(C.time), inp, r.out, pedal, srcMode, H);
+  if (view.drawTime) view.drawTime(frame(C.time), inp, r.out, pedal, srcMode, H, params);
   else drawTime(inp, r.out, lastMatch);
-  view.drawSpec(frame(C.spec), inp, r.out, pedal, srcMode, H);
+  view.drawSpec(frame(C.spec), inp, r.out, pedal, srcMode, H, params);
 }
 
 // The rail's two glyphs. The curve is the catalog's thumbnail live — drawThumb

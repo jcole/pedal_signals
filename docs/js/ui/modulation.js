@@ -4,19 +4,23 @@
 // wet-vs-dry envelope panel, the sideband spectrum, the rate/depth controls, and
 // the live gain-modulation graph. Held-peak envelope + FFT from dsp.js; LFO curve
 // from the pedal's own curve(params).
-import { envelopeHeld, F0, smooth, SR, specDb, windowed } from "../dsp.js";
+import { envelopeHeld, F0, SR, smooth, specDb, windowed } from "../dsp.js";
 import { MODULATIONS, NMOD, SPANMS_MOD } from "../pedals/index.js";
 
 // drawCenter plots the LFO from its formula, not the analysis buffer — a fixed
 // window reads easier than one sized for the slowest rate on the slider.
 const CURVE_SPAN_MS = 600;
 
-// Spectrum half-width, in hertz either side of the carrier. This family puts
-// energy at f₀ ± rate, one pixel wide under the carrier on clipping's 0–3600 Hz
-// axis, so it needs a zoom. 60 Hz is wide enough for chop's odd sidebands (rate,
-// 3·rate, 5·rate…) to spread out and tight enough that tremolo's ±4 Hz pair still
-// reads as a pair.
-const FSPAN_HZ = 60;
+// Spectrum half-width, in hertz either side of the carrier, tracking rate: the
+// sidebands sit at f₀ ± k·rate, so a fixed window buries tremolo's ±rate pair and
+// clips chop's comb. k runs as far as the LFO shape carries energy — a sine only
+// to ±rate, a triangle's odd harmonics (∝1/k²) to ~5·rate, a square's (∝1/k) to
+// ~7·rate (chop's ±7·rate is still −17 dB). ×1.4 keeps the outermost pair off the
+// edge; floored where the FFT lobe stops resolving a closer pair, capped so f₀
+// keeps its gridline company.
+const SIDEBAND_ORDER = { sine: 1, triangle: 5, square: 7 };
+const fspanHz = (pedal, rate) =>
+  Math.min(90, Math.max(10, (SIDEBAND_ORDER[pedal.waveType] ?? 1) * rate * 1.4));
 
 export default {
   id: "modulation",
@@ -62,8 +66,9 @@ export default {
         <code>½[cos(A−B) − cos(A+B)]</code>. So tremolo on a note at f₀ puts
         new energy at <em>f₀ ± rate</em> — a few hertz either side of the note,
         not up at 2f₀ and 3f₀ where clipping puts it. That's why the spectrum
-        panel is zoomed to sixty hertz either side of the carrier and not to the
-        3.6 kHz clipping's is: the whole of what this pedal did to your note
+        panel is zoomed to a band a few dozen hertz either side of the carrier —
+        it tracks the rate, since that's where the sidebands land — and not to
+        the 3.6 kHz clipping's is: the whole of what this pedal did to your note
         happens inside a band narrower than the gap to its second harmonic.</p>
         <p>Those sidebands are why the family keeps going. Wind the rate up out
         of LFO territory and into the audio range and the sidebands move far
@@ -151,15 +156,16 @@ export default {
   // carriers sit at 0 dB and the gap between traces is only the new energy — at
   // the cost of the 3 dB the carrier gives up at depth 0.6 (the panel above is
   // already the one reporting level).
-  drawSpec(F, inp, out, _pedal, _src, H) {
+  drawSpec(F, inp, out, pedal, _src, H, params) {
     const { g, L, R, T, B } = F;
     const { DRY, WET, GRID } = H.colors;
+    const FSPAN = fspanHz(pedal, params.rate ?? pedal.defaults.rate);
     const df = SR / NMOD; // 0.73 Hz per bin
-    const lo = Math.round((F0 - FSPAN_HZ) / df),
-      hi = Math.round((F0 + FSPAN_HZ) / df);
+    const lo = Math.round((F0 - FSPAN) / df),
+      hi = Math.round((F0 + FSPAN) / df);
     const dry = specDb(windowed(inp)),
       wet = specDb(windowed(out));
-    const sx = (f) => L + ((f - F0 + FSPAN_HZ) / (2 * FSPAN_HZ)) * (R - L),
+    const sx = (f) => L + ((f - F0 + FSPAN) / (2 * FSPAN)) * (R - L),
       sy = (db) => T + ((5 - Math.max(-80, db)) / 85) * (B - T);
     // The carrier's own gridline — everything here is read as an offset from it,
     // and it's the one frequency that isn't the pedal's doing.
@@ -182,9 +188,9 @@ export default {
     H.txt(g, "0", L - 5, sy(0), "end", "middle");
     H.txt(g, "-40", L - 5, sy(-40), "end", "middle");
     H.txt(g, "-80", L - 5, sy(-80), "end", "middle");
-    H.txt(g, `−${FSPAN_HZ}`, sx(F0 - FSPAN_HZ), B + 3, "start", "top");
+    H.txt(g, `−${Math.round(FSPAN)}`, sx(F0 - FSPAN), B + 3, "start", "top");
     H.txt(g, "f₀", sx(F0), B + 3, "center", "top");
-    H.txt(g, `+${FSPAN_HZ}`, sx(F0 + FSPAN_HZ), B + 3, "end", "top");
+    H.txt(g, `+${Math.round(FSPAN)}`, sx(F0 + FSPAN), B + 3, "end", "top");
     H.titles(g, F, "dB", "hertz from the carrier");
   },
 
