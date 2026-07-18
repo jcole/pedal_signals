@@ -204,8 +204,10 @@ function drawSpecStems(F, dryDb, wetDb, H) {
   H.txt(g, "-80", L - 5, sy(-80), "end", "middle");
   H.txt(g, "0", sx(0), B + 3, "start", "top");
   for (const f of [1000, 2000, 3000])
-    H.txt(g, `${f / 1000}k`, sx(f), B + 3, "center", "top");
-  H.titles(g, F, "dB", "frequency (Hz)");
+    H.txt(g, `${f / 1000}`, sx(f), B + 3, "center", "top");
+  // ↓: level only ever falls from 0 dB toward the floor; →: frequency runs up.
+  // kHz axis, so the ticks read 1/2/3 — see the tick labels above.
+  H.titles(g, F, "level (dB) ↓", "frequency (kHz) →");
 }
 
 // Guitar mode: the note already carries a full harmonic series, so draw dry vs
@@ -242,6 +244,8 @@ function drawSpecCont(F, inp, out, H) {
   H.txt(g, "-80", L - 5, sy(-80), "end", "middle");
   H.txt(g, "0", sx(0), B + 3, "start", "top");
   for (const f of [1000, 2000, 3000])
-    H.txt(g, `${f / 1000}k`, sx(f), B + 3, "center", "top");
-  H.titles(g, F, "dB", "frequency (Hz)");
+    H.txt(g, `${f / 1000}`, sx(f), B + 3, "center", "top");
+  // ↓: level only ever falls from 0 dB toward the floor; →: frequency runs up.
+  // kHz axis, so the ticks read 1/2/3 — see the tick labels above.
+  H.titles(g, F, "level (dB) ↓", "frequency (kHz) →");
 }

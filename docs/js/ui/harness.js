@@ -169,7 +169,7 @@ function drawTime(inp, out, match) {
   const span = pedal.spanSamples;
   const sx = (i) => L + (i / span) * (R - L),
     sy = (y) => (T + B) / 2 - y * ((B - T) / 2 - 4);
-  g.strokeStyle = ZERO;
+  g.strokeStyle = ZERO; // the amplitude axis — the one horizontal line that reads
   g.beginPath();
   g.moveTo(L, sy(0));
   g.lineTo(R, sy(0));
@@ -183,7 +183,8 @@ function drawTime(inp, out, match) {
   txt(g, "-1", L - 5, sy(-1), "end", "middle");
   txt(g, "0", sx(0), B + 3, "start", "top");
   txt(g, spanMs().toFixed(0), sx(span), B + 3, "end", "top");
-  titles(g, F, "amplitude", "time (ms)");
+  // ↕: amplitude swings both ways around zero; →: time runs forward
+  titles(g, F, "amplitude ↕", "time (ms) →");
 }
 
 // ---- control UI (generated from view.pedals + view.controls) ---------------

@@ -22,9 +22,11 @@ export const colors = {
 };
 
 // Axis ink. Not in the palette or stylesheet: nothing outside a canvas paints
-// either, so there's no second copy to drift from.
-const AXIS = "#6b7361",
-  AXTITLE = "#525a4a";
+// either, so there's no second copy to drift from. Titles ride brighter than the
+// ticks — they carry the axis's identity (quantity, unit, direction), the cue that
+// tells a time panel from a frequency one.
+const AXIS = "#aab393",
+  AXTITLE = "#c6cfb5";
 
 // Size a canvas to its CSS box, scale for the display, and return the plot rect
 // inside the margins `m`. Margins are the caller's: the rig spends them on axis
