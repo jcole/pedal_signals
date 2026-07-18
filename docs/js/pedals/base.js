@@ -18,9 +18,9 @@ export class Pedal {
   // class (NL/LTI/LTV) is deliberately NOT here — constant per family, so it belongs
   // to the view's lesson.
   //
-  // `whatChanges`: clipping-only — its per-pedal spectrum headline, which the family
-  // feeds to spectrumTitle (ui/clipping.js). Delay and modulation share one spectrum
-  // claim per family and set it on the view instead, so they leave this blank.
+  // `whatChanges`: a pedal's per-pedal spectrum headline, which the family feeds to
+  // spectrumTitle (clipping and modulation, whose spectra differ across their pedals).
+  // Delay's spectrum is one claim per family, set on the view, so it leaves this blank.
   //
   // `techNote` reads `tech` back in English, one altitude down from the formula.
   // Optional: present only where a family's pedals differ IN the formula (clipping,

@@ -35,7 +35,10 @@ export default {
   // bottom) are the signal change. That's the reverse of clipping, so the band
   // crosses its CHANGES/YOU HEAR columns onto the right charts (see harness).
   bandSwap: true,
-  spectrumTitle: "new energy either side of the note — not up in the harmonics",
+  // Per pedal, like clipping's: now the window tracks rate (see fspanHz) the three
+  // spectra genuinely differ — one pair, a broad comb, a close faint pair — so the
+  // headline moves with the pick the way the top panel's outnar does, one copy each.
+  spectrumTitle: (pedal) => pedal.whatChanges,
   spectrumTech: "spectrum",
   spectrumUnit: "dB",
 
