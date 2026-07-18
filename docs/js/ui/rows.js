@@ -128,10 +128,15 @@ export function pedalRow(p, href, thumb, { changes, youHear }) {
     op.appendChild(note);
   }
 
+  // data-col names the claim for the stacked phone layout, where the .cathead that
+  // labels these two columns is gone and the pair would otherwise read as two loose
+  // sentences (CSS renders it as an inline header — see the max-width block)
   const chg = mk("span", "catwhat");
   chg.textContent = changes;
+  chg.dataset.col = "changes";
   const you = mk("span", "catwhat");
   you.textContent = youHear;
+  you.dataset.col = "you hear";
 
   // the thumbnail goes against the formula it draws (see headRow); DOM order is
   // column order, so this append IS the layout

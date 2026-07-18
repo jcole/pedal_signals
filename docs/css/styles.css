@@ -9,6 +9,13 @@
 		sans-serif;
 	--mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
+	/* One width for the whole bench, in one place: the centred page blocks cap at
+	   --wide, and the rig's two tracks sum to it (--rail + the 24px gap + charts).
+	   Widen the side gutters by lowering --wide — everything below reads it. Held
+	   where the masthead lede still fits on one line (see #masthead). */
+	--wide: 1240px;
+	--rail: 240px;
+
 	/* the lit page */
 	--page: #fff;
 	--ink: #191c15; /* body prose — the panel's own dark, borrowed back */
@@ -61,17 +68,17 @@ b {
 /* Full-bleed so the bench reads as one band, not a card. Left track is the rail
    (glyphs — the input trace and the pedal's own curve, both measured by the
    charts; see drawRail), right track the charts. The tracks are centred
-   (240 + 24 + 1096 = 1360) rather than the box max-width'd — a max-width would
-   stop the tray at 1360 and make the rig a card. #grid is placed (grid-column 2)
+   (--rail + 24 gap + charts = --wide) rather than the box max-width'd — a max-width
+   would stop the tray at --wide and make the rig a card. #grid is placed (grid-column 2)
    so it can come first in the markup without taking the rail's track. */
 #rig {
 	background: var(--tray);
 	border-top: 1px solid var(--rule);
 	border-bottom: 1px solid var(--rule);
-	padding: 10px 8px 14px;
+	padding: 10px 20px 14px;
 	margin: 10px 0 0;
 	display: grid;
-	grid-template-columns: 240px minmax(0, 1096px);
+	grid-template-columns: var(--rail) minmax(0, calc(var(--wide) - var(--rail) - 24px));
 	justify-content: center;
 	gap: 8px 24px;
 	align-items: start;
@@ -357,13 +364,13 @@ b {
    their names. No top padding — the masthead's own bottom gap is the separation,
    and paying for it twice pushed the lesson through the fold. */
 #bar {
-	max-width: 1360px;
+	max-width: var(--wide);
 	margin: 0 auto;
 	/* close to the column names below so they read as the row's subtitle, not the
 	   title's */
-	padding: 18px 8px 8px;
+	padding: 18px 20px 8px;
 	/* the hairline says "table" — the same rule the catalog draws under .cathead,
-	   at the same 1360 — so the row doesn't read as more lede prose */
+	   at the same --wide — so the row doesn't read as more lede prose */
 	border-top: 1px solid var(--rule);
 }
 .hint {
@@ -394,11 +401,11 @@ b {
    cap OS-dependent. Title sized under the catalog h1 on purpose: it sits above
    the control the eye needs first. */
 #masthead {
-	max-width: 1360px;
+	max-width: var(--wide);
 	margin: 0 auto;
 	/* room under the lede so #bar's rule reads as a seam, not an underline on the
 	   descenders */
-	padding: 14px 8px 13px;
+	padding: 14px 20px 13px;
 	display: flex;
 	align-items: baseline;
 	flex-wrap: wrap;
@@ -597,7 +604,7 @@ b {
    what-changes) and, beside it, the reading-the-charts box. flex not grid — a grid
    track would line the box up with the columns and it'd read as a fifth one. */
 #lede {
-	max-width: 1360px;
+	max-width: var(--wide);
 	display: flex;
 	align-items: flex-start;
 	gap: 32px;
@@ -613,9 +620,9 @@ b {
    must follow the rules they override */
 /* no rule of its own: the tray's bottom edge is the line this sits under */
 #lesson {
-	max-width: 1360px;
+	max-width: var(--wide);
 	margin: 8px auto 0;
-	padding: 24px 8px 8px;
+	padding: 24px 20px 8px;
 }
 .lesson-cols {
 	display: grid;
@@ -657,12 +664,12 @@ b {
    All lit side — no rig, no scope — so no instrument vars; ink on white. Only
    the mono face carries over, on formulas and machine lettering. */
 #cat {
-	/* 1360 like every other page; the SHAPE column made this a table and a table
+	/* --wide like every other page; the SHAPE column made this a table and a table
 	   wants the room. Tracks are all fr, so they absorb the extra and WHAT CHANGES
 	   stops breaking mid-phrase. */
-	max-width: 1360px;
+	max-width: var(--wide);
 	margin: 0 auto;
-	padding: 28px 16px 60px;
+	padding: 28px 20px 60px;
 }
 .cathdr h1 {
 	font-size: 30px;
@@ -863,9 +870,11 @@ a.catrow:hover .catlabel {
 	/* centred, not baselined: a drawing's bottom is an axis, not a text line */
 	align-self: center;
 }
-/* under ~640px the formulas would wrap to nothing, so rows stack and the header
-   (naming columns that no longer exist) goes */
-@media (max-width: 640px) {
+/* Stack before the grid overflows, not just before the formulas wrap: the five
+   tracks have fixed minimums (644px) that with gaps and padding need ~756px, so
+   any narrower and a fluid grid can't shrink — it scrolls sideways. Stacked, the
+   rows block out and the header (naming columns that no longer exist) goes. */
+@media (max-width: 760px) {
 	.catrow,
 	.famhead {
 		display: block;
@@ -886,6 +895,19 @@ a.catrow:hover .catlabel {
 	.catcell > *,
 	.famcell > * {
 		display: block;
+	}
+	/* CHANGES and YOU HEAR lose their column heads when stacked and read as two loose
+	   sentences, so each grows its own head from data-col — the .cathead lettering,
+	   small and quiet, over the claim it names */
+	.catrow .catwhat::before {
+		content: attr(data-col);
+		display: block;
+		margin-bottom: 3px;
+		font-family: var(--mono);
+		font-size: 10px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ink-lo);
 	}
 }
 /* the bench splits the catalog's PEDAL column into two — the picked pedal, then
@@ -916,7 +938,8 @@ a.catrow:hover .catlabel {
    the far edge on a wide viewport */
 #ledetable {
 	flex: 1;
-	max-width: 1120px;
+	/* the rail's width in from the edge, so the family lands where the rail ends below */
+	max-width: calc(var(--wide) - var(--rail));
 }
 /* PEDAL cell: the toy pedal and the picker as one unit. align-items:baseline so the
    picker's text — not the taller icon — sets the unit's baseline, which is what the
@@ -1031,4 +1054,34 @@ a.catrow:hover .catlabel {
 #masthead .catlink:hover {
 	border-color: var(--accent-lo);
 	background: var(--sunk);
+}
+
+/* ---- the bench on a phone ----
+   The bench's four-column row has fixed minimums (13.5 + 9 + 9 + 8rem) that with
+   gaps and padding need ~738px, below which it scrolls sideways; and the rig's
+   fixed 240px rail leaves the charts too little to draw in (a 240 + gap split of
+   a 390px screen crushes them to ~110px). So the rig goes one column — controls
+   first (pick, then play), charts under the button that drives them — and the
+   bench row stacks, dropping its column heads (each claim keeps its own chart
+   chip, so the heads have nothing left to name). */
+@media (max-width: 740px) {
+	#rig {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 14px;
+	}
+	#controls {
+		grid-column: 1;
+		grid-row: 1;
+	}
+	#grid {
+		grid-column: 1;
+		grid-row: 2;
+	}
+	#lede .cathead {
+		display: none;
+	}
+	#lede .benchrow {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 12px;
+	}
 }
