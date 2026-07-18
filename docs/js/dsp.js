@@ -145,6 +145,12 @@ export function envelopeHeld(sig, holdMs = 1000 / F0) {
     if (q[head] <= i - W) head++; // the front aged out of the window
     e[i] = Math.abs(sig[q[head]]);
   }
+  // Warm-up: before i reaches W the trailing window is short, so a tone already at
+  // level reads as a ramp up from |sig[0]| — a dip at t=0. This slice starts
+  // mid-note, so hold the first full window's peak back across that leading region
+  // (offline, so the look-ahead is free; ≥|sig| there, so it never uncovers a peak).
+  const w0 = Math.min(n, W);
+  for (let i = 0; i < w0 - 1; i++) e[i] = e[w0 - 1];
   return e;
 }
 

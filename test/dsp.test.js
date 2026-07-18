@@ -253,11 +253,12 @@ test("envelopeHeld is flat on a steady tone, where envelope ripples", () => {
   const sig = Float64Array.from({ length: n }, (_, i) =>
     Math.sin((2 * Math.PI * F0 * i) / SR),
   );
-  // A steady sine's envelope IS flat 1. Skip the first window, which is still
-  // filling: before the carrier's first peak there genuinely is no peak to hold.
+  // A steady sine's envelope IS flat 1 — from t=0, not just once the trailing
+  // window fills: the warm-up holds the first full window's peak back over the
+  // leading region, so there's no dip at the left edge to skip.
   const e = envelopeHeld(sig);
   let lo = 1;
-  for (let i = 480; i < n; i++) lo = Math.min(lo, e[i]);
+  for (let i = 0; i < n; i++) lo = Math.min(lo, e[i]);
   assert.ok(lo > 0.999, `held: flat to <0.1% (dipped to ${lo.toFixed(4)})`);
   // and the contrast that makes it worth a second function
   const r = envelope(sig);
