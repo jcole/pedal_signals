@@ -400,12 +400,14 @@ function stopSource() {
   srcNode = null;
 }
 
-// the monitor's two listening controls. One crossfade (dry is whatever wet isn't, so
-// the pair can't drift), gated by the footswitch — bypassed, the wet chain is muted
-// and the dry note passes at full. Sound is a plain mute toggle on the master, since
-// the signal is always live: it un-mutes rather than sets a level. Starts off.
+// the monitor's listening controls. One crossfade (dry is whatever wet isn't, so the
+// pair can't drift), gated by the footswitch — bypassed, the wet chain is muted and
+// the dry note passes at full. The signal is always live, so the master carries both
+// a mute toggle (sound on/off, starts off) and a level (the volume slider).
 let soundOn = false;
+let volume = 0.75; // monitor level 0..1, scaled by VOL_MAX; the button gates it on/off
 const blendS = () => document.getElementById("blend");
+const volS = () => document.getElementById("volume");
 const soundBtn = () => document.getElementById("sound");
 function setMix() {
   if (!actx) return;
@@ -414,7 +416,7 @@ function setMix() {
   wetGain.gain.value = engaged ? b : 0;
 }
 function applySound() {
-  if (actx) master.gain.value = soundOn ? VOL_MAX : 0;
+  if (actx) master.gain.value = soundOn ? volume * VOL_MAX : 0;
 }
 function setSoundUI() {
   const b = soundBtn();
@@ -426,6 +428,11 @@ function wireMonitor() {
   blendS().oninput = () => {
     startAudioOnce();
     setMix();
+  };
+  volS().oninput = () => {
+    startAudioOnce();
+    volume = +volS().value;
+    applySound();
   };
   soundBtn().onclick = () => {
     startAudioOnce();

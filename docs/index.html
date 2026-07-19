@@ -56,7 +56,7 @@
         <span class="engrave">monitor</span>
         <!-- sound is on/off, not a level: the signal is always live, this just
              un-mutes the speaker. Starts off (a browser can't sound until you ask).
-             First in the monitor — you turn it on, then set the blend you hear. -->
+             First in the monitor — turn it on, then set the volume and blend. -->
         <button id="sound" class="soundtgl" type="button" aria-pressed="false"
                 title="sound on / off">
           <svg class="volic" viewBox="0 0 24 24" aria-hidden="true">
@@ -65,6 +65,12 @@
           </svg>
           <span class="soundlbl">off</span>
         </button>
+        <span class="mdiv"></span>
+        <div class="field volfield">
+          <span class="blab vol">vol</span>
+          <input id="volume" type="range" min="0" max="1" step="0.01" value="0.75"
+                 aria-label="monitor volume" title="how loud the monitor plays">
+        </div>
         <span class="mdiv"></span>
         <div class="field blendfield">
           <span class="blab dry">dry</span>

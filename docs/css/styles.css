@@ -275,12 +275,16 @@ body:has(.app) {
 	align-items: center;
 	gap: 8px;
 }
-.blendfield {
-	min-width: 130px;
-}
+/* explicit track widths — a range input's intrinsic width (~129px) is too long for
+   this compact monitor, and min-width alone won't shrink a content-sized field */
 .blendfield input[type="range"] {
-	flex: 1;
-	min-width: 0;
+	width: 64px;
+	flex: none;
+	accent-color: var(--accent);
+}
+.volfield input[type="range"] {
+	width: 58px;
+	flex: none;
 	accent-color: var(--accent);
 }
 .blab {
@@ -288,7 +292,8 @@ body:has(.app) {
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 }
-.blab.dry {
+.blab.dry,
+.blab.vol {
 	color: #6b7063;
 }
 .blab.wet {
