@@ -9,7 +9,9 @@
     "test:e2e": "playwright test",
     "test:e2e:chromium": "playwright test --project=chromium",
     "lint": "biome lint",
-    "check": "npm run lint && npm test && npm run test:e2e"
+    "format": "biome format --write",
+    "format:check": "biome format",
+    "check": "npm run lint && npm run format:check && npm test && npm run test:e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.3",
