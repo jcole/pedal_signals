@@ -10,210 +10,169 @@
 <!-- Unfurl card for Slack/iMessage/etc: static (a crawler never runs setPedal()),
      so it stays on the landing pitch, not a picked pedal. Absolute URLs — a
      crawler has no page base to resolve against. og.png is 1200×630. -->
-<meta name="description" content="A guitar pedal is a piece of math on a signal. Pick one, press play, and watch it reshape a note — the math on the left, the sound on the right.">
+<meta name="description" content="A guitar pedal is a piece of math on a signal. Pick one and watch it reshape a note — the input on the left, the pedal in the middle, what you hear on the right.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://jcole.github.io/pedal_signals/">
 <meta property="og:title" content="Pedal signals — see what a guitar pedal does to a signal">
-<meta property="og:description" content="A guitar pedal is a piece of math on a signal. Pick one, press play, and watch it reshape a note — the math on the left, the sound on the right.">
+<meta property="og:description" content="A guitar pedal is a piece of math on a signal. Pick one and watch it reshape a note — the input on the left, the pedal in the middle, what you hear on the right.">
 <meta property="og:image" content="https://jcole.github.io/pedal_signals/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 
-<!-- The one thing on the page that says what the page IS; the rig below only
-     shows. Stays one row (lede beside the title, not under it) — a masthead that
-     stacks costs the lesson its first line under the fold. -->
-<header id="masthead">
-  <h1 class="sitetitle">Pedal signals</h1>
-  <!-- Where to look; re-aim it if the rig's layout moves. -->
-  <p class="sitelede">A guitar pedal is a piece of math on a signal. Pick one, press
-  play, and watch it work — the math on the left, what it does to your note on the
-  right.</p>
-  <!-- The way out to the catalog, opposite pedals.html's "← back to the bench":
-       same .catlink, same header corner. "compare", not "every pedal" — the
-       picker already lists the names; comparing is the thing it can't do. No
-       arrow: it would point straight at the GitHub mark 18px to its right and
-       read as a caption for it. -->
-  <a class="catlink" href="./pedals.html">compare pedals</a>
-  <!-- New tab: it's the one link that leaves the site, and navigating away would
-       tear down the audio graph mid-note. The mark has no text, so its name lives
-       in aria-label and title; the <svg> is hidden from both to avoid saying it
-       twice. -->
-  <a class="sitesrc" href="https://github.com/jcole/pedal_signals"
-     target="_blank" rel="noopener"
-     aria-label="Source on GitHub" title="Source on GitHub">
-    <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false">
-      <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
-    </svg>
-  </a>
-</header>
+<div class="app">
+  <!-- The one thing on the page that says what the page IS; the bench below only
+       shows. Title + a one-line tagline + the way out to compare + the source mark. -->
+  <header id="masthead">
+    <h1 class="sitetitle">Pedal signals</h1>
+    <p class="sitelede">A guitar pedal is a piece of math on a signal — pick one and
+    watch what it does to your note.</p>
+    <a class="catlink" href="./pedals.html">compare pedals</a>
+    <!-- New tab: it's the one link that leaves the site, and navigating away would
+         tear down the audio graph mid-note. Name in aria-label/title; the <svg> is
+         hidden from both so it isn't announced twice. -->
+    <a class="sitesrc" href="https://github.com/jcole/pedal_signals"
+       target="_blank" rel="noopener"
+       aria-label="Source on GitHub" title="Source on GitHub">
+      <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false">
+        <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
+      </svg>
+    </a>
+  </header>
 
-<!-- The band: the pedal you picked and the family it belongs to. PEDAL holds the
-     picker and, beside it, what the two charts show for this pedal — each claim
-     tagged with the chart that proves it. FAMILY is context and the way out to
-     compare. Standing DOM: the picker mounts once and a rebuild would destroy it,
-     so harness.js fills the rest by id. -->
-<div id="bar">
-  <div id="lede">
-    <div id="ledetable">
-      <!-- Four columns reading the signal path left to right: the pedal you picked,
-           what it does to the wave, what that does to your ear, the family it's in.
-           The two middle claims are the page's punchline; the column heads name them
-           and the chip ties each to the chart below that proves it. -->
-      <div id="ledehead" class="cathead"><span>pedal</span><span>changes</span><span>you hear</span><span>family</span></div>
-      <div class="benchrow">
-        <!-- PEDAL: toy pedal + picker (art.js draws the pedal; mountPicker owns #pedalpick) -->
-        <span class="pickunit">
-          <span id="pedalart" class="pedalart"></span>
-          <div id="pedalpick"></div>
-        </span>
-        <!-- CHANGES: what the waveform shows (outnar) -->
-        <span class="factcell">
-          <span class="claim" id="benchchanges"></span>
-          <span class="chip" id="benchchangeschip"></span>
-        </span>
-        <!-- YOU HEAR: what the spectrum shows (whatChanges) -->
-        <span class="factcell">
-          <span class="claim" id="benchhear"></span>
-          <span class="chip" id="benchhearchip"></span>
-        </span>
-        <!-- FAMILY: the name (link out to the catalog) over its signal class -->
-        <span class="famcell">
-          <a class="famname" id="benchfam"><span id="benchfamname"></span><span class="famnoun"> →</span></a>
-          <span class="famklass" id="benchklass"></span>
-        </span>
+  <div class="body">
+    <!-- the shelf: pedals grouped by family, filled by nav.js -->
+    <nav id="pedalnav" aria-label="Choose a pedal"></nav>
+
+    <!-- the bench: its own scroll pane so the scope stays put while the page doesn't
+         move (see the app-shell note in styles.css) -->
+    <main class="main">
+      <!-- patch cables input→pedal→output, recomputed on resize/scroll (harness) -->
+      <svg id="cables" aria-hidden="true"></svg>
+
+      <!-- the monitor: the listening controls, set apart from the signal demo with
+           no enclosure — blend and volume reach the speaker, not the charts. -->
+      <div class="monitor">
+        <span class="engrave">monitor</span>
+        <!-- sound is on/off, not a level: the signal is always live, this just
+             un-mutes the speaker. Starts off (a browser can't sound until you ask).
+             First in the monitor — you turn it on, then set the blend you hear. -->
+        <button id="sound" class="soundtgl" type="button" aria-pressed="false"
+                title="sound on / off">
+          <svg class="volic" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9v6h5l5 4V5L9 9H4z" fill="currentColor"/>
+            <path class="wave" d="M16 8.5a4 4 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          <span class="soundlbl">off</span>
+        </button>
+        <span class="mdiv"></span>
+        <div class="field blendfield">
+          <span class="blab dry">dry</span>
+          <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5"
+                 aria-label="dry/wet blend" title="0 is your note alone, 1 is the pedal alone">
+          <span class="blab wet">wet</span>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
 
-<!-- The rig (charts and the knobs under them) is one object on one surface; the
-     tray steps the dark panels off the white page. -->
-<div id="rig">
-<div id="grid">
-  <div class="stack">
-    <!-- Neither output panel is the same chart on every page — harness.js fills
-         both names from the mounted family (waveform or envelope here, depending
-         on the family's zoom). Name first in the header, then the sentence: you
-         can't use a sentence about a chart you can't yet name. -->
-    <div class="panel">
-      <h3>
-        <span class="ctype">
-          <!-- glyph naming the chart by shape before the word is read; harness.js
-               fills it from the chart type (a wave trace or analyzer bins) -->
-          <span class="ctype-ic" id="timeic" aria-hidden="true"></span>
-          <span id="timetech"></span>
-        </span>
-        <span class="nar" id="outnar"></span>
-        <span class="tech"><span class="dry">in</span> vs <span class="wet">out</span></span>
-      </h3>
-      <canvas data-c="time"></canvas>
-    </div>
-    <!-- The bottom panel isn't a spectrum on every page (only clipping's is), so
-         its name and unit come from the view — harness.js fills both. The unit
-         rides inside the name ("SPECTRUM (dB)") so it attaches to the chart, not
-         to the "out" trace in the legend. -->
-    <div class="panel">
-      <h3>
-        <span class="ctype">
-          <span class="ctype-ic" id="specic" aria-hidden="true"></span>
-          <span id="spectech"></span><span class="cunit" id="specunit"></span>
-        </span>
-        <span class="nar" id="specnar"></span>
-        <span class="tech"><span class="dry">in</span> vs <span class="wet">out</span></span>
-      </h3>
-      <canvas data-c="spec"></canvas>
-    </div>
-  </div>
-</div>
+      <div class="chain">
+        <!-- INPUT: a brushed-steel signal generator; its source controls live inside
+             it, above a SIGNAL scope showing the note going in. -->
+        <div class="col">
+          <p class="seclabel">input</p>
+          <div class="steelbox" id="inputbox">
+            <span class="cscrew l t"></span><span class="cscrew r t"></span>
+            <span class="cscrew l b"></span><span class="cscrew r b"></span>
+            <div class="inctls">
+              <div class="field">
+                <span class="fl">source</span>
+                <span class="seg">
+                  <button class="srcbtn active" data-src="sine">sine</button>
+                  <button class="srcbtn" data-src="guitar" disabled>guitar ⏳</button>
+                </span>
+              </div>
+              <!-- restart the note from the pluck; only the guitar has an attack to
+                   return to, so harness.js hides it on the (continuous) sine -->
+              <button id="replay" class="replaybtn" hidden title="restart the note from the pluck">↻ pluck</button>
+            </div>
+            <div class="screen">
+              <div class="phead">
+                <span class="ctype" id="inctype"></span>
+                <span class="claim" id="inClaim"></span>
+              </div>
+              <canvas data-c="srcglyph" class="chart"></canvas>
+            </div>
+          </div>
+        </div>
 
-<div id="controls">
-  <!-- The rail's decks, TRANSFORM first (the pedal's math), then INPUT (the source
-       you feed it), then the transport at the foot — set the transform and the
-       source, then press play. Both bars are standing text — roles, not names. No
-       arrow: stacked, reading order says "sequence". -->
-  <!-- The pedal deck: the transform, the curve it draws (the same drawCenter the
-       catalog thumbnails call), and the knobs that shape it. The bar is standing
-       text — TRANSFORM, the page's own column head — and wears the picked pedal's
-       toy icon (harness setPedal fills #pedalicon) so the deck reads as the pedal
-       itself. #centerctls is its own element because buildControls() wipes it. -->
-  <div class="ctlcol" id="pedalcol">
-    <div class="grp grp--pedal"><span id="pedalicon" class="pedalart" aria-hidden="true"></span>Transform</div>
-    <!-- the formula over a gloss of the curve's character (tech over techNote), a
-         line of its own — .grp's uppercase would render `tanh` as `TANH`, and no
-         240px bar holds modulation's 35 chars -->
-    <div class="ctl deckopwrap">
-      <code class="deckop" id="pedalop"></code>
-      <span class="decknote" id="pedalnote"></span>
-    </div>
-    <div class="ctl"><canvas class="glyph glyph--curve" data-c="curve" aria-hidden="true"></canvas></div>
-    <div id="centerctls"></div>
-  </div>
-  <div class="ctlcol">
-    <div class="grp" id="ingrp">Input</div>
-    <!-- A glyph of what's going in — "a steady tone" or "a plucked note", three
-         carrier periods, no axes. Not the source panel shrunk: with a real span
-         label it was a lie (hardcoded 3 cycles under a 0–1365 ms axis). On top,
-         like the curve on the deck above — picture first, then its controls. -->
-    <div class="ctl"><canvas class="glyph" data-c="srcglyph" aria-hidden="true"></canvas></div>
-    <!-- The source and (for the source that has a beginning) the way back to it.
-         play/stop stays on the tray — it asks "is the rig running", true of every
-         view; ↻ pluck sits by the button that decides whether it exists. -->
-    <div class="ctl">
-      <span class="seg">
-        <button class="srcbtn active" data-src="sine">sine</button>
-        <button class="srcbtn" data-src="guitar" disabled>guitar ⏳</button>
-      </span>
-      <button id="replay" hidden title="restart the note from the pluck">↻ pluck</button>
-    </div>
-  </div>
-  <!-- The transport, at the foot: the controls that change nothing on a chart.
-       render() reads the source and the knobs, never play/blend — those reach the
-       AudioContext and stop, so they're how you listen, not a stage of the chain
-       (hence no OUTPUT deck). ↻ pluck went to the INPUT deck instead — it's the
-       one that's a property of the source, not the rig. -->
-  <div id="railtop">
-    <!-- big (60px) — the one control on the tray, and the page's one "go" -->
-    <button id="play" title="start audio" aria-label="start audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
-    <!-- A crossfade, one knob: a dry level and a wet level free to disagree would
-         change loudness across an A/B, the one thing it must not do. Ends as the
-         label, no readout — the direction is the only thing worth saying about a
-         blend you set by ear. -->
-    <label class="blendctl">
-      <span>dry</span>
-      <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="dry/wet blend" title="0 is your note alone, 1 is the pedal alone">
-      <span>wet</span>
-    </label>
-  </div>
-  <!-- Spans the columns; it's about the guitar button two decks up. -->
-  <p class="hint ctlhint" id="gcredit" style="display:none">
-    guitar input: a clean Stratocaster A3 (bridge pickup) from
-    <a href="https://egfxset.github.io/">EGFxSet</a> — Pedroza, Meza &amp; Roman,
-    ISMIR 2022. CC&nbsp;BY&nbsp;4.0.
-  </p>
-</div>
-</div>
+        <!-- PEDAL: the stompbox in the pedal's own hue — brand, knobs, the formula
+             silkscreened on the face, a TRANSFORM curve screen, and a footswitch.
+             harness.js fills #pedalobj (and rebuilds it on each pick). -->
+        <div class="col">
+          <p class="seclabel">pedal</p>
+          <div class="pedhold"><div id="pedalobj"></div></div>
+        </div>
 
-<section id="lesson" style="display:none">
-  <div class="lesson-cols">
-    <div class="col">
-      <div id="lbody"></div>
-    </div>
-    <div class="col" id="lasidewrap">
-      <h3 id="lasidetitle"></h3>
-      <div id="lasidebody"></div>
-    </div>
+        <!-- OUTPUT: the dark analyzer — WAVEFORM (what changes) over SPECTRUM (what
+             you hear), each an in-vs-out trace. harness.js fills the headers. -->
+        <div class="col">
+          <p class="seclabel">output</p>
+          <div class="scope" id="scope">
+            <!-- the claim rides the chassis above each screen, so a long one never
+                 crowds the trace. The chart's NAME (WAVEFORM/SPECTRUM/…) and the
+                 in/out key stay in the glass header, on the screen they label.
+                 harness.js fills the same ids wherever they sit. -->
+            <div class="screencap"><span class="role" id="topRole"></span> <span class="claim" id="topClaim"></span></div>
+            <div class="screen">
+              <div class="phead">
+                <span class="ctype" id="topctype"></span>
+                <span class="legend"><span class="in">in</span> vs <span class="out">out</span></span>
+              </div>
+              <canvas data-c="time" class="chart"></canvas>
+            </div>
+            <div class="screencap"><span class="role" id="botRole"></span> <span class="claim" id="botClaim"></span></div>
+            <div class="screen">
+              <div class="phead">
+                <span class="ctype" id="botctype"></span>
+                <span class="legend"><span class="in">in</span> vs <span class="out">out</span></span>
+              </div>
+              <canvas data-c="spec" class="chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- the family's prose, in the bench's scroll pane below the chain -->
+      <section id="lesson" style="display:none">
+        <div class="lesson-cols">
+          <div class="col">
+            <div id="lbody"></div>
+          </div>
+          <div class="col" id="lasidewrap">
+            <h3 id="lasidetitle"></h3>
+            <div id="lasidebody"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- the guitar source's attribution (EGFxSet, CC BY 4.0); shown only while the
+           guitar note is the source it's crediting -->
+      <p class="gcredit" id="gcredit" hidden>
+        guitar input: a clean Stratocaster A3 (bridge pickup) from
+        <a href="https://egfxset.github.io/">EGFxSet</a> — Pedroza, Meza &amp; Roman,
+        ISMIR 2022. CC&nbsp;BY&nbsp;4.0.
+      </p>
+    </main>
   </div>
-</section>
+</div>
 
 <script type="module">
   import { mount, selectPedal } from "./js/ui/harness.js";
-  import { mountPicker } from "./js/ui/picker.js";
+  import { mountNav } from "./js/ui/nav.js";
   import clipping from "./js/ui/clipping.js";
   import delay from "./js/ui/delay.js";
   import modulation from "./js/ui/modulation.js";
 
-  // Add a family here and it shows up in the picker and becomes linkable.
+  // Add a family here and it shows up in the nav and becomes linkable.
   const EFFECTS = [clipping, delay, modulation];
 
   // The URL names a pedal, whose id is unique across the catalog, so it names its
@@ -228,7 +187,7 @@
   let current = null;
   function show(v, pedalId) {
     const p = v.pedals.find((x) => x.id === pedalId) ?? v.pedals[0];
-    picker.select(p.id);
+    nav.select(p.id);
     if (v.id === current) {
       selectPedal(p.id);
       return;
@@ -237,7 +196,7 @@
     mount(v, { pedal: p.id });
   }
 
-  const picker = mountPicker(document.getElementById("pedalpick"), {
+  const nav = mountNav(document.getElementById("pedalnav"), {
     families: EFFECTS,
     onPick: (pedal) => {
       history.pushState(null, "", urlFor(pedal));

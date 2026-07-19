@@ -1,141 +1,136 @@
-// Effect-neutral harness. Everything not specific to one page lives here: the
-// generic output panel (dry-vs-wet time), the control rail, the transport, the
-// dry/wet blend audio graph, the source toggle, and the control UI. It renders a
-// VIEW over a list of PEDALS: the pedals (from pedals/) are the model, the view is
-// the page's UI. Pure DSP is imported from dsp.js.
+// Effect-neutral harness. Everything not specific to one page lives here: the two
+// analyzer screens (dry-vs-wet), the pedal face and its knobs, the SIGNAL input
+// scope, the footswitch bypass, the monitor (dry/wet blend + volume), the source
+// toggle, and the patch cables. It renders a VIEW over a list of PEDALS: the pedals
+// (from pedals/) are the model, the view is the page's UI. Pure DSP from dsp.js.
 //
-// The rig is a control rail and two output charts. Every chart is the output
-// against the input; the input alone and the pedal's own internals get no panel
-// (they're a grey trace and a measured curve already), only glyphs in the rail —
-// see drawRail.
+// The bench is a wired signal chain read left to right: an input generator, the
+// pedal, an output analyzer. Every screen is the output against the input; the
+// input alone gets the SIGNAL scope, the pedal's own curve the TRANSFORM screen.
 //
 // A view module (clipping.js, delay.js, …) supplies the family's UI and pedals and
-// hands it to mount(). The contract:
+// hands it to mount(). The contract (unchanged from the deck layout):
 //
 //   const view = {
-//     id, navLabel,           // family key + name; the picker uses it as the list
-//                             // heading, the band as the FAMILY cell's name
+//     id, navLabel,           // family key + name; the nav uses it as the shelf
+//                             // heading, over the family's signal class
 //     blendDefault,           // where the dry/wet crossfade starts (0 dry, 1 wet)
-//     pedals: [ Pedal, … ],   // what the picker lists; the selected one drives
+//     pedals: [ Pedal, … ],   // what the nav lists; the selected one drives
 //                             // input+process
-//     timeTech?,              // the TOP panel's chart-type word (its chip).
-//                             // Defaults to "waveform"; override with drawTime.
-//     spectrumTitle,          // bottom-panel headline. A string is the family's;
+//     timeTech?,              // the TOP screen's chart-type word. Defaults to
+//                             // "waveform"; override with drawTime.
+//     spectrumTitle,          // bottom-screen claim. A string is the family's;
 //                             // a fn(pedal) is rewritten per pick.
-//     spectrumTech,           // the BOTTOM panel's chart-type word
-//     spectrumUnit?,          // its unit, parenthesized ("dB"); omit if unitless
+//     spectrumTech,           // the BOTTOM screen's chart-type word
+//     bandSwap?,              // cross which screen reads CHANGES vs YOU HEAR
+//                             // (modulation: the pulse you hear is the top screen)
 //     lesson?,                // {formula, formulaNote, klass?, oneLiner, body,
-//                             // aside?:{title, body}} — prose above/below the rig.
-//                             // Omit and both sections stay hidden.
-//     controls:[ {id, label, min, max, step, def, fmt?(v)->string}, … ],
-//     thumbSquare?,           // curve reads against y = x? Squares the rail glyph
-//                             // and catalog thumbnail — see thumb.js's marginsFor.
+//                             // aside?} — prose below the chain. Omit → hidden.
+//     controls:[ {id, label, min, max, step, def, fmt?(v)->string}, … ], // knobs
+//     thumbSquare?,           // curve reads against y = x? Squares the TRANSFORM
+//                             // screen glyph and catalog thumbnail — see thumb.js.
 //     drawCenter(F, pedal, params, H),           // the family's own curve; the
-//                             // rail glyph and catalog thumbnail, off this one hook
-//     drawTime?(F, inp, out, pedal, src, H, params), // the TOP panel. Omit and
-//                             // the harness draws dry-vs-wet waveform (drawTime
-//                             // below), right only for a span a few carrier cycles wide.
-//     drawSpec(F, inp, out, pedal, src, H, params),  // the BOTTOM panel
+//                             // TRANSFORM screen and catalog thumbnail, off this hook
+//     drawTime?(F, inp, out, pedal, src, H, params), // the TOP screen. Omit and
+//                             // the harness draws dry-vs-wet waveform (drawTime below).
+//     drawSpec(F, inp, out, pedal, src, H, params),  // the BOTTOM screen
 //     buildAudio(actx, inGain, H) -> { wetOut, update(pedal, params, state, match), dispose?() },
-//     buildSource?(actx, {srcMode, guitar}) -> AudioNode,  // the view's own live
-//                             // source, for BOTH src modes. Default: looped guitar
-//                             // buffer, or a steady oscillator.
+//     buildSource?(actx, {srcMode, guitar}) -> AudioNode,  // the view's own source.
 //   };
 //
-// mount(view, {pedal}) can be called again to swap families in place. The harness
-// disconnects the old wet chain and calls dispose() — a buildAudio that start()s
-// anything (an LFO, a ConstantSource) MUST stop it there or it runs unheard for the
-// life of the page. `pedal` is the id to open on (unknown falls back to first).
-//
-// Nothing here chooses a pedal: the picker owns that; the page turns its choice
-// into a mount() or selectPedal().
-//
-// The harness reads off the *selected* pedal: sampleCount / spanSamples (analysis
-// sizing), defaults (knobs to snap to; empty = leave them put), genInput() and
-// process(). H is the helper bundle (drawing primitives + palette) passed to the
-// view hooks. DSP core and constants (SR, N, KBIN, …) live in dsp.js.
+// mount(view, {pedal}) can be called again to swap families in place; selectPedal()
+// moves within the family already up (no remount, so the audio chain stays put).
+// Nothing here chooses a pedal: the nav owns that; the page turns its choice into a
+// mount() or selectPedal().
 import { F0, MSMAX, normalize, parseWav, SPAN, SR } from "../dsp.js";
-// the toy pedal in the band's PEDAL cell (art.js has the reasoning)
-import { pedalArt } from "./art.js";
-// drawing primitives and palette, shared with the catalog so both draw the same
-// curves in the same ink (see draw.js). `H` is the bundle handed to view hooks.
+// drawing primitives and palette, shared with the catalog (see draw.js).
 import { frame as fit, H, line, titles, txt } from "./draw.js";
-// the band's two claims, resolved by the same code the catalog uses (see setPedal)
+// the two scope claims, resolved by the same code the catalog uses (see setPedal)
 import { claims } from "./rows.js";
-// the rail's curve glyph is the catalog's thumbnail, live. See drawRail.
+// the TRANSFORM screen's curve is the catalog's thumbnail, live. See drawRail.
 import { drawThumb } from "./thumb.js";
 
-const { DRY, WET, ZERO } = H.colors;
+const { DRY, ZERO } = H.colors;
+// The palette the analyzer draws with while the pedal is bypassed: the "out" trace
+// is painted the "in" grey, so a footswitch-off screen reads as one untouched
+// signal (out === in then) instead of an orange line laid over the grey one.
+const H_BYPASS = { ...H, colors: { ...H.colors, WET: H.colors.DRY } };
 
-// The type-badge glyphs, keyed by chart word: a wave for any time trace
-// (waveform, envelope), analyzer bins for a spectrum. In the chip's own ink
-// (currentColor). The panels get whichever their family declares — the bottom is
-// a spectrum on clipping/modulation but an envelope on delay, so the shape has to
-// follow the word, not the slot.
+// The type-badge glyphs, keyed by chart word: a wave for any time trace (signal,
+// waveform, envelope), analyzer bins for a spectrum. In the chip's own ink.
 const WAVE_IC =
-  '<svg viewBox="0 0 20 12"><path d="M1 6 Q4 1 7 6 T13 6 T19 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6 Q4 1 7 6 T13 6 T19 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 const BARS_IC =
-  '<svg viewBox="0 0 20 12" fill="currentColor"><rect x="2" y="1" width="2.4" height="10"/><rect x="6.8" y="3.5" width="2.4" height="7.5"/><rect x="11.6" y="5.5" width="2.4" height="5.5"/><rect x="16.4" y="7.5" width="2.4" height="3.5"/></svg>';
+  '<svg viewBox="0 0 20 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1" width="2.4" height="10"/><rect x="6.8" y="3.5" width="2.4" height="7.5"/><rect x="11.6" y="5.5" width="2.4" height="5.5"/><rect x="16.4" y="7.5" width="2.4" height="3.5"/></svg>';
 const techIcon = (tech) => (tech === "spectrum" ? BARS_IC : WAVE_IC);
+// the TRANSFORM screen header's own glyph — a bending curve
+const CURVE_IC =
+  '<svg viewBox="0 0 15 13" aria-hidden="true"><path d="M1 11.5 C 6 11.5, 6 1.5, 13 1.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
 
 // ---- module-level state ----------------------------------------------------
 let view = null; // the mounted page: pedals + UI hooks
 let pedal = null; // the currently selected Pedal instance
 const level = 1.0;
 const params = {}; // live control values, keyed by control id
+const ctlDefs = {}; // control id -> its {min,max,step,def,fmt,…} spec
 let srcMode = "sine", // "sine" | "guitar"
   guitar = null; // Float32Array of the clean note, 48 kHz mono
+let engaged = true; // footswitch: true = the pedal is in circuit, false = bypassed
 let lastState = null,
   lastMatch = 1; // process() output the audio graph needs (set each render)
 
 // ---- canvas plumbing -------------------------------------------------------
 const C = {};
-// plot margins reserved for axis labels (draw.js takes them as an argument so a
-// catalog thumbnail can pass zeroes)
 const MARGINS = { L: 40, R: 12, T: 10, B: 26 };
-// a glyph labels nothing — just enough to keep a 1.5px stroke off its edge. Passed
-// to `fit`, not `frame` (which closes over MARGINS): frame would draw the axis
-// panel's 40px inset and bury the trace in a corner.
-const GLYPH_MARGINS = { L: 2, R: 2, T: 2, B: 2 };
+// a glyph labels nothing — just enough to keep a stroke off its edge
+const GLYPH_MARGINS = { L: 6, R: 6, T: 6, B: 6 };
 const frame = (cv) => fit(cv, MARGINS);
 
 // ---- pedal-declared sizing --------------------------------------------------
-// per-sample pedal shows ~13.5 ms; a time-based one asks for more. Downstream reads
-// the selected pedal, not the consts.
 const spanMs = () =>
   pedal.spanSamples === SPAN ? MSMAX : (pedal.spanSamples / SR) * 1000;
 
 // ---- input generation ------------------------------------------------------
-// the selected pedal makes its own input — a steady sine, a guitar slice, or what
-// its lesson needs (delay makes a transient pluck; a steady tone can't show a repeat)
 function genInput() {
   return pedal.genInput({ srcMode, guitar, n: pedal.sampleCount });
 }
 
 // ---- render (effect-neutral orchestration) ---------------------------------
+// Bypassed, the output IS the input: the analyzer's out-trace lands on the in-trace
+// (no change), the spectrum drops to the fundamental, the envelope loses its
+// repeats/pulse. The audio path mutes the wet chain in step (see setMix).
 function render() {
   const inp = genInput();
-  const r = pedal.process(inp, params);
-  lastState = r.state ?? null;
-  lastMatch = r.match ?? 1;
-
+  let out;
+  if (engaged) {
+    const r = pedal.process(inp, params);
+    out = r.out;
+    lastState = r.state ?? null;
+    lastMatch = r.match ?? 1;
+  } else {
+    out = inp;
+    lastState = null;
+    lastMatch = 1;
+  }
+  // bypassed: paint the analyzer in the "in" grey, so the out-trace (which equals
+  // the input then) reads as one untouched signal, not a red line over the grey
+  const Hh = engaged ? H : H_BYPASS;
+  document.getElementById("scope")?.classList.toggle("bypassed", !engaged);
   drawRail(inp);
-  if (view.drawTime) view.drawTime(frame(C.time), inp, r.out, pedal, srcMode, H, params);
-  else drawTime(inp, r.out, lastMatch);
-  view.drawSpec(frame(C.spec), inp, r.out, pedal, srcMode, H, params);
+  if (view.drawTime) view.drawTime(frame(C.time), inp, out, pedal, srcMode, Hh, params);
+  else drawTime(inp, out, lastMatch, Hh);
+  view.drawSpec(frame(C.spec), inp, out, pedal, srcMode, Hh, params);
 }
 
-// The rail's two glyphs. The curve is the catalog's thumbnail live — drawThumb
-// with the live knobs. The source glyph draws SPAN samples, not spanSamples: three
-// carrier periods, which is a readable wave on every family and source (a span
-// sized for an LFO would be a solid band).
+// The two live glyphs off to the side of the analyzer: the pedal's TRANSFORM curve
+// (the catalog thumbnail, drawn off the live knobs) and the SIGNAL scope (the note
+// going in — SPAN samples, three carrier periods, a readable wave on any source).
 function drawRail(inp) {
-  // Square the canvas for a family whose curve reads against y = x, rather than
-  // squaring the plot inside a wide one (marginsFor does that, spending the slack
-  // on the right for the catalog's column). Here there's no column; a square canvas
-  // lets CSS centre the box, so neither page has to know about the other.
-  C.curve.classList.toggle("glyph--square", !!view.thumbSquare);
-  drawThumb(C.curve, view, pedal, params);
+  if (C.curve) {
+    C.curve.classList.toggle("glyph--square", !!view.thumbSquare);
+    drawThumb(C.curve, view, pedal, params);
+  }
+  if (!C.srcglyph) return;
   const { g, L, R, T, B } = fit(C.srcglyph, GLYPH_MARGINS);
   const n = Math.max(2, Math.min(SPAN, inp.length));
   const sx = (i) => L + (i / (n - 1)) * (R - L),
@@ -148,8 +143,7 @@ function drawRail(inp) {
   line(g, ramp(n), inp.subarray(0, n), sx, sy, DRY, 1.5);
 }
 
-// index ramp for sample plots' x's, memoized by length (render() runs on every
-// knob drag and the callers ask for the same lengths)
+// index ramp for sample plots' x's, memoized by length
 const ramps = new Map();
 function ramp(n) {
   let r = ramps.get(n);
@@ -160,16 +154,16 @@ function ramp(n) {
   return r;
 }
 
-// The top panel's default: dry and wet waveforms on shared axes. Legible only
-// while spanSamples is a few carrier cycles wide; a slower-span family (an LFO, a
-// row of echoes) would draw a solid band and overrides drawTime instead.
-function drawTime(inp, out, match) {
+// The top screen's default: dry and wet waveforms on shared axes. A slower-span
+// family (an LFO, a row of echoes) overrides drawTime instead.
+function drawTime(inp, out, match, Hh = H) {
+  const { DRY, WET } = Hh.colors;
   const F = frame(C.time),
     { g, L, R, T, B } = F;
   const span = pedal.spanSamples;
   const sx = (i) => L + (i / span) * (R - L),
     sy = (y) => (T + B) / 2 - y * ((B - T) / 2 - 4);
-  g.strokeStyle = ZERO; // the amplitude axis — the one horizontal line that reads
+  g.strokeStyle = ZERO;
   g.beginPath();
   g.moveTo(L, sy(0));
   g.lineTo(R, sy(0));
@@ -183,92 +177,133 @@ function drawTime(inp, out, match) {
   txt(g, "-1", L - 5, sy(-1), "end", "middle");
   txt(g, "0", sx(0), B + 3, "start", "top");
   txt(g, spanMs().toFixed(0), sx(span), B + 3, "end", "top");
-  // ↕: amplitude swings both ways around zero; →: time runs forward
   titles(g, F, "amplitude ↕", "time (ms) →");
 }
 
-// ---- control UI (generated from view.pedals + view.controls) ---------------
-const ctlEls = {}; // id -> {input, output, ctl}
-function buildControls() {
-  const host = document.getElementById("centerctls");
-  host.innerHTML = "";
-  pedal = view.pedals[0]; // until setPedal() seeds the asked-for one
-  // sliders
-  for (const c of view.controls) {
-    const ctl = el("div", "ctl");
-    const label = el("label");
-    label.textContent = c.label;
-    const input = Object.assign(document.createElement("input"), {
-      type: "range",
-      min: c.min,
-      max: c.max,
-      step: c.step,
-      value: c.def,
-    });
-    const output = el("output");
-    input.oninput = (e) => setParam(c.id, +e.target.value);
-    ctl.append(label, input, output);
-    host.appendChild(ctl);
-    ctlEls[c.id] = { input, output, def: c };
-    params[c.id] = c.def;
+// ---- the pedal face --------------------------------------------------------
+// Rebuilt on every pick (a pedal is a different object — hue, brand, formula), which
+// is fine: it's DOM, not audio. Its knobs read the live `params`, so a rebuild keeps
+// the user's settings; the drag/stomp handlers are delegated on #pedalobj (wired
+// once) so replacing its innerHTML never loses them. `params` seeding and pedal
+// choice happen in mount()/setPedal(); nothing here touches the audio graph.
+function inkOnHue(hex) {
+  const r = parseInt(hex.slice(1, 3), 16),
+    g = parseInt(hex.slice(3, 5), 16),
+    b = parseInt(hex.slice(5, 7), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.56 ? "#231f10" : "#f6f3e6";
+}
+// a knob at rotation `frac` in [0,1] over a −135°..+135° sweep
+function dialSVG(frac) {
+  const a = (-135 + frac * 270) * (Math.PI / 180),
+    px = (24 + Math.sin(a) * 16).toFixed(1),
+    py = (24 - Math.cos(a) * 16).toFixed(1);
+  return `<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="rgba(0,0,0,.55)" stroke="rgba(0,0,0,.4)"/><circle cx="24" cy="24" r="19" fill="none" stroke="rgba(255,255,255,.16)"/><line x1="24" y1="24" x2="${px}" y2="${py}" stroke="#eae7d9" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+}
+function renderPedal() {
+  const hue = pedal.art?.hue ?? "#8a8f82";
+  const ink = inkOnHue(hue);
+  const knobs = view.controls
+    .map((c, i) => {
+      const frac = (params[c.id] - c.min) / (c.max - c.min);
+      return `<div class="dial" data-knob="${i}" title="drag to turn"><span class="kn">${dialSVG(frac)}</span><span class="dcap" style="color:${ink}">${c.label}</span><span class="dval" style="color:${ink}">${fmtCtl(c, params[c.id])}</span></div>`;
+    })
+    .join("");
+  document.getElementById("pedalobj").innerHTML = `
+    <div class="pedal" style="--hue:${hue};--pedink:${ink}">
+      <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
+      <div class="pbrand">${pedal.label}</div>
+      <div class="pknobs">${knobs}</div>
+      <div class="psilk">${pedal.tech ?? ""}</div>
+      <div class="silknote">${pedal.techNote ?? ""}</div>
+      <div class="pscreen"><div class="pscreenhdr">${CURVE_IC}transform</div><canvas data-c="curve"></canvas></div>
+      <div class="footwrap"><button class="footsw" id="footsw" title="stomp to bypass" aria-label="engage or bypass the pedal"><span class="hex"></span><span class="cap"></span></button><div class="footstate"><span class="pled" id="pled"></span><span class="footcap" id="footcap">on</span></div></div>
+    </div>`;
+  C.curve = document.querySelector('[data-c="curve"]');
+  setEngagedUI();
+}
+// redraw one knob after a drag (just its dial + readout, not the whole face)
+function updateKnob(i) {
+  const c = view.controls[i];
+  const frac = (params[c.id] - c.min) / (c.max - c.min);
+  const d = document.querySelectorAll("#pedalobj .dial")[i];
+  if (!d) return;
+  d.querySelector(".kn").innerHTML = dialSVG(frac);
+  d.querySelector(".dval").textContent = fmtCtl(c, params[c.id]);
+}
+function setEngagedUI() {
+  const pled = document.getElementById("pled");
+  if (pled) pled.classList.toggle("off", !engaged);
+  const fc = document.getElementById("footcap");
+  if (fc) {
+    fc.textContent = engaged ? "on" : "off";
+    fc.classList.toggle("off", !engaged);
   }
-  refreshControlOutputs();
 }
-function el(tag, cls) {
-  const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  return e;
-}
+
+// ---- controls (knobs) ------------------------------------------------------
+const DRAG_PX = 160; // vertical drag, in px, to sweep a knob its whole range
 function fmtCtl(c, v) {
   return c.fmt ? c.fmt(v) : String(v);
 }
 const clampCtl = (c, v) => Math.max(c.min, Math.min(c.max, v));
-function refreshControlOutputs() {
-  for (const [id, { output, def }] of Object.entries(ctlEls))
-    output.textContent = fmtCtl(def, params[id]);
+const snapCtl = (c, v) => (c.step ? Math.round(v / c.step) * c.step : v);
+
+let drag = null;
+function wirePedal() {
+  const pobj = document.getElementById("pedalobj");
+  pobj.addEventListener("pointerdown", (e) => {
+    const d = e.target.closest(".dial");
+    if (!d) return;
+    const i = +d.dataset.knob,
+      c = view.controls[i];
+    drag = { i, c, y: e.clientY, v: params[c.id] };
+    d.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  pobj.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const { c } = drag;
+    const v = drag.v + ((drag.y - e.clientY) / DRAG_PX) * (c.max - c.min);
+    params[c.id] = clampCtl(c, snapCtl(c, v));
+    updateKnob(drag.i);
+    schedule();
+  });
+  const end = () => {
+    drag = null;
+  };
+  pobj.addEventListener("pointerup", end);
+  pobj.addEventListener("pointercancel", end);
+  // the footswitch: bypass is a real control, on the charts and in the audio
+  pobj.addEventListener("click", (e) => {
+    if (!e.target.closest("#footsw")) return;
+    engaged = !engaged;
+    setEngagedUI();
+    setMix();
+    schedule();
+  });
 }
-function setParam(id, v) {
-  const c = ctlEls[id].def;
-  params[id] = clampCtl(c, v);
-  ctlEls[id].input.value = params[id];
-  ctlEls[id].output.textContent = fmtCtl(c, params[id]);
-  schedule();
-}
-// Select a pedal: swap its labels and snap any knobs it declares defaults for. A
-// pedal with no defaults (clipping) leaves the knobs put. Silent — the picker owns
-// the choosing, the page owns the URL; by the time this runs the decision is made.
-// Everything here is the PEDAL's, written on every pick (a pick never remounts, so
-// none of it can move to mount()).
+
+// Select a pedal: snap any knobs it declares defaults for (the rest persist — bias
+// stays put across clipping pedals), rebuild the face, and rewrite the two scope
+// claims. Silent — the nav owns the choosing, the page owns the URL.
 function setPedal(id) {
   pedal = view.pedals.find((p) => p.id === id) ?? view.pedals[0];
-  // Both homes of the toy pedal: the lede (beside the picker) and the TRANSFORM
-  // deck's header bar, so the deck reads as the picked pedal.
-  const art = pedalArt(pedal.art);
-  document.getElementById("pedalart").innerHTML = art;
-  document.getElementById("pedalicon").innerHTML = art;
-  // The band's two claims and the panel headlines, from one resolver shared with the
-  // catalog (rows.js) so a claim and the chart it points at can't disagree — nor the
-  // two pages with each other. CHANGES/YOU HEAR cross by bandSwap (modulation: the
-  // pulse you hear is the top chart, the sidebands it makes the bottom; chips cross to
-  // match, in mount()); the panels always show the raw top/bottom narration.
-  const { topNar, botNar, changes, youHear } = claims(view, pedal);
-  document.getElementById("benchchanges").textContent = changes;
-  document.getElementById("benchhear").textContent = youHear;
-  if (topNar) document.getElementById("outnar").textContent = topNar;
-  if (botNar) document.getElementById("specnar").textContent = botNar;
-  // the deck's formula over a gloss of the curve's character (tech over techNote);
-  // techNote is absent on delay, and :empty hides the blank line
-  document.getElementById("pedalop").textContent = pedal.tech ?? "";
-  document.getElementById("pedalnote").textContent = pedal.techNote ?? "";
-  // the tab names the pedal, because the URL does (?pedal=overdrive). Site name
-  // first: tabs truncate from the right, so keep the half that says where you are.
-  document.title = `Pedal signals — ${pedal.label}`;
   for (const [k, v] of Object.entries(pedal.defaults)) {
-    const c = ctlEls[k]?.def;
+    const c = ctlDefs[k];
     params[k] = c ? clampCtl(c, v) : v;
-    if (c) ctlEls[k].input.value = params[k];
   }
-  refreshControlOutputs();
+  renderPedal();
+  // The scope claims, from the resolver shared with the catalog (rows.js) so the two
+  // pages can't disagree. topNar rides the top screen, botNar the bottom; bandSwap
+  // only crosses which screen is CHANGES vs YOU HEAR (modulation hears the pulse on
+  // the top screen and shows the sidebands it makes on the bottom).
+  const { topNar, botNar } = claims(view, pedal);
+  document.getElementById("topClaim").textContent = topNar;
+  document.getElementById("botClaim").textContent = botNar;
+  document.getElementById("topRole").textContent = view.bandSwap ? "you hear:" : "changes:";
+  document.getElementById("botRole").textContent = view.bandSwap ? "changes:" : "you hear:";
+  // the tab names the pedal, because the URL does (?pedal=overdrive)
+  document.title = `Pedal signals — ${pedal.label}`;
   schedule();
 }
 
@@ -283,6 +318,21 @@ function schedule() {
     });
 }
 
+// the SIGNAL screen's claim; the scope itself is drawn by drawRail on each render
+function updateInput() {
+  const cl = document.getElementById("inClaim");
+  if (cl) cl.textContent = srcMode === "guitar" ? "a plucked note" : "a steady sine tone";
+  showReplay();
+}
+
+// ↻ pluck restarts the note from the attack, and only guitar has a note to restart
+// (sine is a continuous oscillator) — so it lives by the source toggle, shown on
+// guitar only.
+function showReplay() {
+  const r = document.getElementById("replay");
+  if (r) r.hidden = srcMode !== "guitar";
+}
+
 // input-source toggle: sine is the clean generated tone, guitar the real EGFxSet note
 function wireSourceToggle() {
   document.querySelectorAll(".srcbtn").forEach((b) => {
@@ -292,10 +342,9 @@ function wireSourceToggle() {
       document.querySelectorAll(".srcbtn").forEach((x) => {
         x.classList.toggle("active", x === b);
       });
-      document.getElementById("gcredit").style.display =
-        srcMode === "guitar" ? "" : "none";
-      showReplay();
+      document.getElementById("gcredit").hidden = srcMode !== "guitar";
       if (actx) startSource();
+      updateInput();
       schedule();
     };
   });
@@ -303,7 +352,7 @@ function wireSourceToggle() {
 
 // ---- audio -----------------------------------------------------------------
 // Generic graph: a dry tap and the effect's wet chain, blended and summed through a
-// master with headroom. The effect owns everything between inGain and wetOut.
+// master the volume knob rides. The effect owns everything between inGain and wetOut.
 let actx,
   srcNode,
   inGain,
@@ -311,15 +360,24 @@ let actx,
   dryGain,
   master,
   audio = null, // { wetOut, update } from effect.buildAudio
-  running = false;
-// A view's buildSource is asked FIRST and for both sources — if a view has an
-// opinion about its input, it has it on every input (else delay's pluck loop would
-// run on sine only, and the charts and the speaker would disagree).
+  audioStarted = false;
+const VOL_MAX = 0.6; // master ceiling at volume 1 — headroom, dry+wet can sum
+
+// The signal is "always live", but a browser won't start an AudioContext without a
+// user gesture. Any first touch on the bench (a knob, the footswitch, the monitor,
+// the nav) is that gesture; volume starts at 0, so nothing is heard until it's
+// raised regardless.
+function startAudioOnce() {
+  if (audioStarted) return;
+  audioStarted = true;
+  ensureAudio();
+  actx.resume();
+}
 function startSource() {
   if (!actx) return;
   stopSource();
   if (view.buildSource) {
-    srcNode = view.buildSource(actx, { srcMode, guitar }); // started below
+    srcNode = view.buildSource(actx, { srcMode, guitar });
   } else if (srcMode === "guitar" && guitar) {
     const ab = actx.createBuffer(1, guitar.length, SR);
     ab.copyToChannel(guitar, 0);
@@ -341,28 +399,47 @@ function stopSource() {
   srcNode.disconnect();
   srcNode = null;
 }
-// ↻ pluck restarts the note, and only guitar has a note to restart (sine is a
-// continuous oscillator). Hidden, not disabled, on sine — and it sits in the INPUT
-// deck by the source segment because srcMode is what governs it.
-function showReplay() {
-  document.getElementById("replay").hidden = srcMode !== "guitar";
-}
 
-// one crossfade, so dry is whatever wet isn't and the pair can't drift. No readout —
-// a crossfade is set by ear (see index.html)
+// the monitor's two listening controls. One crossfade (dry is whatever wet isn't, so
+// the pair can't drift), gated by the footswitch — bypassed, the wet chain is muted
+// and the dry note passes at full. Sound is a plain mute toggle on the master, since
+// the signal is always live: it un-mutes rather than sets a level. Starts off.
+let soundOn = false;
 const blendS = () => document.getElementById("blend");
-function setBlend() {
+const soundBtn = () => document.getElementById("sound");
+function setMix() {
+  if (!actx) return;
   const b = +blendS().value;
-  if (actx) {
-    dryGain.gain.value = 1 - b;
-    wetGain.gain.value = b;
-  }
+  dryGain.gain.value = engaged ? 1 - b : 1;
+  wetGain.gain.value = engaged ? b : 0;
+}
+function applySound() {
+  if (actx) master.gain.value = soundOn ? VOL_MAX : 0;
+}
+function setSoundUI() {
+  const b = soundBtn();
+  b.classList.toggle("on", soundOn);
+  b.setAttribute("aria-pressed", String(soundOn));
+  b.querySelector(".soundlbl").textContent = soundOn ? "on" : "off";
+}
+function wireMonitor() {
+  blendS().oninput = () => {
+    startAudioOnce();
+    setMix();
+  };
+  soundBtn().onclick = () => {
+    startAudioOnce();
+    soundOn = !soundOn;
+    setSoundUI();
+    applySound();
+  };
+  setSoundUI();
 }
 function updateAudio() {
   if (!actx) return;
   inGain.gain.value = level;
   audio.update(pedal, params, lastState, lastMatch);
-  master.gain.value = 0.3; // headroom: dry+wet can sum, keep below clipping
+  applySound();
 }
 function ensureAudio() {
   if (actx) return;
@@ -381,11 +458,9 @@ function connectView() {
   audio.wetOut.connect(wetGain).connect(master); // wet path
   inGain.connect(dryGain).connect(master); // dry path
   updateAudio();
-  setBlend();
+  setMix();
   startSource();
 }
-// drop the view's wet chain. inGain feeds both the view's input and the dry tap, so
-// it's cut wholesale here and connectView remakes the dry tap
 function disconnectView() {
   stopSource();
   inGain.disconnect();
@@ -394,40 +469,59 @@ function disconnectView() {
   audio.dispose?.();
   audio = null;
 }
-function wireTransport() {
-  blendS().oninput = setBlend;
-  const playBtn = document.getElementById("play");
-  const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>';
-  const ICON_STOP =
-    '<svg viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="2.5"/></svg>';
-  const setPlayUI = (playing) => {
-    playBtn.innerHTML = playing ? ICON_STOP : ICON_PLAY;
-    playBtn.classList.toggle("playing", playing);
-    playBtn.title = playBtn.ariaLabel = playing ? "stop audio" : "start audio";
+
+// ---- patch cables ----------------------------------------------------------
+// input → pedal → output, drawn as an SVG under the chain and recomputed from the
+// live element rects on every resize/scroll (defensive: any missing box, no cables).
+function cablePath(a, b, sag) {
+  const mx = (a.x + b.x) / 2,
+    my = (a.y + b.y) / 2 + sag;
+  return `M${a.x} ${a.y} Q${mx} ${my} ${b.x} ${b.y}`;
+}
+function layoutCables() {
+  const svg = document.getElementById("cables"),
+    main = document.querySelector(".main");
+  const inbox = document.getElementById("inputbox"),
+    ped = document.querySelector(".pedal"),
+    scope = document.getElementById("scope");
+  if (!svg || !main || !inbox || !ped || !scope) return;
+  const mr = main.getBoundingClientRect(),
+    sx = main.scrollLeft,
+    sy = main.scrollTop;
+  const rel = (el, fx, fy) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.left - mr.left + sx + r.width * fx, y: r.top - mr.top + sy + r.height * fy };
   };
-  playBtn.onclick = async () => {
-    ensureAudio();
-    if (running) {
-      await actx.suspend();
-      running = false;
-      setPlayUI(false);
-    } else {
-      await actx.resume();
-      running = true;
-      setPlayUI(true);
-    }
-  };
-  document.getElementById("replay").onclick = async () => {
-    ensureAudio();
-    await actx.resume();
-    running = true;
-    setPlayUI(true);
-    startSource();
-  };
+  const iRight = rel(inbox, 1, 0.62),
+    pLeft = rel(ped, 0, 0.5),
+    pRight = rel(ped, 1, 0.5),
+    sIn = rel(scope, 0, 0.3);
+  const c1 = cablePath({ x: iRight.x - 2, y: iRight.y }, { x: pLeft.x + 2, y: pLeft.y }, 22);
+  const c2 = cablePath({ x: pRight.x - 2, y: pRight.y }, { x: sIn.x + 2, y: sIn.y }, 22);
+  const plug = (p) =>
+    `<circle cx="${p.x}" cy="${p.y}" r="5" fill="#3a3d38" stroke="#111" stroke-width="1"/><circle cx="${p.x}" cy="${p.y}" r="2" fill="#c9ccc4"/>`;
+  svg.innerHTML =
+    `<path d="${c1}" fill="none" stroke="#111" stroke-width="7" stroke-linecap="round"/><path d="${c1}" fill="none" stroke="#4a4d47" stroke-width="4" stroke-linecap="round"/>` +
+    `<path d="${c2}" fill="none" stroke="#111" stroke-width="7" stroke-linecap="round"/><path d="${c2}" fill="none" stroke="#4a4d47" stroke-width="4" stroke-linecap="round"/>` +
+    plug(iRight) + plug(pLeft) + plug(pRight) + plug(sIn);
+}
+function wireCables() {
+  document.querySelector(".main").addEventListener("scroll", () =>
+    requestAnimationFrame(layoutCables),
+  );
 }
 
-// ---- lesson section ---------------------------------------------------------
-// the family's prose below the rig, with an optional second-column aside
+let resizeT = 0;
+function onResize() {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => {
+    render();
+    updateInput();
+    layoutCables();
+  }, 80);
+}
+
+// ---- lesson section --------------------------------------------------------
 function renderLesson() {
   const lesson = view.lesson;
   const section = document.getElementById("lesson");
@@ -437,7 +531,6 @@ function renderLesson() {
   }
   section.style.display = "";
   document.getElementById("lbody").innerHTML = lesson.body;
-
   const asideWrap = document.getElementById("lasidewrap");
   if (lesson.aside) {
     asideWrap.style.display = "";
@@ -450,25 +543,28 @@ function renderLesson() {
 
 // ---- mount -----------------------------------------------------------------
 // Tear down everything a view owns so mount() can swap families without a reload:
-// its wet chain, its knobs, and the live values keyed by knob id (a stale `time`
-// from delay must not reach tremolo). The context, outer graph, guitar buffer,
-// source mode and once-wired listeners survive.
+// its wet chain and the live values keyed by knob id (a stale `time` from delay must
+// not reach tremolo). The context, outer graph, guitar buffer, source mode, engaged
+// state, and once-wired listeners survive.
 function unmount() {
   if (raf) cancelAnimationFrame(raf);
   raf = 0;
   if (actx) disconnectView();
   for (const k of Object.keys(params)) delete params[k];
-  for (const k of Object.keys(ctlEls)) delete ctlEls[k];
+  for (const k of Object.keys(ctlDefs)) delete ctlDefs[k];
   lastState = null;
   lastMatch = 1;
 }
 
 // Move to another pedal in the family already up. Not a mount(): the family is
-// unchanged, so its audio chain and knobs stay standing rather than rebuild under a
-// sounding note.
+// unchanged, so its audio chain stays standing rather than rebuild under a note.
 export function selectPedal(id) {
   setPedal(id);
 }
+
+const setChip = (id, word) => {
+  document.getElementById(id).innerHTML = `${techIcon(word)}<span>${word.toUpperCase()}</span>`;
+};
 
 let wired = false;
 export function mount(v, opts = {}) {
@@ -477,50 +573,45 @@ export function mount(v, opts = {}) {
   document.querySelectorAll("canvas").forEach((cv) => {
     C[cv.dataset.c] = cv;
   });
-  // The band's FAMILY cell — filled here, not in setPedal(): it's the family's, and
-  // the family only changes on a mount. Its name is the way out to the catalog, so
-  // the href is built here (the view knows its own id).
-  const fam = document.getElementById("benchfam");
-  fam.href = `./pedals.html#${encodeURIComponent(view.id)}`;
-  document.getElementById("benchfamname").textContent = view.navLabel;
-  document.getElementById("benchklass").textContent = view.lesson?.klass ?? "";
+  // seed the knob specs + live params (all controls), before setPedal overrides the
+  // ones the picked pedal declares
+  for (const c of view.controls) {
+    ctlDefs[c.id] = c;
+    params[c.id] = c.def;
+  }
+  // the three screen chips (icon + word): the input is a signal, the two output
+  // screens whatever the family declares (waveform/envelope, spectrum/envelope)
+  setChip("inctype", "signal");
+  setChip("topctype", view.timeTech ?? "waveform");
+  setChip("botctype", view.spectrumTech);
   document.getElementById("blend").value = view.blendDefault;
-  // What the two output panels ARE — the view's words, not hardcoded (a family may
-  // draw something else). Top defaults to "waveform", the harness's own plot; the
-  // pedal- and spectrum-title headlines are written by setPedal() below.
-  document.getElementById("timetech").textContent = view.timeTech ?? "waveform";
-  document.getElementById("spectech").textContent = view.spectrumTech;
-  document.getElementById("timeic").innerHTML = techIcon(view.timeTech ?? "waveform");
-  document.getElementById("specic").innerHTML = techIcon(view.spectrumTech);
-  document.getElementById("specunit").textContent = view.spectrumUnit
-    ? ` (${view.spectrumUnit})`
-    : "";
-  // the band's chart chips mirror the panels' own names, so a claim points at the
-  // chart that proves it (see index.html). bandSwap crosses them with the claims.
-  const topTech = view.timeTech ?? "waveform";
-  document.getElementById("benchchangeschip").textContent = view.bandSwap
-    ? view.spectrumTech
-    : topTech;
-  document.getElementById("benchhearchip").textContent = view.bandSwap
-    ? topTech
-    : view.spectrumTech;
   renderLesson();
-  buildControls();
-  // seed labels + defaults from the asked-for pedal, falling back to the
-  // family's first for an id the URL made up
+  // seed labels + defaults from the asked-for pedal (unknown falls back to first)
   setPedal(opts.pedal);
   if (actx) connectView(); // playing already? swap the chain under the audio
-  else setBlend(); // otherwise just show the new family's starting mix
+  else setMix();
 
   if (!wired) {
     wired = true;
     wireSourceToggle();
-    wireTransport();
-    showReplay();
-    addEventListener("resize", render);
+    wireMonitor();
+    wirePedal();
+    wireCables();
+    // ↻ pluck: start audio if it hasn't been, then re-trigger the note from the top
+    document.getElementById("replay").onclick = () => {
+      startAudioOnce();
+      startSource();
+    };
+    // any first touch on the bench starts the (silent-at-0) audio context
+    document.querySelector(".app").addEventListener("pointerdown", startAudioOnce, {
+      capture: true,
+    });
+    addEventListener("resize", onResize);
     loadGuitar();
   }
+  updateInput();
   render();
+  requestAnimationFrame(layoutCables);
 }
 
 // the real note from the WAV, fetched once for the page (no AudioContext needed here)

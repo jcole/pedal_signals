@@ -1,32 +1,32 @@
 // What the catalog page promises: it lists the whole catalog — the same pedals
-// the picker offers, in the same order, under their families — and every row is
+// the nav shelves, in the same order, under their families — and every row is
 // a door into the demo standing on that pedal.
 //
 // The list is built from the view modules the demo mounts, so the interesting
 // failure isn't "a row is missing", it's the two pages drifting apart: a pedal
 // the catalog lists that the demo won't open, or an order that disagrees with
-// the picker's. Both are checked against the picker rather than a hardcoded
-// list, since a hardcoded one would have to be updated by the same hand that
-// added the pedal — and would pass while the page was wrong.
+// the nav's. Both are checked against the nav rather than a hardcoded list,
+// since a hardcoded one would have to be updated by the same hand that added
+// the pedal — and would pass while the page was wrong.
 import { expect, test } from "@playwright/test";
 
 const rows = (page) => page.locator(".catrow");
-const pedalName = (page) => page.locator(".pickbtn .pickped");
-// see routing.spec.js — the family moved out of the picker button, through a
-// FAMILY column, and into the band's own name
-const familyName = (page) => page.locator("#lede .famname");
+// which pedal the demo's shelf marks as open (see routing.spec.js)
+const pedalName = (page) => page.locator('.pitem[aria-current="true"] .pname');
+// the family the mounted pedal sits under on the shelf — its heading, no arrow
+const familyName = (page) =>
+  page.locator('#pedalnav .fam:has(.pitem[aria-current="true"]) .famname');
 
-// Every pedal the picker lists, in the picker's own order.
-async function catalogViaPicker(page) {
+// Every pedal the nav shelves, in the nav's own order.
+async function catalogViaNav(page) {
   await page.goto("/");
-  await page.locator(".pickbtn").click();
-  return page.locator(".pickopt").allInnerTexts();
+  return page.locator("#pedalnav .pitem .pname").allInnerTexts();
 }
 
-test("the catalog lists every pedal the picker does, in the same order", async ({
+test("the catalog lists every pedal the nav does, in the same order", async ({
   page,
 }) => {
-  const expected = await catalogViaPicker(page);
+  const expected = await catalogViaNav(page);
   await page.goto("/pedals.html");
   expect(await rows(page).locator(".catlabel").allInnerTexts()).toEqual(
     expected,
@@ -87,7 +87,7 @@ test("a row opens the demo standing on that pedal", async ({ page }) => {
   await rows(page).filter({ hasText: "ambient" }).first().click();
   await expect(page).toHaveURL(/\?pedal=ambient$/);
   await expect(pedalName(page)).toHaveText("ambient");
-  await expect(familyName(page)).toHaveText("delay →");
+  await expect(familyName(page)).toHaveText("delay");
 });
 
 test("every row's link opens a pedal the demo recognizes", async ({ page }) => {
@@ -104,21 +104,13 @@ test("every row's link opens a pedal the demo recognizes", async ({ page }) => {
   }
 });
 
-// The bench's one way out, and the one place the site says what a family is. The
-// family name (under its own FAMILY column head, reading "modulation →") is the
-// link, so the assertion is on the name itself. It aims at the mounted family's own
-// band, not at the top of the page: the link is answering "what IS modulation", so
-// it has to land on the row that says — a band on the bench pointing at the same
-// band on the catalog.
-test("the bench links out to its family's band in the catalog", async ({
-  page,
-}) => {
+// The bench's one way out to the catalog: the masthead's "compare pedals" pill.
+// The shelf headings name the families in place, so the way out is a single link
+// to the whole catalog rather than one deep-link per family.
+test("the masthead links out to the catalog", async ({ page }) => {
   await page.goto("/?pedal=warble");
-  await expect(familyName(page)).toHaveText("modulation →");
-  await familyName(page).click();
-  await expect(page).toHaveURL(/\/pedals\.html#modulation$/);
-  // the anchor has to exist, or the hash is a link to the top of the page
-  // wearing a family's name
+  await page.locator("#masthead .catlink").click();
+  await expect(page).toHaveURL(/\/pedals\.html$/);
   await expect(page.locator("section.fam#modulation .famhead")).toBeVisible();
 });
 

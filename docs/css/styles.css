@@ -1,20 +1,16 @@
 /* Two faces: var(--mono) is the instrument (switchers, values, axis labels,
    formulas, anything that aligns in a column); the default sans is prose. */
-/* Two surfaces: the rig is a dark device (panels, charts, knobs); the page
-   around it is lit, ink on white. The seam is the panel edge — pick a side for
-   any new surface, don't stretch vars across both. */
+/* Two surfaces: the bench is a dark lab (scopes, the steel generator, the hued
+   pedal); the page around it is lit, ink on white. The seam is the panel edge —
+   pick a side for any new surface, don't stretch vars across both. */
 :root {
 	--sans:
 		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial,
 		sans-serif;
 	--mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
-	/* One width for the whole bench, in one place: the centred page blocks cap at
-	   --wide, and the rig's two tracks sum to it (--rail + the 24px gap + charts).
-	   Widen the side gutters by lowering --wide — everything below reads it. Held
-	   where the masthead lede still fits on one line (see #masthead). */
+	/* One width for the whole app shell; the nav + bench sum to it. */
 	--wide: 1240px;
-	--rail: 240px;
 
 	/* the lit page */
 	--page: #fff;
@@ -22,31 +18,21 @@
 	--ink-hi: #0d0f09; /* headings, <strong> */
 	--ink-lo: #5e6555; /* captions, hints */
 	--rule: #dfe3d7;
-	--sunk: #f2f4ee; /* inset blocks on the page: the op box, <code> */
-	/* a middle value: #191c15 panels on #fff cut hard, this steps the eye down */
+	--sunk: #f2f4ee; /* inset blocks on the page: <code> */
+	/* a middle value: #191c15 panels on #fff cut hard, this steps the eye down —
+	   the bench's own surface */
 	--tray: #e9ece2;
 
-	/* Three materials: --inst is the glass (charts only), --inst-head the caption
-	   bar on it, --inst-grp the chassis (column label bars and knob decks), so a
-	   column reads chassis / screen / chassis. --inst-head can't lighten past
-	   ~#242a1e: --wet is the "out" legend word on it and its own trace colour
-	   (harness.js reads it off :root), and both must stay one value and clear AA. */
-	--inst: #191c15;
-	--inst-head: #232820;
-	--inst-grp: #3a4230;
+	/* Instrument materials: --inst-ink is the ink on a screen bezel, --inst-ink-lo
+	   its quiet caption, --inst-edge the dark chassis edge. */
 	--inst-ink: #dfe5d6;
-	/* the .ctl labels; #adb59e clears AA on the chassis, #a2aa94 didn't */
 	--inst-ink-lo: #adb59e;
 	--inst-edge: #0f110c;
 
 	/* Signal colours, and the source of truth for the charts: harness.js reads
 	   --dry/--wet/--grid/--zero/--accent-lo off :root at load, so a trace and the
-	   legend word naming it are one value — rename one, rename it there too.
-	   Orange means OUT (panel headers paint the literal word off --wet); green
-	   (--accent / --accent-lo) means the pedal's own math, drawn and written;
-	   grey means IN. --wet needs a darker --wet-ink for <b> on white, where the
-	   glow orange only reaches 3.2:1. The one non-green formula is .deckop — see
-	   it for why. */
+	   legend word naming it are one value. Orange = OUT, green = the pedal's own
+	   math, grey = IN. */
 	--dry: #9aa0a6;
 	--wet: #dd7048;
 	--wet-ink: #c0522f;
@@ -55,619 +41,832 @@
 	--accent: #5c7f3e;
 	--accent-lo: #7fa650;
 }
+* {
+	box-sizing: border-box;
+}
 body {
 	margin: 0;
 	background: var(--page);
 	color: var(--ink);
-	font: 15px var(--sans);
+	font: 15px/1.5 var(--sans);
+	-webkit-font-smoothing: antialiased;
 }
 /* the page's "signal term" mark; an element default so overrides win */
 b {
 	color: var(--wet-ink);
 }
-/* Full-bleed so the bench reads as one band, not a card. Left track is the rail
-   (glyphs — the input trace and the pedal's own curve, both measured by the
-   charts; see drawRail), right track the charts. The tracks are centred
-   (--rail + 24 gap + charts = --wide) rather than the box max-width'd — a max-width
-   would stop the tray at --wide and make the rig a card. #grid is placed (grid-column 2)
-   so it can come first in the markup without taking the rail's track. */
-#rig {
-	background: var(--tray);
-	border-top: 1px solid var(--rule);
-	border-bottom: 1px solid var(--rule);
-	padding: 10px 20px 14px;
-	margin: 6px 0 0;
-	display: grid;
-	grid-template-columns: var(--rail) minmax(0, calc(var(--wide) - var(--rail) - 24px));
-	justify-content: center;
-	gap: 8px 24px;
-	align-items: start;
-}
-#grid {
-	grid-column: 2;
-	grid-row: 1;
-}
-/* Charts only, full width — an envelope and a spectrum both want width. #rig
-   places it; this sets the stack height. */
-#grid {
-	display: grid;
-	grid-template-columns: 1fr;
-	grid-template-rows: minmax(420px, 62vh);
-	align-items: stretch;
-}
-.panel canvas {
-	display: block;
-	width: 100%;
-	height: 200px;
-	touch-action: none;
-}
-/* Uppercase letterspaced — the rig naming its own objects (deck bars, .ctype
-   chips): the "what is this" labels, loud where everything nested is quiet. */
-.grp {
-	background: var(--inst-grp);
-	padding: 9px 10px;
-	font-family: var(--mono);
-	font-size: 12px;
-	font-weight: 700;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: var(--inst-ink);
-}
-/* The TRANSFORM bar wears the picked pedal's toy (harness fills #pedalicon) so the
-   deck reads as the pedal. flex to sit the icon on the label's baseline-ish centre;
-   the toy keeps its own colours against the chassis green. */
-.grp--pedal {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-.grp--pedal .pedalart {
-	display: flex;
-	flex: none;
-	pointer-events: none;
-}
-.grp--pedal .pedalart svg {
-	height: 20px;
-	width: auto;
-	display: block;
-}
-/* ---- switchers ----
-   A .seg is a toggle (every option visible, e.g. sine/guitar); the pedal picker
-   is a lookup (too long to lay flat). New control: can you see every option at
-   once? Segment, else picker. */
-/* border and buttons darker than the chassis deck, not lighter — a switch cut
-   INTO the chassis */
-.seg {
-	display: inline-flex;
-	border: 1px solid var(--inst-edge);
-	border-radius: 4px;
-	overflow: hidden;
-}
-.srcbtn {
-	font: 14px var(--mono);
-	background: #12140f;
-	color: #8a927e;
-	border: 0;
-	padding: 4px 10px;
-	cursor: pointer;
-	text-decoration: none;
-	display: inline-block;
-}
-.srcbtn.active {
-	background: var(--accent);
-	color: #fff;
-}
-.panel {
-	background: var(--inst);
-	position: relative;
-	display: flex;
-	flex-direction: column;
-}
-.stack {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-.stack > .panel {
-	flex: 1;
-	min-height: 0;
-}
-.stack > .panel > canvas {
-	flex: 1;
-	min-height: 0;
-	height: auto;
-}
-/* One-line header: name, sentence, legend on one row, so the label and its
-   reading arrive together. .nar is the only item allowed to shrink and wrap
-   (the chip and legend are fixed phrases that would only break badly). */
-.panel h3 {
-	margin: 0;
-	padding: 6px 8px;
-	background: var(--inst-head);
-	border-bottom: 1px solid var(--inst-edge);
-	display: flex;
-	align-items: baseline;
-	gap: 10px;
-}
-/* The chart's NAME, in the rig's object lettering (see .grp). A chip, not a
-   full bar like the decks: .grp is chassis and these panels are glass, so a chip
-   is the chassis label screwed to the glass. */
-.panel h3 .ctype {
-	flex: none;
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	background: var(--inst-grp);
-	border-radius: 3px;
-	padding: 2px 7px;
-	font-family: var(--mono);
-	font-size: 12px;
-	font-weight: 700;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: var(--inst-ink);
-	white-space: nowrap;
-}
-/* the type glyph — a wave or a bar cluster, in the chip's own ink; it names the
-   chart by shape before the word is read (harness.js fills it, see index.html) */
-.panel h3 .ctype-ic {
-	flex: none;
-	display: inline-flex;
-}
-.panel h3 .ctype-ic svg {
-	display: block;
-	width: 17px;
-	height: 10px;
-}
-/* the unit inside the name — out of uppercase/letterspacing; "(dB)" is not a word */
-.panel h3 .cunit {
-	text-transform: none;
-	letter-spacing: 0.02em;
-	font-weight: 400;
-	color: var(--inst-ink-lo);
-}
-/* the teaching sentence, set like one, after the chip it's about; the only
-   header item that shrinks and wraps */
-.panel h3 .nar {
-	flex: 1;
-	min-width: 0;
-	font-size: 14px;
-	font-weight: 650;
-	letter-spacing: 0;
-	text-transform: none;
-	color: var(--inst-ink);
-	line-height: 1.3;
-}
-/* the trace key, in the instrument's lettering: "in" and "out" painted the
-   colour of the lines they name. Last in the row, pushed right by .nar's flex:1. */
-.panel h3 .tech {
-	flex: none;
-	font-family: var(--mono);
-	font-size: 10px;
-	/* lightened with the header bar under it; #858d78 was 4.35:1 and under AA */
-	color: #8d9580;
-	font-weight: 400;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	white-space: nowrap;
-}
-/* a key: each word is the colour of the trace it names, taking the var the
-   canvas reads — don't retune for legibility alone or it stops matching the line */
-.panel h3 .dry {
-	color: var(--dry);
-}
-.panel h3 .wet {
-	color: var(--wet);
-	font-weight: 700;
-}
-/* One column, decks stacked in signal order; placed into the rail track by #rig.
-   Both zero-minimums are needed on the fixed 240px track: `min-width: 0` stops
-   this grid item overflowing its track, `minmax(0, 1fr)` stops the column
-   inflating to the widest item (delay's `feedback` row). Miss either and the
-   rail changes width by family. The knobs shrink instead — see the range rule. */
-#controls {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr);
-	grid-column: 1;
-	grid-row: 1;
-	gap: 14px;
-	min-width: 0;
-}
-/* the knob deck — chassis (--inst-grp), not glass: a column reads chassis /
-   screen / chassis, and the dark is only the glass */
-.ctlcol {
-	display: flex;
-	flex-direction: column;
-	background: var(--inst-grp);
-}
-/* knob chrome; mono keeps labels and readouts on a fixed grid while dragging */
-.ctl {
-	padding: 8px;
-	border-top: 1px solid var(--inst-edge);
-	display: flex;
-	gap: 8px;
-	align-items: center;
-	font-family: var(--mono);
-	font-size: 12px;
-	color: var(--inst-ink-lo);
-}
-/* No .ctl:first-child border reset: every deck now opens with its .grp bar, so
-   the first .ctl's top border is the seam under that bar. */
 
-/* ---- the tray, and the rail's glyphs ----
-   Play and blend sit on the tray, not a deck: they change nothing on a chart and
-   are true of every view (render() never reads them). ↻ pluck went to the INPUT
-   deck instead — it IS a property of the source. */
-#railtop {
+/* ============================================================================
+   THE APP SHELL (index.html)
+   The page itself never scrolls: the nav and the bench are their own scroll
+   panes so the scope stays put. Scoped with :has(.app) so the catalog page
+   (pedals.html, no .app) keeps its ordinary document scroll.
+   ========================================================================== */
+body:has(.app) {
+	height: 100vh;
+	overflow: hidden;
 	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 0 2px 8px;
-}
-/* one line: a button and the blend track, which fit the 240px; the slider fills it */
-.blendctl {
-	flex: 1;
-	min-width: 0;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-family: var(--mono);
-	font-size: 12px;
-	color: var(--ink-lo);
-}
-.blendctl input[type="range"] {
-	flex: 1;
-	min-width: 0; /* same reason as .ctl's slider, a few rules down */
-	accent-color: var(--accent-lo);
-}
-/* The pedal deck's formula, over the curve that draws it. The one non-green
-   formula on the site: --accent-lo is 3.73:1 on the chassis, under AA as text,
-   and the fix (a black --inst strip) read as a fourth material — so --inst-ink,
-   and adjacency to the curve below does what the green does elsewhere. Brighter
-   than the knob labels (--inst-ink) — it's the deck's statement. Not
-   letterspaced/uppercased: .grp would wreck `tanh`, and this wraps (modulation's
-   35 chars on a 240px rail). */
-.deckop {
-	display: block;
-	color: var(--inst-ink);
-	overflow-wrap: anywhere;
-}
-/* the formula over its gloss, tight — the .ctl wrapper spaces the pair off the
-   curve below. Quiet (--inst-ink-lo), like the catalog's catnote under its formula */
-.deckopwrap {
 	flex-direction: column;
-	align-items: flex-start;
-	gap: 4px;
 }
-.decknote {
-	font-size: 11.5px;
-	line-height: 1.4;
-	color: var(--inst-ink-lo);
-}
-/* delay declares no techNote; hide the blank line so the curve doesn't sit low */
-.decknote:empty {
-	display: none;
-}
-/* the pedal deck's knobs; display:contents so its children ARE the deck (the bar,
-   canvas and knobs). Exists because buildControls() wipes it — see index.html. */
-#pedalcol > #centerctls {
-	display: contents;
-}
-.glyph {
-	display: block;
-	width: 100%;
-	height: 46px;
-	touch-action: none;
-}
-/* not taller: modulation's LFO only uses gain 1−depth..1, so lower pixels draw
-   empty gap */
-.glyph--curve {
-	height: 96px;
-}
-/* clipping's curve reads against y=x at a true 45°, so square and centred (not
-   via marginsFor — see drawRail) */
-.glyph--curve.glyph--square {
-	width: 96px;
-	margin-inline: auto;
-}
-.ctl:has(> .glyph) {
-	display: block;
-	padding: 6px 8px;
-}
-/* the deck picker's dark overrides live at the foot of the picker section, after
-   the base rules they override (see there) */
-/* min-width: 0 or the slider won't shrink below its intrinsic ~139px and pushes
-   the fixed rail wider (delay's `feedback` row). The slider is what gives. */
-.ctl input[type="range"] {
+.app {
 	flex: 1;
-	min-width: 0;
-	accent-color: var(--accent-lo);
-}
-.ctl output {
-	color: var(--inst-ink);
-	min-width: 2.6em;
-	text-align: right;
-}
-.ctl label {
-	display: inline-block;
-	min-width: 3em;
-}
-/* the header under the masthead: one row of the catalog's three columns under
-   their names. No top padding — the masthead's own bottom gap is the separation,
-   and paying for it twice pushed the lesson through the fold. */
-#bar {
+	min-height: 0;
+	width: 100%;
 	max-width: var(--wide);
 	margin: 0 auto;
-	/* close to the column names below so they read as the row's subtitle, not the
-	   title's */
-	padding: 18px 20px 8px;
-	/* the hairline says "table" — the same rule the catalog draws under .cathead,
-	   at the same --wide — so the row doesn't read as more lede prose */
-	border-top: 1px solid var(--rule);
-}
-.hint {
-	font-size: 12px;
-	color: var(--ink-lo);
-}
-/* hint lines under the controls; full width — both are about controls in more
-   than one column */
-.ctlhint {
-	grid-column: 1 / -1;
-	margin: 2px 0 0;
-}
-/* darkened panel-green for the tray; the weight matters as much as the hex — at
-   12px thin strokes average the tray back in and a lighter weight washes out */
-.ctlhint a {
-	color: #35501f;
-	font-weight: 600;
-	text-decoration: none;
-}
-.ctlhint a:hover {
-	text-decoration: underline;
-}
-/* The site's line: title and lede share one baseline row, so the intro costs one
-   row, not two. One row is a hard budget — everything above #rig eats the
-   lesson's fold (at 1440x900 #lesson must start above y=900; re-measure if you
-   change anything up here). No max-width: the lede is one line and must fit as
-   one — a ch cap would only manufacture a second line, and system-ui makes any
-   cap OS-dependent. Title sized under the catalog h1 on purpose: it sits above
-   the control the eye needs first. */
-#masthead {
-	max-width: var(--wide);
-	margin: 0 auto;
-	/* room under the lede so #bar's rule reads as a seam, not an underline on the
-	   descenders */
-	padding: 14px 20px 13px;
+	background: var(--page);
 	display: flex;
-	align-items: baseline;
-	flex-wrap: wrap;
-	gap: 4px 18px;
+	flex-direction: column;
+	border-left: 1px solid var(--rule);
+	border-right: 1px solid var(--rule);
 }
-/* classed, not "#masthead h1", so the two h1 rules don't sort by specificity */
+
+/* ---- masthead ---- the one thing that says what the page IS */
+#masthead {
+	flex: none;
+	padding: 16px 22px 14px;
+	display: grid;
+	grid-template-columns: auto 1fr auto auto;
+	align-items: baseline;
+	column-gap: 18px;
+	border-bottom: 1px solid var(--rule);
+}
 .sitetitle {
-	font-size: 21px;
-	font-weight: 650;
+	font-size: 22px;
+	font-weight: 700;
+	margin: 0;
 	letter-spacing: -0.01em;
 	color: var(--ink-hi);
-	margin: 0;
 	white-space: nowrap;
 }
 .sitelede {
-	flex: 1;
-	min-width: 22em;
 	margin: 0;
-	font-size: 13px;
-	line-height: 1.5;
 	color: var(--ink-lo);
+	font-size: 13.5px;
 }
-/* the way out to source: a wordless mark (GitHub's own), not a .catlink — a
-   border under a picture rules nothing, and the masthead row can't spend height
-   on a label. flex so the box is exactly the icon (an inline <svg> carries a
-   descender's line-height); centred, no baseline worth aligning. Colour rides
-   currentColor so hover is one property. */
+/* the source mark: a wordless icon (GitHub's own); colour rides currentColor */
 .sitesrc {
-	display: flex;
+	display: inline-flex;
 	align-self: center;
 	color: var(--ink-lo);
-	/* extra air past the row gap: the neighbour is "compare pedals", and a bare
-	   mark can't say "separate" with a border the way that pill can */
-	margin-left: 10px;
 }
 .sitesrc:hover {
 	color: var(--accent);
 }
-/* the centre header: what the chart is, plus the transport; scoped because it's
-   the one header with a control in it */
-/* one size, permanently — 60px, the first control on the tray at the head of the rail */
-#play {
-	width: 60px;
-	height: 60px;
-	border: 0;
-	border-radius: 50%;
-	padding: 0;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	background: var(--accent);
-	cursor: pointer;
-	transition:
-		background 0.15s,
-		transform 0.15s;
+
+.body {
+	flex: 1;
+	min-height: 0;
+	display: grid;
+	/* the shelf is a spine — kept as narrow as the pedal names want, so the width
+	   goes to the analyzer (the only fluid chain column). The signal-class caption
+	   wraps to a second line rather than widening the whole column for its one long
+	   string. */
+	grid-template-columns: 190px minmax(0, 1fr);
 }
-#play svg {
-	width: 28px;
-	height: 28px;
-	fill: #fff;
-	display: block;
-}
-/* glow orange, not ink orange: --wet-ink goes muddy on the dark rig — the seam
-   again, colours come from whichever side a thing is on */
-#play.playing {
-	background: var(--wet);
-}
-/* ---- the pedal picker ----
-   The one picker on the page (lit) rather than the rig; left dark it read as a
-   black slab on the white header. Green still marks what's chosen. */
-.pick {
-	position: relative;
-}
-.pickbtn {
-	display: inline-flex;
-	align-items: baseline;
-	gap: 8px;
-	font: 14px var(--mono);
-	background: var(--page);
-	color: var(--ink-hi);
-	border: 1px solid var(--rule);
-	border-radius: 4px;
-	padding: 5px 10px;
-	cursor: pointer;
-	min-width: 210px;
-}
-.pickbtn:hover,
-.openpick .pickbtn {
-	background: var(--sunk);
-	border-color: var(--accent);
-}
-/* the picked pedal, the whole button label; the family rides in the band over
-   the row now (see famRow) */
-.pickped {
-	font-weight: 700;
-}
-.pickcar {
-	margin-left: auto;
-	color: var(--ink-lo);
-	font-size: 10px;
-}
-.pickpop {
-	position: absolute;
-	top: calc(100% + 4px);
-	left: 0;
-	z-index: 20;
-	width: 260px;
-	background: var(--page);
-	border: 1px solid var(--rule);
-	border-radius: 4px;
-	box-shadow: 0 6px 24px rgb(25 28 21 / 14%);
-	padding: 6px;
-}
-.picksearch {
-	width: 100%;
-	box-sizing: border-box;
-	font: 14px var(--mono);
-	color: var(--ink-hi);
-	background: var(--sunk);
-	border: 1px solid var(--rule);
-	border-radius: 3px;
-	padding: 5px 8px;
-}
-.picksearch:focus {
-	outline: 2px solid var(--accent);
-	outline-offset: -1px;
-}
-/* ~8 rows: long enough to read as a list and see a family boundary, short enough
-   not to run off a laptop */
-.picklist {
-	list-style: none;
-	margin: 6px 0 0;
-	padding: 0;
-	max-height: 264px;
+
+/* ---- the nav: the pedal shelf, its own scroll pane ---- */
+#pedalnav {
 	overflow-y: auto;
+	padding: 16px 12px 22px 18px;
+	border-right: 1px solid var(--rule);
 }
-/* family headings (find "reverb", learn it's a delay), styled like the rig's
-   .grp caps. Each family wraps its own .pickgroup so the heading's spacing hangs
-   off the group — hence the :first-child rule below, not a positional one. */
-.pickgrp {
+.navhead {
 	font-family: var(--mono);
 	font-size: 10px;
-	font-weight: 700;
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
 	color: var(--ink-lo);
-	padding: 10px 8px 4px;
+	margin: 0 0 12px 6px;
 }
-.pickgroup:first-child .pickgrp {
-	padding-top: 4px;
+#pedalnav .famlabel {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	margin: 0 0 7px 6px;
 }
-.pickopt {
-	font: 14px var(--mono);
-	color: var(--ink);
-	padding: 5px 8px 5px 16px;
-	border-radius: 3px;
+#pedalnav .plist {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.pitem {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	padding: 6px 8px 6px 6px;
+	margin-bottom: 1px;
+	border-radius: 6px;
+	border-left: 3px solid transparent;
 	cursor: pointer;
+	color: var(--ink);
+	font-size: 14.5px;
+	transition: background 90ms;
 }
-/* cursor vs chosen are different states: where you point vs where you are */
-.pickopt.cursor {
+.pitem:hover {
 	background: var(--sunk);
-	color: var(--ink-hi);
 }
-.pickopt.on {
-	background: var(--accent);
-	color: #fff;
+/* cursor vs chosen: the green edge marks where you are */
+.pitem[aria-current="true"] {
+	background: var(--sunk);
+	border-left-color: var(--accent);
+	font-weight: 600;
+}
+.pitem:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: -2px;
+}
+/* the toy pedal beside each shelf name; .glyph is the nav's alone */
+.glyph {
+	flex: none;
+	display: flex;
+	width: 18px;
+	pointer-events: none;
+}
+.glyph svg {
+	width: 18px;
+	height: 20px;
+	display: block;
+}
+.pitem .pname {
+	line-height: 1.1;
+}
+
+/* ---- the bench: the work area, its own scroll pane ---- */
+.main {
+	position: relative;
+	overflow-y: auto;
+	background: var(--tray);
+	padding: 14px 20px 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+#cables {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 0;
+}
+.seclabel {
+	font: 10px var(--mono);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--ink-lo);
+	margin: 0 0 6px 3px;
+}
+
+/* the monitor: bare listening controls on the tray, no enclosure (not part of the
+   signal chain — they reach the speaker, not the charts) */
+.monitor {
+	position: relative;
+	z-index: 1;
+	align-self: flex-end;
+	display: flex;
+	align-items: center;
+	gap: 13px;
+	padding: 0 4px;
+}
+.engrave {
+	font: 700 9.5px var(--mono);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: #4b5044;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.monitor .engrave {
+	color: var(--ink-lo);
+	text-shadow: none;
+}
+.mdiv {
+	width: 1px;
+	align-self: stretch;
+	min-height: 20px;
+	background: var(--rule);
+}
+.field {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.blendfield {
+	min-width: 130px;
+}
+.blendfield input[type="range"] {
+	flex: 1;
+	min-width: 0;
+	accent-color: var(--accent);
+}
+.blab {
+	font: 10px var(--mono);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+.blab.dry {
+	color: #6b7063;
+}
+.blab.wet {
+	color: var(--wet);
+}
+/* sound is a mute toggle, not a level: off is grey with the speaker's waves hidden
+   (a muted speaker), on is accent green with them shown */
+.soundtgl {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	background: none;
+	border: 1px solid #929884;
+	border-radius: 999px;
+	padding: 4px 11px;
+	cursor: pointer;
+	color: var(--ink-lo);
+	font: 10px var(--mono);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+.soundtgl:hover {
+	border-color: var(--accent);
+}
+/* on: it's live, so it carries the accent — filled a touch to read as pressed */
+.soundtgl.on {
+	color: var(--accent);
+	border-color: var(--accent-lo);
+	background: var(--sunk);
+}
+/* hold the label's width across on/off ("off" is wider than "on"), or the button
+   resizes and shoves the right-anchored monitor — "monitor" included — sideways */
+.soundlbl {
+	display: inline-block;
+	/* wide enough for "off" WITH its letter-spacing (3ch alone clips it and the
+	   button resizes between states); "on" centres in the same box */
+	min-width: 3.6ch;
+	text-align: center;
+}
+.volic {
+	width: 15px;
+	height: 15px;
+	color: currentColor;
+	flex: none;
+}
+.soundtgl:not(.on) .volic .wave {
+	display: none;
+}
+
+/* the signal chain: input generator → pedal → output analyzer, all one height */
+.chain {
+	display: grid;
+	grid-template-columns: 186px 220px minmax(0, 1fr);
+	gap: 16px;
+	align-items: stretch;
+}
+.chain .col {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+/* a chassis screw, top/bottom left/right */
+.cscrew {
+	position: absolute;
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 36% 34%, #fff, #9a9f96 60%, #6b7062);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+.cscrew.l {
+	left: 9px;
+}
+.cscrew.r {
+	right: 9px;
+}
+.cscrew.t {
+	top: 9px;
+}
+.cscrew.b {
+	bottom: 9px;
+}
+/* INPUT: a brushed-steel signal-generator panel, distinct from the dark analyzer */
+.steelbox {
+	position: relative;
+	border-radius: 12px;
+	padding: 13px 14px 14px;
+	background-image: repeating-linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.05) 0 1px,
+			rgba(0, 0, 0, 0.012) 1px 4px
+		),
+		linear-gradient(180deg, #dcdfda, #b6bbb2 52%, #9ba098);
+	border: 1px solid #7d837a;
+	box-shadow: 0 4px 12px rgba(20, 24, 16, 0.2),
+		inset 0 1px 0 rgba(255, 255, 255, 0.65);
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	flex: 1;
+	min-height: 0;
+}
+.steelbox .scopetop .engrave {
+	color: #4b5044;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* the output analyzer: a dark scope enclosure */
+.scope {
+	border-radius: 12px;
+	padding: 12px 13px 13px;
+	background-image: repeating-linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.02) 0 1px,
+			rgba(0, 0, 0, 0.02) 1px 3px
+		),
+		linear-gradient(180deg, #2c3226, #1d2219);
+	border: 1px solid var(--inst-edge);
+	box-shadow: 0 4px 14px rgba(20, 24, 16, 0.28),
+		inset 0 1px 0 rgba(255, 255, 255, 0.07);
+	display: flex;
+	flex-direction: column;
+	gap: 11px;
+	flex: 1;
+	min-height: 0;
+}
+.scopetop {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	padding: 0 2px 2px;
+	flex: none;
+}
+.scopetop .engrave {
+	color: #c3cbb4;
+	text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+.scopetop .model {
+	margin-left: auto;
+	font: 9px var(--mono);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: #7f8770;
+}
+/* a screen's claim, on the chassis directly above its glass — free to be any length
+   here, since it never crowds the trace. The chart's NAME and the in/out key stay in
+   the glass header. Sits close to the screen below it (more air above than below, so
+   the caption groups with its screen). */
+.scope {
+	gap: 7px;
+}
+.screencap {
+	display: flex;
+	align-items: baseline;
+	gap: 7px;
+	padding: 0 3px;
+	margin-top: 5px;
+	flex: none;
+	line-height: 1.35;
+}
+.screencap:first-of-type {
+	margin-top: 2px;
+}
+/* a screen: dark glass, phosphor glow */
+.screen {
+	position: relative;
+	border-radius: 8px;
+	overflow: hidden;
+	background: #0b0e08;
+	border: 1px solid #000;
+	box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.75),
+		inset 0 0 2px rgba(143, 174, 110, 0.35), 0 1px 0 rgba(255, 255, 255, 0.05);
+	display: flex;
+	flex-direction: column;
+}
+.phead {
+	flex: none;
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	padding: 8px 11px;
+	font-size: 13px;
+	color: var(--inst-ink);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+	background: rgba(0, 0, 0, 0.28);
+}
+/* the input panel's screen fills its steelbox, and its header stacks name-over-claim */
+.steelbox .screen {
+	flex: 1;
+	min-height: 0;
+}
+.steelbox .phead {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 3px;
+}
+/* the screen's NAME, by shape (glyph) before the word is read */
+.ctype {
+	font-family: var(--mono);
+	font-size: 10.5px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--inst-ink-lo);
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+}
+.ctype svg {
+	width: 15px;
+	height: 13px;
+}
+.claimwrap {
+	flex: 1;
+	min-width: 0;
+}
+.role {
+	font-family: var(--mono);
+	font-size: 10.5px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--accent-lo);
+}
+.claim {
+	font-weight: 600;
+	color: var(--inst-ink);
+}
+/* the chassis claim (above the glass) stretches to fill its caption row */
+.screencap .claim {
+	flex: 1;
+	min-width: 0;
+}
+.legend {
+	margin-left: auto;
+	font-family: var(--mono);
+	font-size: 10.5px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--inst-ink-lo);
+	flex: none;
+}
+.legend .in {
+	color: var(--dry);
+}
+.legend .out {
+	color: var(--wet);
 	font-weight: 700;
 }
-.pickempty {
-	font-size: 13px;
-	color: var(--ink-lo);
-	margin: 10px 8px;
+/* bypassed: the analyzer draws the out-trace in grey (harness H_BYPASS), so the
+   legend word that names it drops its orange too — the header can't promise an
+   orange trace the screen isn't showing */
+.scope.bypassed .legend .out {
+	color: var(--dry);
+	font-weight: 400;
+}
+canvas.chart {
+	display: block;
+	width: 100%;
+	touch-action: none;
+}
+/* The two output screens carry fixed-height glass: that gives the analyzer a
+   definite height, which — via the chain's align-items:stretch — is what makes the
+   input generator and the pedal match it (equal-height boxes). The input SIGNAL
+   canvas flexes to fill whatever height the stretch hands its steel box. */
+canvas[data-c="time"] {
+	height: 150px;
+}
+canvas[data-c="spec"] {
+	height: 112px;
+}
+/* flex-basis 0 (not auto): the SIGNAL scope must contribute nothing to the steel
+   box's intrinsic height, so it fills whatever the box has left rather than setting
+   the box's size. That keeps the input box a constant height when the ↻ pluck button
+   appears on guitar — the chart gives up the row instead of growing the box. */
+.steelbox .screen > canvas[data-c="srcglyph"] {
+	flex: 1 1 0;
+	min-height: 0;
+	height: 0;
+}
+
+/* INPUT: the source controls live inside the steel enclosure */
+.inctls {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 0 1px;
+	flex: none;
+}
+.inctls .fl {
+	font: 10px var(--mono);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #5c6154;
+	min-width: 40px;
+}
+/* a switch cut into the chassis: darker than the steel, every option visible */
+.seg {
+	display: inline-flex;
+	border-radius: 5px;
+	overflow: hidden;
+	border: 1px solid rgba(0, 0, 0, 0.5);
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.srcbtn {
+	font: 12px var(--mono);
+	background: #14170f;
+	color: #9aa08c;
+	border: 0;
+	border-right: 1px solid rgba(0, 0, 0, 0.5);
+	padding: 5px 9px;
+	cursor: pointer;
+}
+.srcbtn:last-child {
+	border-right: 0;
+}
+.srcbtn.active {
+	background: linear-gradient(180deg, #6a8f47, var(--accent));
+	color: #fff;
+	text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
 }
 .srcbtn:disabled {
 	opacity: 0.5;
 	cursor: default;
 }
-/* ↻ pluck: outlined on the chassis, not recessed — a filled/recessed button
-   beside .seg reads as a third source you could pick, and pluck is an action, not
-   a choice. The border also squares its height with .seg's. No margin-left:auto:
-   pluck sits against the guitar button that decides whether it exists. */
-#replay {
-	font: 14px var(--mono);
-	background: transparent;
-	color: var(--inst-ink);
-	border: 1px solid var(--inst-ink-lo);
-	border-radius: 4px;
-	padding: 4px 10px;
+/* ↻ pluck: an action, not a source, so outlined on the steel rather than cut into it
+   like the .seg — a filled well would read as a third source you could pick. Sits
+   left, under the source it belongs to; hidden on sine (harness.js). */
+.replaybtn {
+	align-self: flex-start;
+	font: 11px var(--mono);
+	background: rgba(255, 255, 255, 0.35);
+	color: #3f443a;
+	border: 1px solid rgba(0, 0, 0, 0.32);
+	border-radius: 5px;
+	padding: 4px 9px;
 	cursor: pointer;
 }
-#replay:disabled {
-	opacity: 0.4;
-	cursor: default;
+.replaybtn:hover {
+	background: rgba(255, 255, 255, 0.6);
+	border-color: rgba(0, 0, 0, 0.45);
 }
-/* The bench's top band: the four-column context row (pedal, family, transform,
-   what-changes) and, beside it, the reading-the-charts box. flex not grid — a grid
-   track would line the box up with the columns and it'd read as a fifth one. */
-#lede {
-	max-width: var(--wide);
+.replaybtn[hidden] {
+	display: none;
+}
+
+/* PEDAL: the stompbox, filling its column top to bottom */
+.pedhold {
 	display: flex;
-	align-items: flex-start;
-	gap: 32px;
+	flex-direction: column;
 }
-/* the table takes what its four columns need and no more; the box takes the rest.
-   A wide box wraps the copy to two lines instead of four, so the box stops being
-   taller than the table and the whole band shrinks to the table's height. */
-#ledetable {
-	flex: 0 1 780px;
-	min-width: 0;
+.pedal {
+	position: relative;
+	border-radius: 15px;
+	padding: 18px 15px 16px;
+	width: 100%;
+	flex: 1;
+	background-image: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, 0.2),
+		rgba(0, 0, 0, 0.05) 40%,
+		rgba(0, 0, 0, 0.16)
+	);
+	background-color: var(--hue);
+	box-shadow: 0 4px 12px rgba(20, 24, 16, 0.3),
+		inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -3px 7px rgba(0, 0, 0, 0.26);
+	color: var(--pedink);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
 }
-/* the bench's other row overrides live at the foot of the catalog section — they
-   must follow the rules they override */
-/* no rule of its own: the tray's bottom edge is the line this sits under */
+.screw {
+	position: absolute;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 35%, #f0f0ea, #8b8b80 62%, #55554c);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+.screw.tl {
+	left: 9px;
+	top: 9px;
+}
+.screw.tr {
+	right: 9px;
+	top: 9px;
+}
+.screw.bl {
+	left: 9px;
+	bottom: 9px;
+}
+.screw.br {
+	right: 9px;
+	bottom: 9px;
+}
+.pbrand {
+	font-family: var(--mono);
+	font-size: 12.5px;
+	font-weight: 700;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	text-align: center;
+}
+.pknobs {
+	display: flex;
+	gap: 22px;
+}
+.dial {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	cursor: ns-resize;
+	touch-action: none;
+	user-select: none;
+}
+.dial svg {
+	width: 48px;
+	height: 48px;
+	display: block;
+	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+.dcap {
+	font-family: var(--mono);
+	font-size: 9px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	opacity: 0.85;
+}
+.dval {
+	font-family: var(--mono);
+	font-size: 10.5px;
+	font-weight: 600;
+	margin-top: -2px;
+}
+/* the formula silkscreened on the face — the page's thesis, kept big */
+.psilk {
+	font-family: var(--mono);
+	font-size: 10.5px;
+	text-align: center;
+	opacity: 0.92;
+	overflow-wrap: anywhere;
+	line-height: 1.35;
+}
+.silknote {
+	font-size: 10px;
+	text-align: center;
+	opacity: 0.68;
+	line-height: 1.3;
+	margin-top: -5px;
+}
+.silknote:empty {
+	display: none;
+}
+/* the TRANSFORM curve screen on the pedal face */
+.pscreen {
+	width: 100%;
+	border-radius: 5px;
+	background: #0b0e08;
+	border: 1px solid rgba(0, 0, 0, 0.55);
+	box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+	padding: 6px 7px 7px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.pscreenhdr {
+	font-family: var(--mono);
+	font-size: 9px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--inst-ink-lo);
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+.pscreenhdr svg {
+	width: 13px;
+	height: 11px;
+}
+.pscreen canvas {
+	display: block;
+	width: 100%;
+	height: 104px;
+	touch-action: none;
+}
+/* clipping's transfer curve reads against y = x, so it's drawn square; centre it on
+   the pedal face rather than letting it hug the left the way the catalog column wants
+   (thumb.js spends the slack on the right for that column — here there's none). delay
+   and modulation plot against time and keep the full width. */
+.pscreen canvas.glyph--square {
+	width: 104px;
+	margin-inline: auto;
+}
+/* the footswitch: a real control (engage/bypass) with an LED + on/off label */
+.footwrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 3px;
+}
+.footsw {
+	position: relative;
+	width: 66px;
+	height: 66px;
+	margin-top: 2px;
+	border: 0;
+	background: none;
+	padding: 0;
+	cursor: pointer;
+}
+.footsw .hex {
+	position: absolute;
+	inset: 6px;
+	border-radius: 14px;
+	background: linear-gradient(180deg, #b9bdb2, #7f857b);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+		inset 0 -2px 4px rgba(0, 0, 0, 0.4), 0 2px 3px rgba(0, 0, 0, 0.3);
+}
+.footsw .cap {
+	position: absolute;
+	inset: 14px;
+	border-radius: 50%;
+	background: radial-gradient(
+		circle at 38% 30%,
+		#f3f4ef,
+		#b7bcb2 45%,
+		#7c8177 78%,
+		#565b51
+	);
+	box-shadow: 0 3px 5px rgba(0, 0, 0, 0.4), inset 0 -3px 5px rgba(0, 0, 0, 0.28),
+		inset 0 2px 3px rgba(255, 255, 255, 0.7);
+	transition: transform 60ms;
+}
+.footsw:active .cap {
+	transform: scale(0.94);
+}
+.footsw:focus-visible {
+	outline: 2px solid var(--accent-lo);
+	outline-offset: 3px;
+	border-radius: 50%;
+}
+.pled {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: #e2402c;
+	box-shadow: 0 0 8px rgba(240, 70, 50, 0.9), inset 0 0 1px #fff;
+}
+.pled.off {
+	background: #4a2a25;
+	box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6);
+}
+.footstate {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.footcap {
+	font: 700 9px var(--mono);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--pedink);
+	opacity: 0.85;
+}
+.footcap.off {
+	opacity: 0.4;
+}
+
+/* the guitar source's attribution, below the chain */
+.gcredit {
+	font-size: 12px;
+	color: var(--ink-lo);
+	margin: 4px 3px 0;
+}
+.gcredit a {
+	color: #35501f;
+	font-weight: 600;
+	text-decoration: none;
+}
+.gcredit a:hover {
+	text-decoration: underline;
+}
+
+/* ---- the lesson: the family's prose, in the bench's scroll pane ---- */
 #lesson {
-	max-width: var(--wide);
-	margin: 8px auto 0;
-	padding: 24px 20px 8px;
+	margin: 8px 0 0;
+	padding: 20px 4px 8px;
+	border-top: 1px solid var(--rule);
 }
 .lesson-cols {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 	gap: 8px 44px;
 }
-/* narrower than 68ch mono: a proportional face fits more chars per ch, landing
-   near the same ~70-char line */
 .lesson-cols .col {
 	max-width: 58ch;
 }
-/* the lesson's own heading — a step above the aside's h3 so the reading column
-   outranks the column beside it */
 #lesson h2 {
 	font-size: 20px;
 	font-weight: 640;
@@ -675,7 +874,6 @@ b {
 	color: var(--ink-hi);
 	margin: 0 0 12px;
 }
-/* sentence case; at this size the weight alone heads a column */
 #lesson h3 {
 	font-size: 16px;
 	font-weight: 650;
@@ -683,15 +881,12 @@ b {
 	color: var(--ink-hi);
 	margin: 0 0 10px;
 }
-/* the reading column — the one block on the page that's purely prose */
 #lesson p {
 	margin: 0 0 14px;
 	font-size: 15px;
 	line-height: 1.65;
 	color: var(--ink);
 }
-/* the lead sentence — the lesson's one-line summary, carried heavier than body
-   emphasis so it reads as the takeaway under the heading */
 #lesson strong {
 	color: var(--ink-hi);
 	font-weight: 680;
@@ -703,13 +898,39 @@ b {
 	padding: 1px 4px;
 }
 
-/* ---- the catalog page (pedals.html) ----
-   All lit side — no rig, no scope — so no instrument vars; ink on white. Only
-   the mono face carries over, on formulas and machine lettering. */
+/* the way out to the catalog, and back from it: one small mono link. The masthead
+   dresses its own as a pill (below). */
+.catlink {
+	font-family: var(--mono);
+	font-size: 12px;
+	color: var(--ink-lo);
+	text-decoration: none;
+	white-space: nowrap;
+}
+.catlink:hover {
+	color: var(--accent);
+}
+/* the masthead's catlink advertises (it's the only thing that says the catalog
+   exists), so a pill where the catalog's back-link is a bare word */
+#masthead .catlink {
+	align-self: center;
+	color: var(--accent);
+	border: 1px solid var(--rule);
+	border-radius: 999px;
+	padding: 5px 12px;
+	line-height: 1;
+}
+#masthead .catlink:hover {
+	border-color: var(--accent-lo);
+	background: var(--sunk);
+}
+
+/* ============================================================================
+   THE CATALOG PAGE (pedals.html)
+   All lit side — no bench, no scope. Shares only the mono face and the vars
+   above. Left intact from the deck-layout design.
+   ========================================================================== */
 #cat {
-	/* --wide like every other page; the SHAPE column made this a table and a table
-	   wants the room. Tracks are all fr, so they absorb the extra and WHAT CHANGES
-	   stops breaking mid-phrase. */
 	max-width: var(--wide);
 	margin: 0 auto;
 	padding: 28px 20px 60px;
@@ -721,8 +942,6 @@ b {
 	color: var(--ink-hi);
 	margin: 0 0 8px;
 }
-/* 88ch: wide enough to read as the table's header rather than a narrow ribbon
-   hanging off a table nearly twice its width */
 .catlede {
 	margin: 0;
 	max-width: 88ch;
@@ -733,15 +952,10 @@ b {
 .fam {
 	margin: 40px 0 0;
 }
-/* Column names, a family, a pedal — one geometry, declared once, so they line up.
-   Each lays out its own three columns (a row is an <a> and can't also be a grid
-   without subgrid). The 3px left border is transparent here, green on a band;
-   every box reserves it or the band's columns sit 3px off. Change a track, gap or
-   padding here and you change all three. */
+/* Column names, a family, a pedal — one geometry, declared once, so they line up. */
 .cathead,
 .famhead,
-.catrow,
-.benchrow {
+.catrow {
 	display: grid;
 	grid-template-columns: minmax(9rem, 1fr) minmax(11rem, 1.15fr) minmax(
 			11rem,
@@ -752,8 +966,6 @@ b {
 	padding: 11px 10px;
 	border-left: 3px solid transparent;
 }
-/* air above (the families' own gap), not below, so the names belong to the table
-   under them and not the lede above */
 .cathead {
 	font-family: var(--mono);
 	font-size: 10px;
@@ -764,13 +976,9 @@ b {
 	padding-top: 0;
 	padding-bottom: 7px;
 }
-/* first family owns no gap — the header row already opened it */
 .cathead + .fam {
 	margin-top: 0;
 }
-/* A band naming the pedals under it (the .grp job) but lit: --tray, not
-   instrument-dark .grp, and not --sunk — .sunk is the hover state, and a band in
-   the hover colour reads as hovered. The band is what separates the families. */
 .famhead {
 	margin: 0 0 2px;
 	background: var(--tray);
@@ -778,17 +986,12 @@ b {
 	font-weight: 400;
 	font-size: inherit;
 }
-/* value over gloss (name over class, formula over its English note); the same
-   shape as the rows below, so a family reads as the generic case of a row. One
-   rule for all, or the columns drift. */
 .famcell,
 .catcell {
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
 }
-/* the family name gets the rig's uppercase mono: here the families ARE the column
-   names (the .grp job on the bench) */
 .famname {
 	font-family: var(--mono);
 	font-size: 13px;
@@ -797,8 +1000,6 @@ b {
 	text-transform: uppercase;
 	color: var(--ink-hi);
 }
-/* "family" after the name (see famRow), set like the glosses — the small quiet
-   noun saying what kind of heading. No margin: the gap is text (famRow says why). */
 .famnoun {
 	font-size: 11.5px;
 	font-weight: 400;
@@ -806,22 +1007,37 @@ b {
 	text-transform: none;
 	color: var(--ink-lo);
 }
-/* the general form of the column below it, so it takes that column's green —
-   without it a <b> takes the default orange and the two altitudes of one formula
-   split into two colours */
 .famop {
 	font-family: var(--mono);
 	font-size: 12.5px;
 	font-weight: 400;
 	color: var(--accent);
 }
-/* the two glosses; same size/colour as .catalias in the rows */
 .famklass,
 .famnote {
 	font-size: 11.5px;
 	line-height: 1.45;
 	color: var(--ink-lo);
 	font-weight: 400;
+}
+/* The shelf reuses the family classes (.fam / .famname / .famklass) but is its own
+   component; these override the catalog defaults above for the nav. Kept here, after
+   the base rules, so specificity ascends in source order (see biome noDescendingSpecificity). */
+#pedalnav .fam {
+	margin-bottom: 18px;
+}
+/* the families ARE the shelf's headings (the general case each pedal instances) */
+#pedalnav .famname {
+	font-family: var(--mono);
+	font-size: 11.5px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--ink);
+}
+#pedalnav .famklass {
+	font-size: 10.5px;
+	color: var(--ink-lo);
 }
 .famwhat {
 	font-size: 13px;
@@ -835,8 +1051,6 @@ b {
 	border-top: 1px solid var(--rule);
 	border-radius: 3px;
 }
-/* hover/focus mean "clickable", so scoped to a.catrow: the catalog's rows are
-   links, the bench's single row is a <div> and must not promise a click */
 a.catrow:hover {
 	background: var(--sunk);
 }
@@ -844,8 +1058,6 @@ a.catrow:focus-visible {
 	outline: 2px solid var(--accent);
 	outline-offset: -2px;
 }
-/* indented so the pedals read as belonging to the family band; only this cell,
-   not the row — indent the row and the formula column drifts out of alignment */
 .catped {
 	display: flex;
 	flex-direction: column;
@@ -861,22 +1073,15 @@ a.catrow:focus-visible {
 a.catrow:hover .catlabel {
 	color: var(--accent);
 }
-/* the pedal's two glosses; same as .famnote/.famklass above. Not mono though —
-   it's prose about the notation, and the notation's face would read as more of it */
 .catalias,
 .catnote {
 	font-size: 11.5px;
 	line-height: 1.45;
 	color: var(--ink-lo);
 }
-/* the bench's row is filled, not built; an empty note still takes the cell gap,
-   so hide it or the formula sits 3px high on families with no note */
 .catnote:empty {
 	display: none;
 }
-/* green, like every drawing of the pedal's math (the rail plots this formula in
-   --accent). Not orange — orange is the referent for "out" (panel headers paint
-   the word off --wet), and a formula isn't the output, the transform is. */
 .catop {
 	font-family: var(--mono);
 	font-size: 12px;
@@ -887,11 +1092,6 @@ a.catrow:hover .catlabel {
 	font-size: 13px;
 	line-height: 1.5;
 }
-/* Five tracks — pedal, transform, SHAPE, then the bench's two claims (CHANGES,
-   YOU HEAR) — added to all three (.cathead is .catrow's grid rule) or the names
-   stop sitting over what they name. The band leaves SHAPE empty (a family has no
-   one curve) and spans its oneLiner across the two claim tracks (below). Scoped to
-   #cat — the bench shares the base rule but runs its own four columns. */
 #cat .cathead,
 #cat .famhead,
 #cat .catrow {
@@ -899,24 +1099,14 @@ a.catrow:hover .catlabel {
 		minmax(8rem, 0.85fr) minmax(9rem, 1fr) minmax(84px, 0.4fr)
 		minmax(9rem, 1.1fr) minmax(9rem, 1.1fr);
 }
-/* the family's oneLiner is one general claim, not a CHANGES/YOU HEAR pair, so it
-   runs across both claim tracks — the general case the pedals below split in two */
 #cat .famwhat {
 	grid-column: span 2;
 }
-/* sized to the row (two lines ≈ 42px) so the curve rides height the row already
-   spends; 56 over 42 is the square clipping thumbnails (see thumb.js). No
-   border/fill — a drawing on the page, not another instrument panel. */
 .catthumb {
 	width: 100%;
 	height: 56px;
-	/* centred, not baselined: a drawing's bottom is an axis, not a text line */
 	align-self: center;
 }
-/* Stack before the grid overflows, not just before the formulas wrap: the five
-   tracks have fixed minimums (644px) that with gaps and padding need ~756px, so
-   any narrower and a fluid grid can't shrink — it scrolls sideways. Stacked, the
-   rows block out and the header (naming columns that no longer exist) goes. */
 @media (max-width: 760px) {
 	.catrow,
 	.famhead {
@@ -933,15 +1123,11 @@ a.catrow:hover .catlabel {
 	.famhead > *:first-child {
 		margin-top: 0;
 	}
-	/* the flex-column cells flatten to inline spans when stacked; block them apart */
 	.catped > *,
 	.catcell > *,
 	.famcell > * {
 		display: block;
 	}
-	/* CHANGES and YOU HEAR lose their column heads when stacked and read as two loose
-	   sentences, so each grows its own head from data-col — the .cathead lettering,
-	   small and quiet, over the claim it names */
 	.catrow .catwhat::before {
 		content: attr(data-col);
 		display: block;
@@ -953,127 +1139,6 @@ a.catrow:hover .catlabel {
 		color: var(--ink-lo);
 	}
 }
-/* the bench splits the catalog's PEDAL column into two — the picked pedal, then
-   its FAMILY — so header and row run four columns, not the catalog's three. Down
-   here, after the rules they override (a plain .cathead following would read as
-   losing to an ID — the linter's descending-specificity warning). */
-#lede .cathead,
-#lede .benchrow {
-	/* four columns reading the signal path: pedal | changes | you hear | family.
-	   The pedal track is a FIXED width, not auto: the head and the row are separate
-	   grids, and an auto track sizes to each one's own content (the word "pedal" vs
-	   the picker), so the heads would drift off their columns. The two middle claims
-	   get the room (1fr each). Wider column gap than the base — the claims want air. */
-	/* pedal track +5px so the CHANGES column's left edge lands on the charts' left
-	   edge below (rail + rig gap); the offset is constant, both blocks centre on --wide */
-	grid-template-columns: calc(13.5rem + 5px) minmax(9rem, 1fr) minmax(9rem, 1fr) minmax(8rem, 0.8fr);
-	gap: 8px 30px;
-}
-#lede .cathead {
-	margin-top: 0;
-	/* and no gap below — here the names head one row and sit right on it */
-	padding-bottom: 2px;
-}
-/* the bench's one row: quiet context, so no tray fill, no green edge. Tight bottom
-   padding (the base 11px is for the catalog's stacked rows) so the tray sits close. */
-#lede .benchrow {
-	margin: 0;
-	padding-top: 4px;
-	padding-bottom: 5px;
-}
-/* the four columns want the row's width; cap only so the family doesn't drift to
-   the far edge on a wide viewport */
-#ledetable {
-	flex: 1;
-	/* the rail's width in from the edge, so the family lands where the rail ends below */
-	max-width: calc(var(--wide) - var(--rail));
-}
-/* PEDAL cell: the toy pedal and the picker as one unit. align-items:baseline so the
-   picker's text — not the taller icon — sets the unit's baseline, which is what the
-   row aligns the claims to (so "the peaks get clipped" sits on "overdrive"). */
-.pickunit {
-	display: inline-flex;
-	align-items: baseline;
-	gap: 9px;
-}
-/* scoped to #lede (the art's only home now) so it clears #play svg above — the
-   linter's descending-specificity warning */
-#lede .pedalart {
-	display: flex;
-	flex: none;
-	/* centred on the picker, and out of the baseline the claims align to */
-	align-self: center;
-	pointer-events: none;
-}
-#lede .pedalart svg {
-	height: 34px;
-	width: auto;
-	display: block;
-}
-/* the picker on the lit page keeps the base .pickbtn look; only rein in the width
-   (the base 210 is sized for the dark rail) */
-#lede .pickbtn {
-	min-width: 150px;
-}
-/* a chart claim: the punchline (what the pedal does), set loud, with the chip that
-   names the chart proving it trailing inline (echoing the panel's own .ctype chip).
-   Inline, not stacked: the cell is only as tall as the claim, so it matches the
-   family column's height and a wrapped claim doesn't cost a third line. */
-.factcell {
-	line-height: 1.3;
-	text-wrap: balance;
-}
-.factcell .claim {
-	font-size: 15.5px;
-	font-weight: 600;
-	color: var(--ink-hi);
-}
-.factcell .chip {
-	/* an inline tag after the sentence; nudged up to sit on its baseline, not sink
-	   to the line's bottom */
-	display: inline-block;
-	margin-left: 7px;
-	vertical-align: 1px;
-	font-family: var(--mono);
-	font-size: 9.5px;
-	font-weight: 700;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	color: var(--ink-lo);
-	background: var(--tray);
-	border-radius: 3px;
-	padding: 2px 7px;
-	white-space: nowrap;
-}
-/* on this page the band's name is the way out (see famRow), the one .famname
-   that's an <a>: mono caps kept, underline dropped (it'd rule under a heading);
-   the arrow rides in .famnoun and hover carries the colour */
-#lede a.famname {
-	text-decoration: none;
-}
-#lede a.famname:hover .famnoun,
-#lede a.famname:focus-visible .famnoun {
-	color: var(--accent);
-}
-/* the way back to the bench, and the way out to the catalog: one small mono
-   link, on the page side both times */
-.catlink {
-	font-family: var(--mono);
-	font-size: 12px;
-	color: var(--ink-lo);
-	text-decoration: none;
-	border-bottom: 1px solid var(--rule);
-	padding-bottom: 1px;
-	white-space: nowrap;
-}
-.catlink:hover {
-	color: var(--accent);
-	border-bottom-color: var(--accent);
-}
-/* upper right, level with the h1 — the same nav corner the bench keeps "compare
-   pedals" in. Grid so the link can be first in the DOM (keyboard hits the way-out
-   before the page) but sit beside the h1 without source order lying. Still a bare
-   word, not the bench's pill: this reader came looking for the way back. */
 .cathdr {
 	display: grid;
 	grid-template-columns: 1fr auto;
@@ -1089,49 +1154,42 @@ a.catrow:hover .catlabel {
 .catlede {
 	grid-column: 1 / -1;
 }
-/* the one .catlink that must advertise: the only thing on the bench that says the
-   catalog exists, so a box (accent ink + border) where the other two are bare
-   words — the same "this is a thing you press" move .seg makes. Centred, no
-   baseline worth sharing on a padded box. */
-#masthead .catlink {
-	align-self: center;
-	color: var(--accent);
-	border: 1px solid var(--rule);
-	border-radius: 999px;
-	padding: 5px 11px;
-	line-height: 1;
-}
-#masthead .catlink:hover {
-	border-color: var(--accent-lo);
-	background: var(--sunk);
-}
 
-/* ---- the bench on a phone ----
-   The bench's four-column row has fixed minimums (13.5 + 9 + 9 + 8rem) that with
-   gaps and padding need ~738px, below which it scrolls sideways; and the rig's
-   fixed 240px rail leaves the charts too little to draw in (a 240 + gap split of
-   a 390px screen crushes them to ~110px). So the rig goes one column — controls
-   first (pick, then play), charts under the button that drives them — and the
-   bench row stacks, dropping its column heads (each claim keeps its own chart
-   chip, so the heads have nothing left to name). */
-@media (max-width: 740px) {
-	#rig {
-		grid-template-columns: minmax(0, 1fr);
-		gap: 14px;
+/* ============================================================================
+   THE BENCH ON A NARROW SCREEN
+   Below ~900px the nav + three chain columns don't fit: the shell unlocks to an
+   ordinary scroll, the nav sits atop the bench, and the chain single-columns.
+   Cables (anchored to a side-by-side layout) drop out.
+   ========================================================================== */
+@media (max-width: 900px) {
+	body:has(.app) {
+		height: auto;
+		overflow: auto;
 	}
-	#controls {
-		grid-column: 1;
-		grid-row: 1;
+	.app {
+		max-width: none;
+		border-left: 0;
+		border-right: 0;
 	}
-	#grid {
-		grid-column: 1;
-		grid-row: 2;
+	.body {
+		grid-template-columns: 1fr;
 	}
-	#lede .cathead {
+	#pedalnav {
+		overflow: visible;
+		border-right: none;
+		border-bottom: 1px solid var(--rule);
+	}
+	.main {
+		overflow: visible;
+	}
+	.chain {
+		grid-template-columns: 1fr;
+	}
+	#cables {
 		display: none;
 	}
-	#lede .benchrow {
-		grid-template-columns: minmax(0, 1fr);
-		gap: 12px;
+	/* the pedal no longer has a full column to fill; give it a natural height */
+	.chain > .col > .pedhold {
+		flex: none;
 	}
 }
