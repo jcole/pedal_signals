@@ -11,8 +11,13 @@ const current = (page) => page.locator('.pitem[aria-current="true"] .pname');
 
 test("the shelf lists the whole catalog under its families", async ({ page }) => {
   await page.goto("/");
-  await expect(families(page)).toHaveText(["clipping", "delay", "modulation"]);
-  await expect(items(page)).toHaveCount(9);
+  await expect(families(page)).toHaveText([
+    "clipping",
+    "delay",
+    "modulation",
+    "chorus",
+  ]);
+  await expect(items(page)).toHaveCount(11);
 });
 
 test("the catalog's order is the shelf's order", async ({ page }) => {
@@ -22,6 +27,7 @@ test("the catalog's order is the shelf's order", async ({ page }) => {
     "overdrive", "distortion", "fuzz",
     "echo", "slapback", "ambient",
     "tremolo", "chop", "warble",
+    "chorus", "flanger",
   ]);
 });
 

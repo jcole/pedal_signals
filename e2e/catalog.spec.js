@@ -47,18 +47,23 @@ test("each family heads its pedals with its signal class and formula", async ({
     "clipping family",
     "delay family",
     "modulation family",
+    "chorus family",
   ]);
   // the class named the way the demo's header names it — same phrase, so the two
-  // pages teach one term and not a page-local shorthand
+  // pages teach one term and not a page-local shorthand. Chorus shares modulation's
+  // class (both LTV) — the mechanism differs (a swept delay, not a swept gain), the
+  // signal class doesn't.
   await expect(page.locator(".famklass")).toHaveText([
     "memoryless nonlinearity (NL)",
     "linear, time-invariant (LTI)",
+    "linear, time-varying (LTV)",
     "linear, time-varying (LTV)",
   ]);
   await expect(page.locator(".famop")).toHaveText([
     "y[n] = f(x[n])",
     "y[n] = x[n] + fb·y[n−D]",
     "y[n] = x[n]·m(t)",
+    "y[n] = x[n] + g·x[n−D(n)]",
   ]);
 });
 

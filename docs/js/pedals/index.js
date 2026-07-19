@@ -23,12 +23,22 @@ export {
   squareShape,
   triangleShape,
 } from "./modulation.js";
+export {
+  CHORUSES,
+  combResponseDb,
+  DELAY_FLOOR_MS,
+  ModulatedDelayPedal,
+  NCHORUS,
+  SPANMS_CHORUS,
+  sweptComb,
+} from "./modulatedDelay.js";
 
 import { CLIPPING } from "./clipping.js";
 import { DELAYS } from "./delay.js";
+import { CHORUSES } from "./modulatedDelay.js";
 import { MODULATIONS } from "./modulation.js";
 
 // every pedal, by id
 export const PEDALS = Object.fromEntries(
-  [...CLIPPING, ...DELAYS, ...MODULATIONS].map((p) => [p.id, p]),
+  [...CLIPPING, ...DELAYS, ...MODULATIONS, ...CHORUSES].map((p) => [p.id, p]),
 );

@@ -39,7 +39,13 @@
   import clipping from "./js/ui/clipping.js";
   import delay from "./js/ui/delay.js";
   import modulation from "./js/ui/modulation.js";
+  import chorus from "./js/ui/modulatedDelay.js";
 
   // Same list and order as the demo's EFFECTS — one catalog, read twice.
-  mountCatalog(document.getElementById("catlist"), [clipping, delay, modulation]);
+  mountCatalog(document.getElementById("catlist"), [
+    clipping,
+    delay,
+    modulation,
+    chorus,
+  ]);
 </script>

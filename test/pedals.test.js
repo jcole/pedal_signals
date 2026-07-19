@@ -8,16 +8,20 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  CHORUSES,
   CLIPPING,
   ClippingPedal,
+  combResponseDb,
   DELAYS,
   DelayPedal,
   echo,
   impulseResponse,
+  ModulatedDelayPedal,
   PEDALS,
   PLUCK_MS,
   sineShape,
   squareShape,
+  sweptComb,
   MODULATIONS,
   ModulationPedal,
   triangleShape,
@@ -122,6 +126,16 @@ test("clipping pedals carry a curve; delay pedals carry starting knobs", () => {
     assert.equal(typeof p.fn, "function", `${p.id}.fn`);
     assert.equal(typeof p.waveType, "string", `${p.id}.waveType`);
   }
+  for (const p of CHORUSES) {
+    assert.ok(p instanceof ModulatedDelayPedal);
+    assert.equal(typeof p.defaults.rate, "number", `${p.id}.defaults.rate`);
+    assert.equal(typeof p.defaults.depth, "number", `${p.id}.defaults.depth`);
+    // centre delay + copy level are the pedal's identity, not knobs (like fn)
+    assert.equal(typeof p.centerMs, "number", `${p.id}.centerMs`);
+    assert.equal(typeof p.mix, "number", `${p.id}.mix`);
+    // the sweep must never drive the delay negative through zero
+    assert.ok(p.centerMs > 0, `${p.id}.centerMs > 0`);
+  }
 });
 
 test("PEDALS is the whole catalog, every family, keyed by id", () => {
@@ -135,6 +149,8 @@ test("PEDALS is the whole catalog, every family, keyed by id", () => {
     "tremolo",
     "chop",
     "warble",
+    "chorus",
+    "flanger",
   ]);
 });
 
@@ -328,4 +344,72 @@ test("chop (square LFO, depth 0.95) drives the signal near silent at its troughs
   let lo = Infinity;
   for (const v of out) lo = Math.min(lo, v);
   assert.ok(lo < 0.06, "square LFO gates all the way down near 1-depth");
+});
+
+// ---- modulated delay: sweptComb (y[n] = x[n] + g·x[n−D(n)]) ----------------
+
+test("sweptComb at depth 0 is a fixed comb: dry plus one delayed copy at g", () => {
+  // depth 0 freezes D at centerSamp, so an impulse rings once dry and once at D
+  const inp = impulse(64);
+  const out = sweptComb(inp, {
+    centerSamp: 10,
+    depthSamp: 0,
+    rate: 5,
+    mix: 0.6,
+  });
+  assert.equal(out[0], 1, "the dry hit rides through at unity");
+  assert.ok(Math.abs(out[10] - 0.6) < 1e-12, "the copy lands at D, scaled by g");
+  // nothing anywhere else — one tap, not a train (no feedback)
+  for (const i of [1, 5, 9, 11, 20, 63]) assert.equal(out[i], 0);
+});
+
+test("sweptComb reads a fractional delay by interpolating between samples", () => {
+  // a ramp so the interpolated value is easy to predict. D = 20.5 (above the ~9.6
+  // sample floor) reads halfway between x[n−20] and x[n−21].
+  const inp = Float64Array.from({ length: 64 }, (_, i) => i);
+  const out = sweptComb(inp, {
+    centerSamp: 20.5,
+    depthSamp: 0,
+    rate: 1,
+    mix: 1,
+  });
+  // at n=40: dry 40 + copy interp(19.5) = 40 + 19.5
+  assert.ok(Math.abs(out[40] - 59.5) < 1e-9, "linear interpolation of the tap");
+});
+
+test("sweptComb never reads through the delay floor on a deep sweep", () => {
+  // depth well past the centre would swing D negative; the floor holds it positive,
+  // so the copy stays a copy of the past, never the dry sample doubled
+  const inp = Float64Array.from({ length: 4096 }, (_, i) =>
+    Math.sin((2 * Math.PI * 220 * i) / 48000),
+  );
+  const out = sweptComb(inp, {
+    centerSamp: 48, // ~1 ms
+    depthSamp: 480, // ~10 ms, far deeper than the centre
+    rate: 1,
+    mix: 1,
+  });
+  assert.ok(out.every(Number.isFinite), "no NaN/Inf from a zero-crossing delay");
+});
+
+// ---- modulated delay: combResponseDb (the notch comb) ----------------------
+
+test("combResponseDb peaks at 1+g in phase and notches at 1−g inverted", () => {
+  const D = 0.005, // 5 ms -> teeth every 200 Hz, notches at 100, 300, …
+    mix = 0.5;
+  // in phase at DC (θ = 0): 1 + g
+  assert.ok(Math.abs(combResponseDb(0, D, mix) - 20 * Math.log10(1.5)) < 1e-9);
+  // inverted at f = 1/(2D) = 100 Hz: 1 − g
+  assert.ok(
+    Math.abs(combResponseDb(100, D, mix) - 20 * Math.log10(0.5)) < 1e-9,
+    "the first notch is a 1−g cut",
+  );
+  // back in phase at f = 1/D = 200 Hz
+  assert.ok(Math.abs(combResponseDb(200, D, mix) - 20 * Math.log10(1.5)) < 1e-9);
+});
+
+test("combResponseDb: a louder copy cuts deeper notches", () => {
+  const D = 0.004;
+  const notch = (mix) => combResponseDb(1 / (2 * D), D, mix); // the first null
+  assert.ok(notch(0.7) < notch(0.5), "g=0.7 notches below g=0.5");
 });
