@@ -217,6 +217,30 @@ body:has(.app) {
 	color: var(--ink-lo);
 	margin: 0 0 6px 3px;
 }
+/* the OUTPUT label shares its row with the way out to the reading page: a quiet
+   accent link (the "advertise a page they don't know exists" role, like the
+   masthead's catlink) sitting where a first-timer asks "what am I looking at?" */
+.outhead {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	margin-bottom: 6px;
+}
+.outhead .seclabel {
+	margin: 0 0 0 3px;
+}
+.readlink {
+	margin-left: auto;
+	font: 11px var(--mono);
+	letter-spacing: 0.04em;
+	color: var(--accent);
+	text-decoration: none;
+	white-space: nowrap;
+}
+.readlink:hover {
+	color: var(--accent-lo);
+	text-decoration: underline;
+}
 
 /* the monitor: bare listening controls on the tray, no enclosure (not part of the
    signal chain — they reach the speaker, not the charts) */
@@ -1207,5 +1231,144 @@ a.catrow:hover .catlabel {
 	/* the pedal no longer has a full column to fill; give it a natural height */
 	.chain > .col > .pedhold {
 		flex: none;
+	}
+}
+
+/* ============================================================================
+   THE READING PAGE (reading.html)
+   All lit side, like the catalog — but each card carries a real dark scope
+   (the bench's own .screen/.phead/.ctype/.legend classes) so a picture here
+   reads the same as the analyzer it explains. A reference, not a tutorial:
+   cards stand alone, so the layout is a plain grid with no ordering implied.
+   ========================================================================== */
+#reading {
+	max-width: 980px;
+	margin: 0 auto;
+	padding: 28px 20px 72px;
+}
+.rt-hdr {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: baseline;
+}
+.rt-hdr .catlink {
+	grid-area: 1 / 2;
+	justify-self: end;
+}
+.rt-hdr h1 {
+	grid-area: 1 / 1;
+	font-size: 30px;
+	font-weight: 650;
+	letter-spacing: -0.01em;
+	color: var(--ink-hi);
+	margin: 0 0 8px;
+}
+.rt-lede {
+	grid-column: 1 / -1;
+	margin: 0;
+	max-width: 74ch;
+	font-size: 16px;
+	line-height: 1.6;
+	color: var(--ink);
+}
+.rt-grid {
+	margin-top: 26px;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+}
+.rt-card {
+	border: 1px solid var(--rule);
+	border-radius: 14px;
+	overflow: hidden;
+	background: var(--page);
+	display: flex;
+	flex-direction: column;
+}
+/* the scope reuses the bench's .screen; only its canvas height is the card's own */
+.rt-card .rt-canvas {
+	height: 128px;
+}
+.rt-body {
+	padding: 14px 18px 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+}
+.rt-name {
+	margin: 0;
+	font-family: var(--mono);
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--ink-hi);
+}
+/* the domain line sits by the axis it names — not in a preamble up top */
+.rt-axis {
+	margin: -3px 0 0;
+	font-size: 13px;
+	color: var(--ink-lo);
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.rt-axis .ax {
+	flex: none;
+	font-family: var(--mono);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+.rt-what {
+	margin: 0;
+	font-size: 14px;
+	color: var(--ink);
+}
+.rt-tip {
+	margin: 0;
+	font-size: 13px;
+	color: var(--ink-lo);
+	padding-left: 12px;
+	border-left: 2px solid var(--accent);
+}
+.rt-tags {
+	margin: 2px 0 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+.rt-lbl {
+	font-family: var(--mono);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--ink-lo);
+	margin-right: 2px;
+}
+/* a chip is the way back to the bench, opened on that pedal */
+.rt-chip {
+	font-family: var(--mono);
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	padding: 4px 9px;
+	border-radius: 999px;
+	background: var(--sunk);
+	color: var(--ink-lo);
+	border: 1px solid var(--rule);
+	text-decoration: none;
+}
+.rt-chip:hover {
+	color: var(--accent);
+	border-color: var(--accent-lo);
+}
+@media (max-width: 720px) {
+	.rt-grid {
+		grid-template-columns: 1fr;
 	}
 }

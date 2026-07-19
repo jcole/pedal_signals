@@ -115,7 +115,12 @@
         <!-- OUTPUT: the dark analyzer — WAVEFORM (what changes) over SPECTRUM (what
              you hear), each an in-vs-out trace. harness.js fills the headers. -->
         <div class="col">
-          <p class="seclabel">output</p>
+          <!-- the section label, plus the way to the reading page — the analyzer's
+               own help, offered where the eye first meets the charts -->
+          <div class="outhead">
+            <p class="seclabel">output</p>
+            <a class="readlink" href="./reading.html">how to read these →</a>
+          </div>
           <div class="scope" id="scope">
             <!-- the claim rides the chassis above each screen, so a long one never
                  crowds the trace. The chart's NAME (WAVEFORM/SPECTRUM/…) and the

@@ -1,0 +1,245 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pedal signals — reading the screens</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./css/styles.css">
+
+<!-- Unfurl card, absolute URLs like pedals.html — a reference way in, shares og.png. -->
+<meta name="description" content="How to read the bench's four screens: waveform, envelope, spectrum, and comb — what each picture shows, and which pedals draw it.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jcole.github.io/pedal_signals/reading.html">
+<meta property="og:title" content="Pedal signals — reading the screens">
+<meta property="og:description" content="How to read the bench's four screens: waveform, envelope, spectrum, and comb — what each picture shows, and which pedals draw it.">
+<meta property="og:image" content="https://jcole.github.io/pedal_signals/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- A reference, not a tutorial: each card stands alone so a reader can jump to the
+     one screen they're looking at. The domain (time/frequency) and the in/out key
+     live ON each card, next to the axis they describe — no shared preamble up top. -->
+<article id="reading">
+  <header class="rt-hdr">
+    <a class="catlink" href="./">← back to the bench</a>
+    <h1>Reading the screens</h1>
+    <p class="rt-lede">Each pedal draws the same note on two screens — one <b>over time</b>, one
+      <b>by frequency</b> — with the dry and wet signals overlaid. Here's how to read all four
+      pictures. The traces below are drawn to explain each screen, not pulled from a live pedal.</p>
+  </header>
+
+  <div class="rt-grid">
+    <!-- WAVEFORM — time domain, top screen (clipping, delay) -->
+    <section class="rt-card">
+      <div class="screen">
+        <div class="phead">
+          <span class="ctype"><svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6 Q4 1 7 6 T13 6 T19 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>waveform</span>
+          <span class="legend"><span class="in">in</span> dry vs <span class="out">out</span> wet</span>
+        </div>
+        <canvas class="chart rt-canvas" data-chart="waveform" aria-label="A clean sine going in, its peaks flattened on the way out"></canvas>
+      </div>
+      <div class="rt-body">
+        <h2 class="rt-name">waveform</h2>
+        <p class="rt-axis"><span class="ax">time · x = ms →</span> the signal arriving, moment to moment</p>
+        <p class="rt-what">The signal's own up-and-down as it moves through — tall is loud, and the
+          <b>shape</b> carries the tone. Clipping flattens the peaks into grit; a delay stacks the
+          note up as separate taps.</p>
+        <p class="rt-tip">Read the shape, not the height: same size, different edges = a different tone.</p>
+        <p class="rt-tags"><span class="rt-lbl">seen on</span><a class="rt-chip" href="./?pedal=overdrive">overdrive</a><a class="rt-chip" href="./?pedal=echo">echo</a></p>
+      </div>
+    </section>
+
+    <!-- ENVELOPE — time domain (delay bottom; modulation & chorus/flanger top) -->
+    <section class="rt-card">
+      <div class="screen">
+        <div class="phead">
+          <span class="ctype"><svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6 Q4 1 7 6 T13 6 T19 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>envelope</span>
+          <span class="legend"><span class="in">in</span> dry vs <span class="out">out</span> wet</span>
+        </div>
+        <canvas class="chart rt-canvas" data-chart="envelope" aria-label="A steady note going in, pulsing in loudness on the way out"></canvas>
+      </div>
+      <div class="rt-body">
+        <h2 class="rt-name">envelope</h2>
+        <p class="rt-axis"><span class="ax">time · x = ms →</span> the signal arriving, moment to moment</p>
+        <p class="rt-what">The <b>outline</b> of the loudness over time — the wave's swell traced out,
+          with the fast wiggles dropped. This is where tremolo's pulse shows, or a delay's repeats
+          stepping down one after another.</p>
+        <p class="rt-tip">The line is a loudness contour, not the sound itself — watch it rise, dip, and repeat.</p>
+        <p class="rt-tags"><span class="rt-lbl">seen on</span><a class="rt-chip" href="./?pedal=echo">echo</a><a class="rt-chip" href="./?pedal=tremolo">tremolo</a><a class="rt-chip" href="./?pedal=chorus">chorus</a><a class="rt-chip" href="./?pedal=flanger">flanger</a></p>
+      </div>
+    </section>
+
+    <!-- SPECTRUM — frequency domain, bottom screen (clipping, modulation) -->
+    <section class="rt-card">
+      <div class="screen">
+        <div class="phead">
+          <span class="ctype"><svg viewBox="0 0 20 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1" width="2.4" height="10"/><rect x="6.8" y="3.5" width="2.4" height="7.5"/><rect x="11.6" y="5.5" width="2.4" height="5.5"/><rect x="16.4" y="7.5" width="2.4" height="3.5"/></svg>spectrum</span>
+          <span class="legend"><span class="in">in</span> dry vs <span class="out">out</span> wet</span>
+        </div>
+        <canvas class="chart rt-canvas" data-chart="spectrum" aria-label="One pitch going in, a stack of new harmonics coming out"></canvas>
+      </div>
+      <div class="rt-body">
+        <h2 class="rt-name">spectrum</h2>
+        <p class="rt-axis"><span class="ax">frequency · x = kHz →</span> the sound split into pitches, low → high</p>
+        <p class="rt-what">Which pitches are actually <b>in</b> the sound — one spike per frequency
+          present. A clean note is a single spike; distortion sprouts a row of new spikes (harmonics)
+          that weren't there before.</p>
+        <p class="rt-tip">Count the spikes — new ones are frequencies the pedal invented.</p>
+        <p class="rt-tags"><span class="rt-lbl">seen on</span><a class="rt-chip" href="./?pedal=overdrive">overdrive</a><a class="rt-chip" href="./?pedal=tremolo">tremolo</a></p>
+      </div>
+    </section>
+
+    <!-- COMB — frequency domain, bottom screen (chorus, flanger) -->
+    <section class="rt-card">
+      <div class="screen">
+        <div class="phead">
+          <span class="ctype"><svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6 Q4 1 7 6 T13 6 T19 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>comb</span>
+          <span class="legend"><span class="in">in</span> dry vs <span class="out">out</span> wet</span>
+        </div>
+        <canvas class="chart rt-canvas" data-chart="comb" aria-label="A flat dry line and a wet line combed with regular notches"></canvas>
+      </div>
+      <div class="rt-body">
+        <h2 class="rt-name">comb</h2>
+        <p class="rt-axis"><span class="ax">frequency · x = Hz →</span> the sound split into pitches, low → high</p>
+        <p class="rt-what">Not the sound — the <b>pedal's</b> own fingerprint: how much it lifts or cuts
+          each frequency. A short, swept delay cuts a row of regular notches — the teeth of a comb —
+          while the dry line sits flat at 0&nbsp;dB.</p>
+        <p class="rt-tip">Above the flat line it boosts, below it cuts. Chorus's teeth are fine and close; a flanger's are few, wide, and deep.</p>
+        <p class="rt-tags"><span class="rt-lbl">seen on</span><a class="rt-chip" href="./?pedal=chorus">chorus</a><a class="rt-chip" href="./?pedal=flanger">flanger</a></p>
+      </div>
+    </section>
+  </div>
+</article>
+
+<script type="module">
+  // Draw the four sample scopes the way the harness does — faint grid, a zero line, a
+  // grey IN trace and an orange OUT trace — reading the same signal colours off :root
+  // so a mini-scope here matches the bench. Values are illustrative, not measured.
+  const css = getComputedStyle(document.documentElement);
+  const C = {
+    grid: css.getPropertyValue("--grid").trim(),
+    zero: css.getPropertyValue("--zero").trim(),
+    dry: css.getPropertyValue("--dry").trim(),
+    wet: css.getPropertyValue("--wet").trim(),
+    axis: css.getPropertyValue("--inst-ink-lo").trim(),
+  };
+
+  function fit(cv) {
+    const dpr = window.devicePixelRatio || 1;
+    const r = cv.getBoundingClientRect();
+    cv.width = Math.round(r.width * dpr);
+    cv.height = Math.round(r.height * dpr);
+    const ctx = cv.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, w: r.width, h: r.height };
+  }
+  const frame = (w, h) => ({ l: 8, r: w - 8, t: 8, b: h - 16, w, h });
+
+  function grid(ctx, f, cols) {
+    ctx.strokeStyle = C.grid;
+    ctx.lineWidth = 1;
+    for (let i = 1; i < cols; i++) {
+      const x = f.l + ((f.r - f.l) * i) / cols;
+      ctx.beginPath();
+      ctx.moveTo(x, f.t);
+      ctx.lineTo(x, f.b);
+      ctx.stroke();
+    }
+  }
+  function zeroLine(ctx, f, y) {
+    ctx.strokeStyle = C.zero;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(f.l, y);
+    ctx.lineTo(f.r, y);
+    ctx.stroke();
+  }
+  function trace(ctx, f, fn, color, n = 240) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const x = f.l + (f.r - f.l) * t;
+      const y = f.b - (f.b - f.t) * fn(t);
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    ctx.stroke();
+  }
+  function xlabel(ctx, f, text) {
+    ctx.fillStyle = C.axis;
+    ctx.font = "10px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(text, f.r, f.h - 3);
+  }
+
+  const soft = (x) => Math.tanh(x * 2.2) / Math.tanh(2.2); // gentle clip
+
+  const charts = {
+    waveform(ctx, w, h) {
+      const f = frame(w, h);
+      grid(ctx, f, 4);
+      const span = f.b - f.t,
+        amp = span * 0.34;
+      zeroLine(ctx, f, (f.t + f.b) / 2);
+      const base = (t) => Math.sin(t * Math.PI * 2 * 3);
+      const toFrac = (v) => 0.5 + (v * amp) / span;
+      trace(ctx, f, (t) => toFrac(base(t)), C.dry);
+      trace(ctx, f, (t) => toFrac(soft(base(t) * 1.7)), C.wet);
+      xlabel(ctx, f, "time (ms) →");
+    },
+    envelope(ctx, w, h) {
+      const f = frame(w, h);
+      grid(ctx, f, 4);
+      const env = (t) => 0.86 * Math.exp(-0.55 * t);
+      trace(ctx, f, (t) => 0.12 + env(t) * 0.8, C.dry);
+      trace(ctx, f, (t) => 0.12 + env(t) * (0.55 + 0.45 * Math.cos(t * Math.PI * 2 * 4)) * 0.8, C.wet);
+      xlabel(ctx, f, "time (ms) →");
+    },
+    spectrum(ctx, w, h) {
+      const f = frame(w, h);
+      const stems = (arr, color, dx) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = "round";
+        for (const [pos, hgt] of arr) {
+          const x = f.l + (f.r - f.l) * pos + dx;
+          const y = f.b - (f.b - f.t) * hgt;
+          ctx.beginPath();
+          ctx.moveTo(x, f.b);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        }
+      };
+      stems([[0.1, 0.9]], C.dry, -2.5);
+      stems([[0.1, 0.9], [0.24, 0.62], [0.38, 0.44], [0.52, 0.3], [0.66, 0.2], [0.8, 0.12]], C.wet, 2.5);
+      xlabel(ctx, f, "frequency (kHz) →");
+    },
+    comb(ctx, w, h) {
+      const f = frame(w, h);
+      grid(ctx, f, 4);
+      const y0 = 0.74; // fraction for 0 dB
+      zeroLine(ctx, f, f.b - (f.b - f.t) * y0);
+      trace(ctx, f, () => y0, C.dry);
+      // a few deep notches, wide apart — the flanger/chorus comb
+      trace(ctx, f, (t) => y0 - 0.5 * (0.5 - 0.5 * Math.cos(t * Math.PI * 2 * 4.5)), C.wet);
+      xlabel(ctx, f, "frequency (Hz) →");
+    },
+  };
+
+  function drawAll() {
+    for (const cv of document.querySelectorAll("canvas.rt-canvas")) {
+      const { ctx, w, h } = fit(cv);
+      ctx.clearRect(0, 0, w, h);
+      charts[cv.dataset.chart](ctx, w, h);
+    }
+  }
+  drawAll();
+  let raf;
+  addEventListener("resize", () => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(drawAll);
+  });
+</script>
