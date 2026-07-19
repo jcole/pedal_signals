@@ -137,7 +137,7 @@ body:has(.app) {
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
 	color: var(--ink-lo);
-	margin: 0 0 12px 6px;
+	margin: 0 0 22px 6px;
 }
 #pedalnav .famlabel {
 	display: flex;
@@ -1064,7 +1064,7 @@ canvas[data-c="spec"] {
    component; these override the catalog defaults above for the nav. Kept here, after
    the base rules, so specificity ascends in source order (see biome noDescendingSpecificity). */
 #pedalnav .fam {
-	margin-bottom: 18px;
+	margin: 14px 0 6px;
 }
 /* the families ARE the shelf's headings (the general case each pedal instances) */
 #pedalnav .famname {
