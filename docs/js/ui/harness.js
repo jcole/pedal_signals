@@ -43,8 +43,8 @@
 // Nothing here chooses a pedal: the nav owns that; the page turns its choice into a
 // mount() or selectPedal().
 import { F0, MSMAX, normalize, parseWav, SPAN, SR } from "../dsp.js";
-// drawing primitives and palette, shared with the catalog (see draw.js).
-import { frame as fit, H, line, titles, txt } from "./draw.js";
+// drawing primitives and palette, shared with the catalog (see chart.js).
+import { baseline, frame as fit, H, line, titles, txt } from "./chart.js";
 // the two scope claims, resolved by the same code the catalog uses (see setPedal)
 import { claims } from "./rows.js";
 // the TRANSFORM screen's curve is the catalog's thumbnail, live. See drawRail.
@@ -163,11 +163,7 @@ function drawTime(inp, out, match, Hh = H) {
   const span = pedal.spanSamples;
   const sx = (i) => L + (i / span) * (R - L),
     sy = (y) => (T + B) / 2 - y * ((B - T) / 2 - 4);
-  g.strokeStyle = ZERO;
-  g.beginPath();
-  g.moveTo(L, sy(0));
-  g.lineTo(R, sy(0));
-  g.stroke();
+  baseline(g, F, sy); // the scope's centre line — partner to the spectra's dbLadder
   const od = new Float64Array(span);
   for (let i = 0; i < span; i++) od[i] = out[i] * match;
   line(g, ramp(span), inp.subarray(0, span), sx, sy, DRY, 1.5);

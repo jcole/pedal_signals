@@ -171,6 +171,9 @@ export default {
       wet = specDb(windowed(out));
     const sx = (f) => L + ((f - F0 + FSPAN) / (2 * FSPAN)) * (R - L),
       sy = (db) => T + ((5 - Math.max(-80, db)) / 85) * (B - T);
+    // dB ladder + floor — the analyzer furniture (see chart.js), matching the
+    // clipping spectrum: this panel descends from a 0 dB ceiling to the -80 floor.
+    H.dbLadder(g, F, sy, [0, -40], -80);
     // The carrier's own gridline — everything here is read as an offset from it,
     // and it's the one frequency that isn't the pedal's doing.
     g.strokeStyle = GRID;

@@ -137,24 +137,19 @@ export default {
   // Overrides the harness waveform: 65536 samples of a 222 Hz carrier into ~400 px
   // is a filled band, not a wave (same reason as modulation).
   drawTime(F, inp, out, _pedal, _src, H) {
-    const { g, L, R, T, B } = F;
-    const { DRY, WET } = H.colors;
-    const span = out.length;
-    const sx = (i) => L + (i / span) * (R - L),
-      sy = (v) => B - Math.min(1.5, v) * ((B - T - 4) / 1.5);
     // Held follower (the carrier is sustained), smoothed over one carrier period so
-    // the staircase reads as the pulse it is. See dsp.js / modulation.
-    const de = smooth(envelopeHeld(inp)),
-      we = smooth(envelopeHeld(out));
-    const xs = new Array(span);
-    for (let i = 0; i < span; i++) xs[i] = i;
-    H.line(g, xs, de, sx, sy, DRY, 1.5);
-    H.line(g, xs, we, sx, sy, WET, 2);
-    H.txt(g, "1", L - 5, sy(1), "end", "middle");
-    H.txt(g, "0", L - 5, sy(0), "end", "middle");
-    H.txt(g, "0", sx(0), B + 3, "start", "top");
-    H.txt(g, SPANMS_CHORUS.toFixed(0), sx(span), B + 3, "end", "top");
-    H.titles(g, F, "level", "time (ms)");
+    // the staircase reads as the pulse it is. See dsp.js / modulation. yMax 1.5: the
+    // wet peaks push above unity where the comb teeth pile the copy in phase.
+    H.envelopePanel(
+      F,
+      {
+        dry: smooth(envelopeHeld(inp)),
+        wet: smooth(envelopeHeld(out)),
+        spanMs: SPANMS_CHORUS,
+        yMax: 1.5,
+      },
+      H,
+    );
   },
 
   // Output BOTTOM panel: the comb the pedal makes — an EQ-style curve of gain vs
@@ -182,6 +177,10 @@ export default {
     const sx = (f) => L + (f / COMB_FMAX) * (R - L),
       sy = (db) =>
         T + ((DB_TOP - Math.max(DB_BOT, Math.min(DB_TOP, db))) / (DB_TOP - DB_BOT)) * (B - T);
+    // dB ladder — the analyzer furniture (see chart.js). Bipolar here: the comb
+    // rides above and below the 0 dB unity line (the grey IN trace), so the dashes
+    // bracket it — a peak ceiling and a notch floor, no separate floor rule.
+    H.dbLadder(g, F, sy, [DB_TOP, DB_BOT]);
     // f₀ marker — where the note sits on the comb (see above)
     g.strokeStyle = GRID;
     g.lineWidth = 1;

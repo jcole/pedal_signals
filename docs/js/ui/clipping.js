@@ -155,7 +155,7 @@ export default {
 
 function drawSpecStems(F, dryDb, wetDb, H) {
   const { g, L, R, T, B } = F;
-  const { DRY, WET, GRID, ZERO } = H.colors;
+  const { DRY, WET, GRID } = H.colors;
   const nH = Math.floor(FMAX / F0); // harmonics of f0 that fit under FMAX
   const sx = (f) => L + (f / FMAX) * (R - L),
     sy = (db) => T + ((5 - db) / 85) * (B - T);
@@ -169,14 +169,8 @@ function drawSpecStems(F, dryDb, wetDb, H) {
     g.lineTo(px, B);
     g.stroke();
   }
-  // the floor the bins stand on — the waveform's zero-line ink, but along the
-  // bottom: a scope swings around centre, an analyzer rises from the floor
-  g.strokeStyle = ZERO;
-  g.lineWidth = 1;
-  g.beginPath();
-  g.moveTo(L, sy(-80));
-  g.lineTo(R, sy(-80));
-  g.stroke();
+  // dB ladder + the floor the bins stand on — the analyzer furniture (see chart.js)
+  H.dbLadder(g, F, sy, [0, -40], -80);
   for (let k = 1; k <= nH; k++) {
     const b = k * KBIN;
     if (wetDb[b] > -79) {
@@ -216,7 +210,7 @@ function drawSpecCont(F, inp, out, H) {
   const dry = specDb(windowed(inp)),
     wet = specDb(windowed(out));
   const { g, L, R, T, B } = F;
-  const { DRY, WET, GRID, ZERO } = H.colors;
+  const { DRY, WET, GRID } = H.colors;
   const df = SR / N,
     nb = Math.floor(FMAX / df);
   const sx = (f) => L + (f / FMAX) * (R - L),
@@ -229,12 +223,8 @@ function drawSpecCont(F, inp, out, H) {
     g.lineTo(sx(f), B);
     g.stroke();
   }
-  // the analyzer floor — matches the stem view and the waveform's zero line
-  g.strokeStyle = ZERO;
-  g.beginPath();
-  g.moveTo(L, sy(-80));
-  g.lineTo(R, sy(-80));
-  g.stroke();
+  // dB ladder + floor — the same analyzer furniture the stem view stands on
+  H.dbLadder(g, F, sy, [0, -40], -80);
   const xs = [];
   for (let i = 1; i <= nb; i++) xs.push(i * df);
   H.line(g, xs, Array.from({ length: nb }, (_, i) => dry[i + 1]), sx, sy, DRY, 1);

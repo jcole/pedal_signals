@@ -96,19 +96,11 @@ export default {
   ],
 
   // center panel: the tap train — stems at 0, D, 2D, … with the fb^k decay law
-  // drawn faintly through their tops.
+  // through their tops. This module owns the DSP (impulse response + decay law);
+  // chart.js draws the panel.
   drawCenter(F, _pedal, params, H) {
-    const { g, L, R, T, B } = F;
-    const { GRID, ZERO, ACCENT } = H.colors;
-    const sx = (ms) => L + (ms / SPANMS) * (R - L),
-      sy = (v) => B - v * (B - T - 6);
-    g.strokeStyle = GRID;
-    g.lineWidth = 1;
-    g.beginPath();
-    g.moveTo(L, sy(0));
-    g.lineTo(R, sy(0));
-    g.stroke();
-    // the geometric decay envelope fb^(ms/D) through the tap tops
+    // the geometric decay envelope fb^(ms/D) the tap tops ride
+    let decay = null;
     if (params.feedback > 0) {
       const xs = [],
         ys = [];
@@ -117,55 +109,18 @@ export default {
         xs.push(ms);
         ys.push(params.feedback ** (ms / params.time));
       }
-      H.line(g, xs, ys, sx, sy, ZERO, 1.5);
+      decay = { xs, ys };
     }
-    for (const { ms, level } of impulseResponse(params.time, params.feedback, SPANMS)) {
-      g.strokeStyle = ACCENT;
-      g.lineWidth = 2.5;
-      g.beginPath();
-      g.moveTo(sx(ms), sy(0));
-      g.lineTo(sx(ms), sy(level));
-      g.stroke();
-    }
-    H.txt(g, "1", L - 5, sy(1), "end", "middle");
-    H.txt(g, "0", L - 5, sy(0), "end", "middle");
-    H.txt(g, "0", sx(0), B + 3, "start", "top");
-    H.txt(g, SPANMS.toFixed(0), sx(SPANMS), B + 3, "end", "top");
-    H.titles(g, F, "tap level", "time (ms)");
+    const stems = impulseResponse(params.time, params.feedback, SPANMS);
+    H.tapTrain(F, { stems, decay, spanMs: SPANMS }, H);
   },
 
-  // bottom panel: the wet envelope (orange) over the dry (grey) — the decaying row
-  // of humps, one per repeat, that the ear hears as the echo.
-  //
-  // One follower, both sources: both are transients now (see genInput), so both
-  // want envelope()'s coast.
+  // bottom panel: the wet envelope over the dry — the decaying row of humps, one
+  // per repeat, that the ear hears as the echo. Both sources are transients now
+  // (see genInput), so both want envelope()'s coast; dry dashed on top since the
+  // output contains it until the first repeat lands (see envelopePanel).
   drawSpec(F, inp, out, _pedal, _src, H) {
-    const { g, L, R, T, B } = F;
-    const { DRY, WET } = H.colors;
-    const span = out.length;
-    const sx = (i) => L + (i / span) * (R - L),
-      sy = (v) => B - Math.min(1, v) * (B - T - 4);
-    const de = envelope(inp),
-      we = envelope(out);
-    const xs = new Array(span);
-    for (let i = 0; i < span; i++) xs[i] = i;
-    // Dry LAST and dashed: the output CONTAINS the input — out[i] === inp[i] until
-    // the first repeat lands — so a solid dry would hide under the wet exactly
-    // where it matters. Dashed and on top, it rides the first hump: your note
-    // stopped there, every hump after is the pedal's.
-    //
-    // Dashes only work here because these are smooth curves. A canvas dash walks
-    // PATH length, so the waveform panel above (swinging ±1 at 222 Hz) would
-    // stipple its verticals rather than dash them.
-    H.line(g, xs, we, sx, sy, WET, 2);
-    g.setLineDash([6, 4]);
-    H.line(g, xs, de, sx, sy, DRY, 1.5);
-    g.setLineDash([]);
-    H.txt(g, "1", L - 5, sy(1), "end", "middle");
-    H.txt(g, "0", L - 5, sy(0), "end", "middle");
-    H.txt(g, "0", sx(0), B + 3, "start", "top");
-    H.txt(g, SPANMS.toFixed(0), sx(span), B + 3, "end", "top");
-    H.titles(g, F, "level", "time (ms)");
+    H.envelopePanel(F, { dry: envelope(inp), wet: envelope(out), spanMs: SPANMS, dryDashed: true }, H);
   },
 
   // Live source for BOTH src modes — the same burst genInput draws, so panel and

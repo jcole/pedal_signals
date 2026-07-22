@@ -96,7 +96,7 @@
           <span class="ctype"><svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6 Q4 1 7 6 T13 6 T19 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>comb</span>
           <span class="legend"><span class="in">in</span> dry vs <span class="out">out</span> wet</span>
         </div>
-        <canvas class="chart rt-canvas" data-chart="comb" aria-label="A flat dry line and a wet line combed with regular notches"></canvas>
+        <canvas class="chart rt-canvas" data-chart="comb" aria-label="A flat dry line and a wet line combed into regular peaks and notches"></canvas>
       </div>
       <div class="rt-body">
         <h2 class="rt-name">comb</h2>
@@ -154,6 +154,24 @@
     ctx.lineTo(f.r, y);
     ctx.stroke();
   }
+  // The frequency cards' dB ladder — the analyzer furniture the bench draws with
+  // chart.js's dbLadder. Kept in this page's own minimal idiom (fractions, no
+  // measured dB) so the sample screens match the real ones. `fracs`/`floor` are
+  // heights from the bottom; the floor is the solid rule the bins stand on.
+  function ladder(ctx, f, fracs, floor) {
+    ctx.strokeStyle = C.grid;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 3]);
+    for (const fr of fracs) {
+      const y = f.b - (f.b - f.t) * fr;
+      ctx.beginPath();
+      ctx.moveTo(f.l, y);
+      ctx.lineTo(f.r, y);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    if (floor != null) zeroLine(ctx, f, f.b - (f.b - f.t) * floor);
+  }
   function trace(ctx, f, fn, color, n = 240) {
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
@@ -200,6 +218,8 @@
     },
     spectrum(ctx, w, h) {
       const f = frame(w, h);
+      // descends from a 0 dB ceiling to a solid floor — the analyzer look
+      ladder(ctx, f, [0.94, 0.47], 0);
       const stems = (arr, color, dx) => {
         ctx.strokeStyle = color;
         ctx.lineWidth = 2.5;
@@ -220,11 +240,15 @@
     comb(ctx, w, h) {
       const f = frame(w, h);
       grid(ctx, f, 4);
-      const y0 = 0.74; // fraction for 0 dB
+      const y0 = 0.74; // fraction for 0 dB — the unity line the comb rides
+      // dashed brackets above and below unity — the bench comb's dB ladder. No
+      // floor: a comb measures against unity, not a bottom (see chart.js dbLadder).
+      ladder(ctx, f, [0.84, 0.32]);
       zeroLine(ctx, f, f.b - (f.b - f.t) * y0);
       trace(ctx, f, () => y0, C.dry);
-      // a few deep notches, wide apart — the flanger/chorus comb
-      trace(ctx, f, (t) => y0 - 0.5 * (0.5 - 0.5 * Math.cos(t * Math.PI * 2 * 4.5)), C.wet);
+      // teeth wide apart — a peak of 1+g above unity, a deeper notch of 1−g below,
+      // as the flanger/chorus comb bites the copy in and out of phase
+      trace(ctx, f, (t) => y0 - 0.16 + 0.26 * Math.cos(t * Math.PI * 2 * 4.5), C.wet);
       xlabel(ctx, f, "frequency (Hz) →");
     },
   };

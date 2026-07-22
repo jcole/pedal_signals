@@ -7,10 +7,10 @@
 // `drawCenter` hook and pure `fn` the rig runs, so a tweaked `fn` can't quietly
 // make it lie the way a checked-in PNG could.
 
-import { frame, H } from "./draw.js";
+import { frame, H } from "./chart.js";
 
 // A thumbnail has no axis labels, so it reserves no room for any — the whole
-// difference between this drawing and the rig's (see draw.js's `frame`).
+// difference between this drawing and the rig's (see chart.js's `frame`).
 const PAD = 1;
 
 // Square the plot for a family that asks (`thumbSquare`) by spending the slack on
