@@ -24,10 +24,12 @@
 	--tray: #e9ece2;
 
 	/* Instrument materials: --inst-ink is the ink on a screen bezel, --inst-ink-lo
-	   its quiet caption, --inst-edge the dark chassis edge. */
+	   its quiet caption, --inst-edge the dark chassis edge, --glass the dark scope
+	   glass (a warm charcoal, not a black void — the trace still reads against it). */
 	--inst-ink: #dfe5d6;
 	--inst-ink-lo: #adb59e;
 	--inst-edge: #0f110c;
+	--glass: #14180f;
 
 	/* Signal colours, and the source of truth for the charts: harness.js reads
 	   --dry/--wet/--grid/--zero/--accent-lo off :root at load, so a trace and the
@@ -393,7 +395,9 @@ body:has(.app) {
 .steelbox {
 	position: relative;
 	border-radius: 12px;
-	padding: 13px 14px 14px;
+	/* extra top/bottom inset so the control row and the scope both clear the
+	   corner screws (which reach ~18px in) — the screws frame, not crowd */
+	padding: 23px 14px 22px;
 	background-image: linear-gradient(180deg, #cdd0c9, #bfc2ba 52%, #b0b5ac);
 	border: 1px solid #969b8f;
 	box-shadow:
@@ -414,17 +418,11 @@ body:has(.app) {
 .scope {
 	border-radius: 12px;
 	padding: 12px 13px 13px;
-	background-image:
-		repeating-linear-gradient(
-			90deg,
-			rgba(255, 255, 255, 0.02) 0 1px,
-			rgba(0, 0, 0, 0.02) 1px 3px
-		),
-		linear-gradient(180deg, #2c3226, #1d2219);
+	background-image: linear-gradient(180deg, #565f47, #3b4331);
 	border: 1px solid var(--inst-edge);
 	box-shadow:
 		0 4px 14px rgba(20, 24, 16, 0.28),
-		inset 0 1px 0 rgba(255, 255, 255, 0.07);
+		inset 0 1px 0 rgba(255, 255, 255, 0.11);
 	display: flex;
 	flex-direction: column;
 	gap: 11px;
@@ -473,10 +471,10 @@ body:has(.app) {
 	position: relative;
 	border-radius: 8px;
 	overflow: hidden;
-	background: #0b0e08;
+	background: var(--glass);
 	border: 1px solid #000;
 	box-shadow:
-		inset 0 0 20px rgba(0, 0, 0, 0.75),
+		inset 0 0 20px rgba(0, 0, 0, 0.5),
 		inset 0 0 2px rgba(143, 174, 110, 0.35),
 		0 1px 0 rgba(255, 255, 255, 0.05);
 	display: flex;
@@ -530,7 +528,9 @@ body:has(.app) {
 	font-size: 10.5px;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
-	color: var(--accent-lo);
+	/* a lighter phosphor green than --accent-lo: the role sits on the lifted
+	   green chassis, where the trace's own accent would read too close to it */
+	color: #b0d484;
 }
 .claim {
 	font-weight: 600;
@@ -594,13 +594,6 @@ canvas[data-c="spec"] {
 	gap: 8px;
 	padding: 0 1px;
 	flex: none;
-}
-.inctls .fl {
-	font: 10px var(--mono);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: #5c6154;
-	min-width: 40px;
 }
 /* a switch cut into the chassis: darker than the steel, every option visible */
 .seg {
@@ -768,7 +761,7 @@ canvas[data-c="spec"] {
 .pscreen {
 	width: 100%;
 	border-radius: 5px;
-	background: #0b0e08;
+	background: var(--glass);
 	border: 1px solid rgba(0, 0, 0, 0.55);
 	box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
 	padding: 6px 7px 7px;
