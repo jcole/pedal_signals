@@ -600,9 +600,20 @@ export function mount(v, opts = {}) {
     wireMonitor();
     wirePedal();
     wireCables();
-    // ↻ pluck: start audio if it hasn't been, then re-trigger the note from the top
+    // ↻ pluck: it's an audio-replay control, and the charts are static, so a mute
+    // pluck would do nothing visible — switch the monitor on (nudging a zeroed volume
+    // back up so it's actually heard), then re-trigger the note from the top.
     document.getElementById("replay").onclick = () => {
       startAudioOnce();
+      if (!soundOn) {
+        soundOn = true;
+        if (volume === 0) {
+          volume = 0.75;
+          volS().value = volume;
+        }
+        setSoundUI();
+        applySound();
+      }
       startSource();
     };
     // any first touch on the bench starts the (silent-at-0) audio context
