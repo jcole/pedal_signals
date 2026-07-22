@@ -771,17 +771,18 @@ canvas[data-c="spec"] {
 }
 .pscreenhdr {
 	font-family: var(--mono);
-	font-size: 9px;
+	/* matches .ctype so all four screen names read as one family across the chain */
+	font-size: 10.5px;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 	color: var(--inst-ink-lo);
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
+	gap: 6px;
 }
 .pscreenhdr svg {
-	width: 13px;
-	height: 11px;
+	width: 15px;
+	height: 13px;
 }
 .pscreen canvas {
 	display: block;
