@@ -381,26 +381,24 @@ body:has(.app) {
 .cscrew.b {
 	bottom: 9px;
 }
-/* INPUT: a brushed-steel signal-generator panel, distinct from the dark analyzer */
+/* INPUT: a brushed-steel signal-generator panel, distinct from the dark analyzer.
+   It's the "before" reference, so it stays the quietest of the three boxes — a
+   muted, flat steel that recedes behind the hued pedal and the dark analyzer. It
+   sizes to its content and top-aligns (flex: none), rather than stretching to the
+   analyzer's full height. */
 .steelbox {
 	position: relative;
 	border-radius: 12px;
 	padding: 13px 14px 14px;
-	background-image:
-		repeating-linear-gradient(
-			90deg,
-			rgba(255, 255, 255, 0.05) 0 1px,
-			rgba(0, 0, 0, 0.012) 1px 4px
-		),
-		linear-gradient(180deg, #dcdfda, #b6bbb2 52%, #9ba098);
-	border: 1px solid #7d837a;
+	background-image: linear-gradient(180deg, #cdd0c9, #bfc2ba 52%, #b0b5ac);
+	border: 1px solid #969b8f;
 	box-shadow:
-		0 4px 12px rgba(20, 24, 16, 0.2),
-		inset 0 1px 0 rgba(255, 255, 255, 0.65);
+		0 2px 7px rgba(20, 24, 16, 0.12),
+		inset 0 1px 0 rgba(255, 255, 255, 0.35);
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	flex: 1;
+	flex: none;
 	min-height: 0;
 }
 .steelbox .scopetop .engrave {
@@ -491,9 +489,11 @@ body:has(.app) {
 	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
 	background: rgba(0, 0, 0, 0.28);
 }
-/* the input panel's screen fills its steelbox, and its header stacks name-over-claim */
+/* the input panel's screen sizes to its content (fixed-height scope below), not the
+   full column — the "before" reference reads at the same scale as an output screen,
+   not stretched to the analyzer's whole height. Its header stacks name-over-claim. */
 .steelbox .screen {
-	flex: 1;
+	flex: none;
 	min-height: 0;
 }
 .steelbox .phead {
@@ -575,14 +575,12 @@ canvas[data-c="time"] {
 canvas[data-c="spec"] {
 	height: 112px;
 }
-/* flex-basis 0 (not auto): the SIGNAL scope must contribute nothing to the steel
-   box's intrinsic height, so it fills whatever the box has left rather than setting
-   the box's size. That keeps the input box a constant height when the ↻ pluck button
-   appears on guitar — the chart gives up the row instead of growing the box. */
+/* the SIGNAL scope carries a fixed height matched to the top output screen, so the
+   reference wave reads at the same scale as the traces it feeds — a peer, not a
+   billboard. The steel box then sizes to its content and top-aligns in the column. */
 .steelbox .screen > canvas[data-c="srcglyph"] {
-	flex: 1 1 0;
-	min-height: 0;
-	height: 0;
+	flex: none;
+	height: 150px;
 }
 
 /* INPUT: the source controls live inside the steel enclosure */
@@ -902,7 +900,6 @@ canvas[data-c="spec"] {
 #lesson {
 	margin: 8px 0 0;
 	padding: 20px 4px 8px;
-	border-top: 1px solid var(--rule);
 }
 .lesson-cols {
 	display: grid;
