@@ -104,14 +104,7 @@ export default {
     g.moveTo(sx(-1), sy(-1));
     g.lineTo(sx(1), sy(1));
     g.stroke();
-    const xs = [],
-      ys = [];
-    for (let i = 0; i <= 400; i++) {
-      const x = -1 + (2 * i) / 400;
-      xs.push(x);
-      ys.push(nl(x));
-    }
-    H.line(g, xs, ys, sx, sy, ACCENT, 2.5);
+    H.plotCurve(g, -1, 1, nl, sx, sy, ACCENT, 2.5);
     H.txt(g, "+1", L - 5, sy(1), "end", "middle");
     H.txt(g, "0", L - 5, sy(0), "end", "middle");
     H.txt(g, "-1", L - 5, sy(-1), "end", "middle");
@@ -153,12 +146,28 @@ export default {
   },
 };
 
+// Both spectrum views share a scale — frequency runs 0..FMAX across the panel,
+// level hangs from a 0 dB ceiling to the −80 floor — and the same kHz footer. Only
+// the marks between (harmonic stems vs continuous curves) differ.
+const specSx = (F) => (f) => F.L + (f / FMAX) * (F.R - F.L);
+const specSy = (F) => (db) => F.T + ((5 - Math.max(-80, db)) / 85) * (F.B - F.T);
+function specFooter(F, H) {
+  const { g, B } = F,
+    sx = specSx(F);
+  H.txt(g, "0", sx(0), B + 3, "start", "top");
+  for (const f of [1000, 2000, 3000])
+    H.txt(g, `${f / 1000}`, sx(f), B + 3, "center", "top");
+  // ↓: level only ever falls from 0 dB toward the floor; →: frequency runs up.
+  // kHz axis, so the ticks read 1/2/3 — see the tick labels above.
+  H.titles(g, F, "level (dB) ↓", "frequency (kHz) →");
+}
+
 function drawSpecStems(F, dryDb, wetDb, H) {
-  const { g, L, R, T, B } = F;
+  const { g, T, B } = F;
   const { DRY, WET, GRID } = H.colors;
   const nH = Math.floor(FMAX / F0); // harmonics of f0 that fit under FMAX
-  const sx = (f) => L + (f / FMAX) * (R - L),
-    sy = (db) => T + ((5 - db) / 85) * (B - T);
+  const sx = specSx(F),
+    sy = specSy(F);
   // faint gridline on every harmonic k*f0 — so empty (even) slots read as empty
   g.strokeStyle = GRID;
   g.lineWidth = 1;
@@ -170,7 +179,7 @@ function drawSpecStems(F, dryDb, wetDb, H) {
     g.stroke();
   }
   // dB ladder + the floor the bins stand on — the analyzer furniture (see chart.js)
-  H.dbLadder(g, F, sy, [0, -40], -80);
+  H.dbLadder(g, F, sy, [0, -40], -80, true);
   for (let k = 1; k <= nH; k++) {
     const b = k * KBIN;
     if (wetDb[b] > -79) {
@@ -193,15 +202,7 @@ function drawSpecStems(F, dryDb, wetDb, H) {
       g.stroke();
     }
   }
-  H.txt(g, "0", L - 5, sy(0), "end", "middle");
-  H.txt(g, "-40", L - 5, sy(-40), "end", "middle");
-  H.txt(g, "-80", L - 5, sy(-80), "end", "middle");
-  H.txt(g, "0", sx(0), B + 3, "start", "top");
-  for (const f of [1000, 2000, 3000])
-    H.txt(g, `${f / 1000}`, sx(f), B + 3, "center", "top");
-  // ↓: level only ever falls from 0 dB toward the floor; →: frequency runs up.
-  // kHz axis, so the ticks read 1/2/3 — see the tick labels above.
-  H.titles(g, F, "level (dB) ↓", "frequency (kHz) →");
+  specFooter(F, H);
 }
 
 // Guitar mode: the note already carries a full harmonic series, so draw dry vs
@@ -209,12 +210,12 @@ function drawSpecStems(F, dryDb, wetDb, H) {
 function drawSpecCont(F, inp, out, H) {
   const dry = specDb(windowed(inp)),
     wet = specDb(windowed(out));
-  const { g, L, R, T, B } = F;
+  const { g, T, B } = F;
   const { DRY, WET, GRID } = H.colors;
   const df = SR / N,
     nb = Math.floor(FMAX / df);
-  const sx = (f) => L + (f / FMAX) * (R - L),
-    sy = (db) => T + ((5 - Math.max(-80, db)) / 85) * (B - T);
+  const sx = specSx(F),
+    sy = specSy(F);
   g.strokeStyle = GRID;
   g.lineWidth = 1;
   for (const f of [1000, 2000, 3000]) {
@@ -224,18 +225,10 @@ function drawSpecCont(F, inp, out, H) {
     g.stroke();
   }
   // dB ladder + floor — the same analyzer furniture the stem view stands on
-  H.dbLadder(g, F, sy, [0, -40], -80);
+  H.dbLadder(g, F, sy, [0, -40], -80, true);
   const xs = [];
   for (let i = 1; i <= nb; i++) xs.push(i * df);
   H.line(g, xs, Array.from({ length: nb }, (_, i) => dry[i + 1]), sx, sy, DRY, 1);
   H.line(g, xs, Array.from({ length: nb }, (_, i) => wet[i + 1]), sx, sy, WET, 1.5);
-  H.txt(g, "0", L - 5, sy(0), "end", "middle");
-  H.txt(g, "-40", L - 5, sy(-40), "end", "middle");
-  H.txt(g, "-80", L - 5, sy(-80), "end", "middle");
-  H.txt(g, "0", sx(0), B + 3, "start", "top");
-  for (const f of [1000, 2000, 3000])
-    H.txt(g, `${f / 1000}`, sx(f), B + 3, "center", "top");
-  // ↓: level only ever falls from 0 dB toward the floor; →: frequency runs up.
-  // kHz axis, so the ticks read 1/2/3 — see the tick labels above.
-  H.titles(g, F, "level (dB) ↓", "frequency (kHz) →");
+  specFooter(F, H);
 }

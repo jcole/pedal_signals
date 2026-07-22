@@ -90,32 +90,25 @@ export default {
   // center panel: the multiplier m(t) over a fixed window, with 1 and 1−depth
   // reference lines so the cut depth reads directly off the curve's floor.
   drawCenter(F, pedal, params, H) {
-    const { g, L, R, T, B } = F;
-    const { GRID, ACCENT } = H.colors;
+    const { L, R, T, B } = F;
     const m = pedal.curve(params);
-    const sx = (ms) => L + (ms / CURVE_SPAN_MS) * (R - L),
-      sy = (v) => B - v * (B - T - 6);
-    g.strokeStyle = GRID;
-    g.lineWidth = 1;
-    g.beginPath();
-    g.moveTo(L, sy(1));
-    g.lineTo(R, sy(1));
-    g.moveTo(L, sy(1 - params.depth));
-    g.lineTo(R, sy(1 - params.depth));
-    g.stroke();
-    const xs = [],
-      ys = [];
-    for (let i = 0; i <= 400; i++) {
-      const ms = (CURVE_SPAN_MS * i) / 400;
-      xs.push(ms);
-      ys.push(m(ms));
-    }
-    H.line(g, xs, ys, sx, sy, ACCENT, 2.5);
-    H.txt(g, "1", L - 5, sy(1), "end", "middle");
-    H.txt(g, (1 - params.depth).toFixed(2), L - 5, sy(1 - params.depth), "end", "middle");
-    H.txt(g, "0", sx(0), B + 3, "start", "top");
-    H.txt(g, CURVE_SPAN_MS.toFixed(0), sx(CURVE_SPAN_MS), B + 3, "end", "top");
-    H.titles(g, F, "gain", "time (ms)");
+    H.curvePanel(
+      F,
+      {
+        sx: (ms) => L + (ms / CURVE_SPAN_MS) * (R - L),
+        sy: (v) => B - v * (B - T - 6),
+        from: 0,
+        to: CURVE_SPAN_MS,
+        curve: m,
+        refs: [
+          { v: 1, label: "1" },
+          { v: 1 - params.depth, label: (1 - params.depth).toFixed(2) },
+        ],
+        ytitle: "gain",
+        xtitle: "time (ms)",
+      },
+      H,
+    );
   },
 
   // Output TOP panel: the wet envelope (orange) tracing the chop over the dry
@@ -173,7 +166,7 @@ export default {
       sy = (db) => T + ((5 - Math.max(-80, db)) / 85) * (B - T);
     // dB ladder + floor — the analyzer furniture (see chart.js), matching the
     // clipping spectrum: this panel descends from a 0 dB ceiling to the -80 floor.
-    H.dbLadder(g, F, sy, [0, -40], -80);
+    H.dbLadder(g, F, sy, [0, -40], -80, true);
     // The carrier's own gridline — everything here is read as an offset from it,
     // and it's the one frequency that isn't the pedal's doing.
     g.strokeStyle = GRID;
@@ -192,9 +185,6 @@ export default {
     }
     H.line(g, xs, ds, sx, sy, DRY, 1);
     H.line(g, xs, ws, sx, sy, WET, 1.5);
-    H.txt(g, "0", L - 5, sy(0), "end", "middle");
-    H.txt(g, "-40", L - 5, sy(-40), "end", "middle");
-    H.txt(g, "-80", L - 5, sy(-80), "end", "middle");
     H.txt(g, `−${Math.round(FSPAN)}`, sx(F0 - FSPAN), B + 3, "start", "top");
     H.txt(g, "f₀", sx(F0), B + 3, "center", "top");
     H.txt(g, `+${Math.round(FSPAN)}`, sx(F0 + FSPAN), B + 3, "end", "top");

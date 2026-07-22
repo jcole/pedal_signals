@@ -101,31 +101,28 @@ export default {
   // center panel: the delay time D(t) the sweep traces, with a reference line at
   // the pedal's centre delay so the sweep reads as a wobble around it.
   drawCenter(F, pedal, params, H) {
-    const { g, L, R, T, B } = F;
-    const { GRID, ACCENT } = H.colors;
+    const { L, R, T, B } = F;
     const D = pedal.curve(params);
-    const sx = (ms) => L + (ms / CURVE_SPAN_MS) * (R - L),
-      sy = (d) => B - (d / DMAX_MS) * (B - T - 6);
-    g.strokeStyle = GRID;
-    g.lineWidth = 1;
-    g.beginPath();
-    g.moveTo(L, sy(pedal.centerMs));
-    g.lineTo(R, sy(pedal.centerMs));
-    g.stroke();
-    const xs = [],
-      ys = [];
-    for (let i = 0; i <= 400; i++) {
-      const ms = (CURVE_SPAN_MS * i) / 400;
-      xs.push(ms);
-      ys.push(D(ms));
-    }
-    H.line(g, xs, ys, sx, sy, ACCENT, 2.5);
-    H.txt(g, `${DMAX_MS}`, L - 5, sy(DMAX_MS), "end", "middle");
-    H.txt(g, pedal.centerMs.toFixed(0), L - 5, sy(pedal.centerMs), "end", "middle");
-    H.txt(g, "0", L - 5, sy(0), "end", "middle");
-    H.txt(g, "0", sx(0), B + 3, "start", "top");
-    H.txt(g, CURVE_SPAN_MS.toFixed(0), sx(CURVE_SPAN_MS), B + 3, "end", "top");
-    H.titles(g, F, "delay (ms)", "time (ms)");
+    H.curvePanel(
+      F,
+      {
+        sx: (ms) => L + (ms / CURVE_SPAN_MS) * (R - L),
+        sy: (d) => B - (d / DMAX_MS) * (B - T - 6),
+        from: 0,
+        to: CURVE_SPAN_MS,
+        curve: D,
+        // one rule at the centre delay the sweep wobbles around; the axis ends get
+        // a label with no rule.
+        refs: [{ v: pedal.centerMs, label: pedal.centerMs.toFixed(0) }],
+        yLabels: [
+          { v: DMAX_MS, label: `${DMAX_MS}` },
+          { v: 0, label: "0" },
+        ],
+        ytitle: "delay (ms)",
+        xtitle: "time (ms)",
+      },
+      H,
+    );
   },
 
   // Output TOP panel: the wet envelope (orange) against the dry (grey). A steady

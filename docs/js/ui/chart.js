@@ -55,6 +55,20 @@ export function line(g, xs, ys, sx, sy, color, width) {
   }
   g.stroke();
 }
+// Sample a pure fn over [from,to] and stroke it — the curve every center panel
+// draws (a transfer curve, an LFO, a swept delay), fixed at 400 steps so all three
+// read at the same resolution. The one bit of drawCenter that was copied verbatim.
+export function plotCurve(g, from, to, fn, sx, sy, color, width) {
+  const n = 400,
+    xs = new Array(n + 1),
+    ys = new Array(n + 1);
+  for (let i = 0; i <= n; i++) {
+    const t = from + ((to - from) * i) / n;
+    xs[i] = t;
+    ys[i] = fn(t);
+  }
+  line(g, xs, ys, sx, sy, color || colors.ACCENT, width || 2.5);
+}
 export function txt(g, s, x, y, align, base, color) {
   g.fillStyle = color || AXIS;
   g.font = "10px ui-monospace,Menlo,monospace";
@@ -81,8 +95,10 @@ export function titles(g, F, ytitle, xtitle) {
 // tells a frequency panel from a time scope: a scope draws one centre line and
 // swings around it; an analyzer measures against a descending ladder. `sy` maps
 // dB → pixel; the family owns the levels (a spectrum hangs from 0; a comb brackets
-// unity ±).
-export function dbLadder(g, F, sy, levels, floor) {
+// unity ±). Pass `labeled` to also print each level (and the floor) up the left
+// edge — the tick column the spectra used to spell out by hand; a comb labels its
+// rungs itself (it wants a "0" the ladder has no rule for) so it leaves this off.
+export function dbLadder(g, F, sy, levels, floor, labeled) {
   g.lineWidth = 1;
   g.strokeStyle = colors.GRID;
   g.setLineDash([2, 3]);
@@ -99,6 +115,10 @@ export function dbLadder(g, F, sy, levels, floor) {
     g.moveTo(F.L, sy(floor));
     g.lineTo(F.R, sy(floor));
     g.stroke();
+  }
+  if (labeled) {
+    for (const db of levels) txt(g, `${db}`, F.L - 5, sy(db), "end", "middle");
+    if (floor != null) txt(g, `${floor}`, F.L - 5, sy(floor), "end", "middle");
   }
 }
 
@@ -170,11 +190,40 @@ export function envelopePanel(F, cfg, H) {
   titles(g, F, "level", "time (ms)");
 }
 
+// The formula-curve center panel, shared by the two modulation families (the LFO
+// and the swept delay both plot the pedal's own fn over a fixed time window). An
+// ACCENT curve riding one or more GRID reference lines, with the axis labels and
+// titles the rig shows and the thumbnail stubs out — so text goes through the
+// passed H, geometry through the module primitives that always draw. Data-in: cfg =
+// { sx, sy, from, to, curve, refs:[{v,label}], yLabels:[{v,label}], ytitle, xtitle }.
+// `refs` draw a rule and label it; `yLabels` label a level with no rule (an axis end
+// the sweep never reaches). Clipping keeps its own drawCenter — its bipolar axes and
+// y=x diagonal don't fit this mould — but shares plotCurve for the curve itself.
+export function curvePanel(F, cfg, H) {
+  const { g, L, R, B } = F;
+  const { GRID, ACCENT } = H.colors;
+  g.strokeStyle = GRID;
+  g.lineWidth = 1;
+  g.beginPath();
+  for (const r of cfg.refs ?? []) {
+    g.moveTo(L, cfg.sy(r.v));
+    g.lineTo(R, cfg.sy(r.v));
+  }
+  g.stroke();
+  plotCurve(g, cfg.from, cfg.to, cfg.curve, cfg.sx, cfg.sy, ACCENT, 2.5);
+  for (const { v, label } of [...(cfg.refs ?? []), ...(cfg.yLabels ?? [])])
+    H.txt(g, label, L - 5, cfg.sy(v), "end", "middle");
+  H.txt(g, "0", cfg.sx(cfg.from), B + 3, "start", "top");
+  H.txt(g, `${Math.round(cfg.to)}`, cfg.sx(cfg.to), B + 3, "end", "top");
+  H.titles(g, F, cfg.ytitle, cfg.xtitle);
+}
+
 // The helper bundle handed to an effect's draw/audio hooks: drawing primitives,
 // chart furniture (dbLadder/baseline), whole-panel renderers (tapTrain/
 // envelopePanel), and the shared palette. (DSP + constants come from dsp.js.)
 export const H = {
   line,
+  plotCurve,
   txt,
   vtxt,
   titles,
@@ -182,5 +231,6 @@ export const H = {
   baseline,
   tapTrain,
   envelopePanel,
+  curvePanel,
   colors,
 };
