@@ -47,38 +47,11 @@
     <!-- the bench: its own scroll pane so the scope stays put while the page doesn't
          move (see the app-shell note in styles.css) -->
     <main class="main">
+      <!-- the bench: the green tray holds only the instrument (monitor + wired
+           chain); the family's prose below sits on the lit page, not the bench -->
+      <div class="bench">
       <!-- patch cables input→pedal→output, recomputed on resize/scroll (harness) -->
       <svg id="cables" aria-hidden="true"></svg>
-
-      <!-- the monitor: the listening controls, set apart from the signal demo with
-           no enclosure — blend and volume reach the speaker, not the charts. -->
-      <div class="monitor">
-        <span class="engrave">monitor</span>
-        <!-- sound is on/off, not a level: the signal is always live, this just
-             un-mutes the speaker. Starts off (a browser can't sound until you ask).
-             First in the monitor — turn it on, then set the volume and blend. -->
-        <button id="sound" class="soundtgl" type="button" aria-pressed="false"
-                title="sound on / off">
-          <svg class="volic" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 9v6h5l5 4V5L9 9H4z" fill="currentColor"/>
-            <path class="wave" d="M16 8.5a4 4 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.6"/>
-          </svg>
-          <span class="soundlbl">off</span>
-        </button>
-        <span class="mdiv"></span>
-        <div class="field volfield">
-          <span class="blab vol">vol</span>
-          <input id="volume" type="range" min="0" max="1" step="0.01" value="0.75"
-                 aria-label="monitor volume" title="how loud the monitor plays">
-        </div>
-        <span class="mdiv"></span>
-        <div class="field blendfield">
-          <span class="blab dry">dry</span>
-          <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5"
-                 aria-label="dry/wet blend" title="0 is your note alone, 1 is the pedal alone">
-          <span class="blab wet">wet</span>
-        </div>
-      </div>
 
       <div class="chain">
         <!-- INPUT: a brushed-steel signal generator; its source controls live inside
@@ -152,6 +125,34 @@
         </div>
       </div>
 
+      <!-- the monitor: the bench's listening controls, a strip under the chain with
+           no enclosure — blend and volume reach the speaker, not the charts. -->
+      <div class="monitor">
+        <span class="engrave">monitor</span>
+        <!-- sound is on/off, not a level: the signal is always live, this just
+             un-mutes the speaker. Starts off (a browser can't sound until you ask).
+             First in the monitor — turn it on, then set the volume and blend. -->
+        <button id="sound" class="soundtgl" type="button" aria-pressed="false"
+                title="sound on / off">
+          <svg class="volic" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9v6h5l5 4V5L9 9H4z" fill="currentColor"/>
+            <path class="wave" d="M16 8.5a4 4 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          <span class="soundlbl">off</span>
+        </button>
+        <div class="field volfield">
+          <span class="blab vol">vol</span>
+          <input id="volume" type="range" min="0" max="1" step="0.01" value="0.75"
+                 aria-label="monitor volume" title="how loud the monitor plays">
+        </div>
+        <div class="field blendfield">
+          <span class="blab dry">dry</span>
+          <input id="blend" type="range" min="0" max="1" step="0.01" value="0.5"
+                 aria-label="dry/wet blend" title="0 is your note alone, 1 is the pedal alone">
+          <span class="blab wet">wet</span>
+        </div>
+      </div>
+
       <!-- the guitar source's attribution (EGFxSet, CC BY 4.0); shown only while the
            guitar note is the source it's crediting -->
       <p class="gcredit" id="gcredit" hidden>
@@ -159,8 +160,9 @@
         <a href="https://egfxset.github.io/">EGFxSet</a> — Pedroza, Meza &amp; Roman,
         ISMIR 2022. CC&nbsp;BY&nbsp;4.0.
       </p>
+      </div>
 
-      <!-- the family's prose, in the bench's scroll pane below the chain -->
+      <!-- the family's prose, on the lit page below the bench -->
       <section id="lesson" style="display:none">
         <div class="lesson-cols">
           <div class="col">

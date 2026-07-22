@@ -483,17 +483,17 @@ function cablePath(a, b, sag) {
 }
 function layoutCables() {
   const svg = document.getElementById("cables"),
-    main = document.querySelector(".main");
+    bench = document.querySelector(".bench");
   const inbox = document.getElementById("inputbox"),
     ped = document.querySelector(".pedal"),
     scope = document.getElementById("scope");
-  if (!svg || !main || !inbox || !ped || !scope) return;
-  const mr = main.getBoundingClientRect(),
-    sx = main.scrollLeft,
-    sy = main.scrollTop;
+  if (!svg || !bench || !inbox || !ped || !scope) return;
+  // the SVG rides inside .bench, so it scrolls with the chain — rects are relative
+  // to the bench box, no scroll offset to add.
+  const br = bench.getBoundingClientRect();
   const rel = (el, fx, fy) => {
     const r = el.getBoundingClientRect();
-    return { x: r.left - mr.left + sx + r.width * fx, y: r.top - mr.top + sy + r.height * fy };
+    return { x: r.left - br.left + r.width * fx, y: r.top - br.top + r.height * fy };
   };
   const iRight = rel(inbox, 1, 0.62),
     pLeft = rel(ped, 0, 0.5),

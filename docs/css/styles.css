@@ -196,8 +196,16 @@ body:has(.app) {
 .main {
 	position: relative;
 	overflow-y: auto;
+	background: var(--page);
+	display: flex;
+	flex-direction: column;
+}
+/* the bench surface: the green tray, ending at the chain. Only the instrument
+   rides it — the prose below is on the lit page (the two-surfaces rule up top). */
+.bench {
+	position: relative;
 	background: var(--tray);
-	padding: 14px 20px 24px;
+	padding: 14px 20px 18px;
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
@@ -244,14 +252,16 @@ body:has(.app) {
 
 /* the monitor: bare listening controls on the tray, no enclosure (not part of the
    signal chain — they reach the speaker, not the charts) */
+/* the bench's footer strip: the listening controls centered under the chain.
+   No rules — spacing alone groups them (wide gaps between, tight within). */
 .monitor {
 	position: relative;
 	z-index: 1;
-	align-self: flex-end;
 	display: flex;
 	align-items: center;
-	gap: 13px;
-	padding: 0 4px;
+	justify-content: center;
+	gap: 22px;
+	padding: 10px 4px 2px;
 }
 .engrave {
 	font: 700 9.5px var(--mono);
@@ -263,12 +273,6 @@ body:has(.app) {
 .monitor .engrave {
 	color: var(--ink-lo);
 	text-shadow: none;
-}
-.mdiv {
-	width: 1px;
-	align-self: stretch;
-	min-height: 20px;
-	background: var(--rule);
 }
 .field {
 	display: flex;
@@ -898,8 +902,8 @@ canvas[data-c="spec"] {
 
 /* ---- the lesson: the family's prose, in the bench's scroll pane ---- */
 #lesson {
-	margin: 8px 0 0;
-	padding: 20px 4px 8px;
+	margin: 0;
+	padding: 24px 20px 20px;
 }
 .lesson-cols {
 	display: grid;
